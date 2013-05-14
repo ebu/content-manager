@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+	This file is part of the project Content Manager
+	developed by European Broadcasting Union. 
+	
+	See	www.ebulabs.org for information about licensing.
+	
+-->
+<slidecarts>
+
+<!--  <slidecart name="1.2">
+    <variable name="SECTION_HEADING" value="Radio in the European Parliament"/>
+	<slide name="p-lotta"/>
+	<slide name="p-carbajo"/>
+	<slide name="p-duch"/>
+	
+  </slidecart>-->
+  
+  <!--<varcart name="1.2 Radio in the European Parliament">
+    <variable name="SECTION_HEADING" value="Radio in the European Parliament"/>
+	<variable name="SECTION_PEOPLE" value="Fernando Carbajo (European Parliament)\nJaume Duch"/>
+  </varcart>-->
+
+</slidecarts>

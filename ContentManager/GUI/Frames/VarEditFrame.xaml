@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="ContentManager.GUI.Frames.VarEditFrame"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:my="clr-namespace:ContentManager.GUI.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="275" d:DesignWidth="283">
+ 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+        
+        <WrapPanel Grid.Row="0" Margin="5">
+            <TextBlock Text="Slide" Margin="5" VerticalAlignment="Center"/>
+            <ComboBox x:Name="availableSlidesListBox" Width="122" Height="25" VerticalAlignment="Center" Margin="5" SelectionChanged="availableSlidesListBox_SelectionChanged" />
+        </WrapPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"  Grid.Row="1">
+            <StackPanel x:Name="stack">
+            </StackPanel>
+        </ScrollViewer>
+
+        <TextBlock Grid.Row="2"  Text="F5: preview   F8: RSS wizard" Margin="5" VerticalAlignment="Center"/>
+    </Grid>
+    
+</UserControl>

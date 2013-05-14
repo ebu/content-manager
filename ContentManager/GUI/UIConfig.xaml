@@ -1,0 +1,235 @@
+﻿<Window x:Class="ContentManager.GUI.UIConfig"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="CMS Configuration" Height="680" Width="764" WindowStartupLocation="CenterScreen" Topmost="True" Foreground="White" Background="Black">
+    <Grid Margin="5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="183*"/>
+            <ColumnDefinition Width="183*"/>
+            <ColumnDefinition Width="46*"/>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="117*" />
+            <ColumnDefinition Width="183*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="25" />
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="32*" />
+        </Grid.RowDefinitions>
+        <Button Content="import" Grid.Column="5" Margin="98,0,0,0" Click="Button_Click_5" />
+        <Button x:Name="exportbtn" Content="export" Grid.Column="5" Margin="0,0,91,0" Click="Button_Click_6" />
+        
+        <TextBlock Text="INPUT" FontWeight="Bold" VerticalAlignment="Bottom" />
+        
+        <TextBlock Text="type" Grid.Row="1" Grid.Column="0" Margin="5" />
+        <ComboBox x:Name="zTypeList"  Grid.Row="1" Grid.Column="1">
+            <ComboBoxItem Content="HTTP" IsSelected="True" />
+            <ComboBoxItem Content="WCF" />
+        </ComboBox>
+        <TextBlock Text="HTTP port" Grid.Row="3" Grid.Column="0" Margin="5"/>
+        <TextBox x:Name="zHttpPort" Grid.Row="3" Grid.Column="1" TextChanged="TextChanged" />
+
+        <TextBlock Text="HTTP url separator" Grid.Row="3" Grid.Column="3" Margin="5" Grid.ColumnSpan="2" />
+        <TextBox x:Name="zHttpUrlSeparator" Grid.Row="3" Grid.Column="5" TextChanged="TextChanged" />
+
+        <TextBlock Text="RADIOVIS" Grid.Row="4" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Bottom"/>
+        <TextBlock Text="Default link" Grid.Row="5" Grid.Column="0" Margin="5" />
+        <TextBox x:Name="zRadioVisLink" Grid.Row="5" Grid.Column="1" TextChanged="TextChanged" />
+
+        <TextBlock Text="Default text" Grid.Row="5" Grid.Column="3" Margin="5" Grid.ColumnSpan="2" />
+        <TextBox x:Name="zRadioVisText" Grid.Row="5" Grid.Column="5" TextChanged="TextChanged" />
+
+        
+        <TextBlock Text="STOMP Server / port" Grid.Row="7" Grid.Column="0" Margin="5" />
+        <TextBox x:Name="zStompServer" Grid.Row="7" Grid.Column="1" Margin="0,0,60,0" TextChanged="TextChanged"/>
+        <TextBox x:Name="zStompPort" Grid.Row="7" Grid.Column="1" Margin="129,0,0,0" TextChanged="TextChanged"/>
+
+        <TextBlock Text="STOMP HTTP url" Grid.Row="7" Grid.Column="3" Margin="5" Grid.ColumnSpan="2" />
+        <TextBox x:Name="zStompHttpUrl" Grid.Row="7" Grid.Column="5"  TextChanged="TextChanged"/>
+
+
+        <TextBlock Text="STOMP Login" Grid.Row="9" Grid.Column="0" Margin="5" />
+        <TextBox x:Name="zStompLogin" Grid.Row="9" Grid.Column="1"  TextChanged="TextChanged"/>
+
+        <TextBlock Text="STOMP Passcode" Grid.Row="9" Grid.Column="3" Margin="5" Grid.ColumnSpan="2" />
+        <TextBox x:Name="zStompPasscode" Grid.Row="9" Grid.Column="5" TextChanged="TextChanged" />
+
+
+        <TextBlock Text="STOMP topics" Grid.Row="11" Grid.Column="0" Margin="5"/>
+        <TextBlock Text="ie: /topic/fm/ch/4000/09580/" Grid.Row="13" Height="20" VerticalAlignment="Top" />
+        <TextBlock Text="    /topic/fm/4e1/4000/09580/" Grid.Row="13" Height="20" Margin="0,20,0,0" VerticalAlignment="Top" />
+        <TextBlock Text="    /topic/dab/4e1/4fff/4001/0/" Grid.Row="13" Height="20" Margin="0,40,0,0" VerticalAlignment="Top" />
+
+        <TextBox x:Name="nStompTopic" Grid.Row="11" Grid.Column="1" Grid.ColumnSpan="4" Margin="0,0,8,0" TextChanged="TextChanged" />
+        <Button Grid.Row="11" Grid.Column="5" Width="40" HorizontalAlignment="Left" Content="+" Click="Button_Click" />
+        <Button Grid.Row="13" Grid.Column="5" Height="25" Width="40" HorizontalAlignment="Left" Content="-" VerticalAlignment="Top" Click="Button_Click_1" />
+        <ListBox x:Name="zStompTopicsList" Grid.Row="13" Grid.Column="1" Grid.ColumnSpan="4" Margin="0,0,8,0"  SelectionChanged="SelectionChanged"/>
+
+        <TextBlock Text="FTP" Grid.Row="15" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Bottom"/>
+        <Grid Grid.Row="17" Grid.ColumnSpan="6" Margin="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="10*"/>
+                <ColumnDefinition Width="20*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Host" Margin="6,0,0,0" HorizontalAlignment="Left" Width="55" />
+            <TextBox x:Name="nFtpHost" Grid.Column="1" Text="ftp://"  Margin="0,0,6,0" TextChanged="TextChanged"/>
+            <TextBlock Grid.Column="2" Text="Login" Margin="6,0,0,0" HorizontalAlignment="Left" Width="55" />
+            <TextBox x:Name="nFtpLogin" Grid.Column="3" TextChanged="TextChanged" />
+            <TextBlock Grid.Column="4" Text="Password" Margin="6,0,0,0" HorizontalAlignment="Left" Width="55" />
+            <TextBox x:Name="nFtpPassword" Grid.Column="5"  Margin="0,0,7,0" TextChanged="TextChanged" />
+            <TextBlock Grid.Column="6" Text="MinPeriod" Margin="6,0,0,0" HorizontalAlignment="Left" Width="55" />
+            <TextBox x:Name="nFtpMinPeriod" Grid.Column="7" Margin="6,0,0,0" HorizontalAlignment="Left" Width="115" Text="0" TextChanged="TextChanged" />
+            
+        </Grid>
+        
+        <ListBox x:Name="zFtpList" Grid.Row="19" Grid.Column="1" Grid.ColumnSpan="4" Margin="0,0,8,0" SelectionChanged="SelectionChanged" />
+        <TextBlock Grid.Row="15" Grid.Column="1" Grid.ColumnSpan="4" Margin="0,0,8,0" />
+        <Grid Grid.Row="19" Grid.Column="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="25"/>
+                <RowDefinition Height="10*"/>
+            </Grid.RowDefinitions>
+            <Button Content="+" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Left" Width="40" Click="Button_Click_2" />
+            <Button Content="-" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" Width="40" Click="Button_Click_3" />
+        </Grid>
+        
+
+        <TextBlock Text="PLAYOUT" Grid.Row="20" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Bottom"/>
+        <TextBlock Text="Broadcast default delay" Margin="5" Grid.Column="0" Grid.Row="22" HorizontalAlignment="Right"/>
+        <TextBox x:Name="zBroadcastDelay" Grid.Row="22" Grid.Column="1" Text="" TextChanged="TextChanged" />
+        <TextBlock Text="SlideCart prefix autoload" Margin="0,5" Grid.Column="3" Grid.Row="22" HorizontalAlignment="Right" Width="136" Grid.ColumnSpan="2" />
+        <TextBox x:Name="zSlideCartPrefix" Grid.Row="22" Grid.Column="5" Text="" TextChanged="TextChanged" />
+        
+        <TextBlock Text="DIRECTORIES" Grid.Row="28" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Bottom"/>
+        <Grid Grid.Row="30" Grid.ColumnSpan="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="20*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Slide root folder" Margin="6,0,0,0" Grid.Column="0" Grid.Row="30" HorizontalAlignment="Left"/>
+            <TextBox x:Name="zSlideDir" Grid.Row="0" Grid.Column="1" Text="" TextChanged="TextChanged" />
+            <TextBlock Text="Template folder" Margin="6,0,0,0" Grid.Column="3" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" />
+            <TextBox x:Name="zTemplateDir" Grid.Row="30" Grid.Column="4" Text="" TextChanged="TextChanged" />
+            <TextBlock Text="Watch folder" Margin="6,0,0,0" Grid.Column="6" Grid.Row="0" HorizontalAlignment="Left" Grid.ColumnSpan="2" />
+            <TextBox x:Name="zWatchDir" Grid.Row="30" Grid.Column="7" Text="" TextChanged="TextChanged" />
+
+        </Grid>
+        
+        <Grid Grid.Row="24" Grid.RowSpan="3" Grid.ColumnSpan="6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="20*"/>
+                <ColumnDefinition Width="20*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20*"/>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="20*"/>
+            </Grid.RowDefinitions>
+        <TextBlock Text="IMAGE" Grid.Row="0" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Bottom"/>
+        <TextBlock Text="Width" Margin="5" Grid.Column="0" Grid.Row="26" HorizontalAlignment="Right"/>
+            <TextBox x:Name="zImageWidth" Grid.Row="26" Grid.Column="1" Text="" TextChanged="TextChanged" />
+            <TextBlock Text="Height" Margin="5" Grid.Column="3" Grid.Row="26" HorizontalAlignment="Right" />
+            <TextBox x:Name="zImageHeight" Grid.Row="2" Grid.Column="4" Text=""  Margin="6,0,0,0" TextChanged="TextChanged" />
+            <TextBlock Text="Quality" Margin="5" Grid.Column="6" Grid.Row="26" HorizontalAlignment="Right" />
+            <TextBox x:Name="zImageQuality" Grid.Row="26" Grid.Column="7" Text="" TextChanged="TextChanged" />
+        </Grid>
+        <Button Grid.Row="32" Grid.Column="5" Content="Save" Click="Button_Click_4" />
+        <TextBlock Text="After modification, the application must restart." Grid.Row="32" Grid.Column="1" Grid.ColumnSpan="4" Foreground="Red" TextAlignment="Right" Margin="5"/>
+        <Rectangle Grid.Row="4" Height="1" Grid.ColumnSpan="6" Margin="20,10,20,0" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                    <GradientStop Color="Transparent" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="1" />
+                    <GradientStop Color="Red" Offset="0.552" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="15" Height="1" Grid.ColumnSpan="6" Margin="20,8,20,0" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                    <GradientStop Color="Transparent" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="1" />
+                    <GradientStop Color="Red" Offset="0.552" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="20" Height="1" Grid.ColumnSpan="6" Margin="20,5,20,0" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                    <GradientStop Color="Transparent" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="1" />
+                    <GradientStop Color="Red" Offset="0.552" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="24" Height="1" Grid.ColumnSpan="6" Margin="20,5,20,0" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                    <GradientStop Color="Transparent" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="1" />
+                    <GradientStop Color="Red" Offset="0.552" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Grid.Row="28" Height="1" Grid.ColumnSpan="6" Margin="20,5,20,0" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                    <GradientStop Color="Transparent" Offset="0" />
+                    <GradientStop Color="Transparent" Offset="1" />
+                    <GradientStop Color="Red" Offset="0.552" />
+                </LinearGradientBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+    </Grid>
+</Window>
