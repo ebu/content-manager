@@ -213,6 +213,31 @@ namespace SlideGeneratorLib.Parser
             return "";
         }
 
+        public static string parseCSV(string val, XmlDocument doc = null)
+        {
+
+            String[] s = val.Split(("@").ToArray(), StringSplitOptions.None);
+            if (s.Length == 2)
+            {
+                String path = s[1];
+                
+                try
+                {
+                    
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("CSV Exception: " + e.Message);
+                    return "--error--";
+                }
+
+            }
+
+
+            return "";
+        }
+
+
         private static int getNb(string node)
         {
             

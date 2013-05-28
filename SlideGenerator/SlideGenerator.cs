@@ -34,6 +34,7 @@ using System.Deployment.Application;
 using System.Drawing;
 using System.Drawing.Imaging;
 using XMLConfig.CMS;
+using log4net;
 
 
 namespace SlideGeneratorLib
@@ -48,6 +49,10 @@ namespace SlideGeneratorLib
     /// </summary>
     public class SlideGenerator
     {
+
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(SlideGenerator));
+
         Dictionary<String, IRenderable> tags;
         
         int cWidth = CMSConfig.imagewidth;
@@ -106,7 +111,7 @@ namespace SlideGeneratorLib
             Console.WriteLine("SLIDE FOLDER: " + slidefolder);
             Console.WriteLine("TEMPLATE FOLDER: " + templatefolder);
             if (CMSConfig.ftp.Count == 0)
-                MessageBox.Show("No FTP defined. The content manager is offline. So, the ONAIR frame will not be able to display broadcasted slides. However you can use right click to preview the slides", "Warning");
+               log.Info("No FTP defined. The content manager is offline. So, the ONAIR frame will not be able to display broadcasted slides. However you can use right click to preview the slides");
             
 
 
@@ -533,7 +538,7 @@ namespace SlideGeneratorLib
             key = key.ToUpper();
             try
             {
-                Console.WriteLine("SET " + key + " = " + content);
+              //  log.Debug("SET " + key + " = " + content);
                 if (!cstlist.ContainsKey(key))
                     cstlist.Add(key, content);
                 else

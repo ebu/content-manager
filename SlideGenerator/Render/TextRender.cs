@@ -28,11 +28,15 @@ using SlideGeneratorLib.Parser;
 using System.Windows.Media;
 using System.Windows;
 using System.Windows.Documents;
+using log4net;
 
 namespace SlideGeneratorLib.Rendering
 {
     class TextRender: ARender
     {
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(TextRender));
+
         private SlideGenerator slidegen;
         public TextRender(SlideGenerator slidegen) : base("text") { this.slidegen = slidegen; }
 
@@ -42,15 +46,40 @@ namespace SlideGeneratorLib.Rendering
         }
         public override void draw(XElement field, Canvas c, Dictionary<string, string> localdic)
         {
-            if (field.HasAttributes && field.Attribute("content") != null)
+            if (field.HasAttributes && field.Attribute("content") != null || field.Attribute("path") != null && field.Attribute("field") != null)
             {
                 TextBlock box = new TextBlock();
                 box.TextWrapping = TextWrapping.WrapWithOverflow;
-                /** Text **/
-                String t = VarParser.parseText(field.Attribute("content").Value, this.slidegen.cstlist, localdic);
-                t = t.Replace("\\n", "\n");
-                box.Inlines.Add(t);
 
+                if (field.Attribute("path")!=null)
+                {
+                    String path = VarParser.parseText(field.Attribute("path").Value, this.slidegen.cstlist, localdic).ToUpper();
+                    String fieldValue = VarParser.parseText(field.Attribute("field").Value, this.slidegen.cstlist, localdic).ToUpper();
+
+                    String key = path + "@" + fieldValue;
+                    if (localdic != null && localdic.ContainsKey(key))
+                    {
+                        log.Info("Key : " + key + " => value : " + localdic[key]);
+                        box.Inlines.Add(localdic[key]);
+                    }
+                    else if (this.slidegen.cstlist.ContainsKey(key))
+                    {
+                        log.Info("Key : " + key + " => value : " + this.slidegen.cstlist[key]);
+                        
+                        box.Inlines.Add(this.slidegen.cstlist[key]);
+                    }
+                    else
+                        log.Info("Unknown value for key : " + key);
+
+                }
+                else
+                {
+
+                    /** Text **/
+                    String t = VarParser.parseText(field.Attribute("content").Value, this.slidegen.cstlist, localdic);
+                    t = t.Replace("\\n", "\n");
+                    box.Inlines.Add(t);
+                }
                 /** Font **/
                 if (field.Attribute("font-style") != null)
                 {
