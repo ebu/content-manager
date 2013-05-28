@@ -1,0 +1,11 @@
+﻿<Window x:Class="ContentManager.GUI.Modules.SwissTiming.UISwimming"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Swimming" Height="323" Width="781">
+    <Grid>
+        <ComboBox Height="23" HorizontalAlignment="Left" Margin="607,42,0,0" Name="comboBox1" VerticalAlignment="Top" Width="120" />
+        <Label Content="TvCompetitors slide" Height="28" Margin="607,12,23,0" Name="label6" VerticalAlignment="Top" />
+        <TreeView Height="200" HorizontalAlignment="Left" Margin="12,12,0,0" Name="tree" VerticalAlignment="Top" Width="248" />
+        <ListBox Height="200" HorizontalAlignment="Left" Margin="292,12,0,0" Name="listBox1" VerticalAlignment="Top" Width="178" />
+    </Grid>
+</Window>

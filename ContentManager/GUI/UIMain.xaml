@@ -128,6 +128,9 @@
             <MenuItem Header="Capture">
                 <MenuItem Header="Video Stream" Foreground="Black" Click="MenuItem_Click_1"/>                
             </MenuItem>
+            <MenuItem Header="Sports">
+                <MenuItem Header="Swimming" Foreground="Black" Click="MenuItem_Click_3"/>
+            </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" Foreground="Black" Click="MenuItem_Click" Padding="0" />
             </MenuItem>

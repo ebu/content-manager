@@ -41,6 +41,7 @@ using System.Deployment.Application;
 using System.Reflection;
 using XMLConfig.CMS;
 using System.Net;
+using ContentManager.GUI.Modules.SwissTiming;
 
 namespace ContentManager.GUI
 {
@@ -106,6 +107,9 @@ namespace ContentManager.GUI
 
             if(CMSConfig.stationimage !="")
                 stationPic.Source = new BitmapImage(new Uri(CMSConfig.stationimage));
+
+
+            MenuItem_Click_3(null, null);
         }
 
 
@@ -471,6 +475,12 @@ namespace ContentManager.GUI
         {
             UIVideoCapture videoCapture = new UIVideoCapture(this);
             videoCapture.Show();
+        }
+
+        private void MenuItem_Click_3(object sender, RoutedEventArgs e)
+        {
+            UISwimming swimming = new UISwimming();
+            swimming.Show();
         }
     }
 }
