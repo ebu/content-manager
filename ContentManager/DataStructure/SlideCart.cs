@@ -47,6 +47,5 @@ namespace ContentManager.DataStructure
             return this.name;
         }
 
-
     }
 }

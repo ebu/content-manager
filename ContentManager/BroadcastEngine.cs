@@ -57,9 +57,9 @@ namespace ContentManager
         public delegate void OutputEvent(String filename, String link);
         public event OutputEvent onBroadcast;
 
-
         public delegate void ChangeCartEvent(List<String> slides);
         public event ChangeCartEvent onChangeCart;
+
 
         public void setSlideCart(List<string> slidenames){
             this.slidecart.Clear();
@@ -72,7 +72,7 @@ namespace ContentManager
             if(this.onChangeCart!=null)
                  this.onChangeCart(slidenames);
         }
-
+        
         public BroadcastEngine(SlideGenerator slidegen)
         {
             this.slidegen = slidegen;
@@ -137,8 +137,6 @@ namespace ContentManager
         {
             UIMain.timerValue = 0;
             this.timer.Start();
-            
-            
         }
 
         void stop()

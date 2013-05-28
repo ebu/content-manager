@@ -28,6 +28,14 @@ using ContentManager.GUI;
 using System.Deployment.Application;
 using System.IO;
 using XMLConfig.CMS;
+using Newtonsoft.Json;
+using RabbitMQ.Client.Events;
+using CsvHelper;
+using ContentManager.GUI.Modules.Sports.SwisstimingData;
+using CsvHelper.Configuration;
+using System.Windows.Threading;
+using log4net;
+using log4net.Config;
 
 namespace ContentManager
 {
@@ -37,23 +45,28 @@ namespace ContentManager
     /// </summary>
     public class ContentManagerCore
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(ContentManagerCore));
+
         private static ContentManagerCore instance = null;
         public SlideGenerator slidegen;
         public BroadcastEngine engine;
-        
+        public AMQPEngine amqpEngine;
+
         public String datafolder;
         public String tmpfolder;
-        
+
         public IInputPlugin input;
 
         public static Boolean debug = false;
-        
+
         //Output
 
 
         private static Object InstanceLock = new Object();
-        
-        private ContentManagerCore() {
+
+        private ContentManagerCore()
+        {
+            BasicConfigurator.Configure();
             try
             {
                 debug = System.Configuration.ConfigurationManager.AppSettings["debug"].Equals("true");
@@ -62,10 +75,10 @@ namespace ContentManager
                 datafolder = System.Configuration.ConfigurationManager.AppSettings["DataFolder"];
                 tmpfolder = System.Configuration.ConfigurationManager.AppSettings["TmpFolder"];
 
-                
+
                 if (!Directory.Exists(datafolder) && !File.Exists(datafolder + "\\config.xml") && ApplicationDeployment.IsNetworkDeployed)
                     datafolder = ApplicationDeployment.CurrentDeployment.DataDirectory + "\\" + datafolder;
-              
+
                 if (!Directory.Exists(tmpfolder) && ApplicationDeployment.IsNetworkDeployed)
                     tmpfolder = ApplicationDeployment.CurrentDeployment.DataDirectory + "\\" + tmpfolder;
 
@@ -103,13 +116,22 @@ namespace ContentManager
 
                 this.engine = new BroadcastEngine(slidegen);
                 this.engine.setSlideCart(this.getAutoSlides());
-                if(this.engine.slidecart.Count != 0)
+                if (this.engine.slidecart.Count != 0)
                     this.engine.startAutoBroadcast();
+
+                amqpEngine = new AMQPEngine();
+                amqpEngine.onUpdate += new AMQPEngine.Update(amqpEngine_onUpdate);
+                amqpEngine.start();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                MessageBox.Show("Error when starting: "+e.Message);
+                MessageBox.Show("Error when starting: " + e.Message);
             }
+        }
+
+        public void amqpEngine_onUpdate(Dictionary<string, string> message) {
+
+            log.Debug(message);
         }
 
         public static ContentManagerCore getInstance()
@@ -143,7 +165,7 @@ namespace ContentManager
                         if (slidegen.cstlist.ContainsKey(dictionary.ElementAt(i).Key))
                         {
                             slidegen.cstlist[dictionary.ElementAt(i).Key] = dictionary.ElementAt(i).Value;
-                            if(dictionary.ElementAt(i).Key =="CURRENTARTIST")
+                            if (dictionary.ElementAt(i).Key == "CURRENTARTIST")
                                 slidegen.cstlist["ARTIST"] = dictionary.ElementAt(i).Value;
                             if (dictionary.ElementAt(i).Key == "CURRENTTITLE")
                                 slidegen.cstlist["TITLE"] = dictionary.ElementAt(i).Value;
@@ -169,9 +191,10 @@ namespace ContentManager
             return filename;
         }
 
-        private Boolean isSlideCartValid(){
-            List<String>slide = slidegen.getAvailableSlides();
-            
+        private Boolean isSlideCartValid()
+        {
+            List<String> slide = slidegen.getAvailableSlides();
+
             if (this.engine.slidecart.Count == 0)
                 return false;
 
@@ -183,7 +206,8 @@ namespace ContentManager
             return true;
         }
 
-        public void checkAfterChangeDir(){
+        public void checkAfterChangeDir()
+        {
 
             if (!isSlideCartValid())
             {
@@ -200,7 +224,7 @@ namespace ContentManager
             }
             else
                 Console.WriteLine("CART VALID");
-            
+
         }
 
         public List<String> getAutoSlides()
