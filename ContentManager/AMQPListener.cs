@@ -31,8 +31,8 @@ namespace ContentManager
             String queueName = channel.QueueDeclare().QueueName;
 
             channel.ExchangeDeclare(EXCHANGE_NAME, "topic");
-            channel.QueueBind(queueName, EXCHANGE_NAME, "swisstiming");
-            channel.QueueBind(queueName, EXCHANGE_NAME, "trace.*");
+            channel.QueueBind(queueName, EXCHANGE_NAME, "swisstiming.data");
+            channel.QueueBind(queueName, EXCHANGE_NAME, "swisstiming.trace");
 
             consumer = new QueueingBasicConsumer(channel);
             channel.BasicConsume(queueName, true, consumer);

@@ -32,7 +32,7 @@ namespace ContentManager.GUI.Modules.SwissTiming
         {
             InitializeComponent();
             UIMain.core.amqpEngine.onTrace += new AMQPEngine.Trace(amqpEngine_onTrace);
-            UIMain.core.amqpEngine.onUpdate += new AMQPEngine.Update(amqpEngine_onUpdate);
+            UIMain.core.amqpEngine.onData += new AMQPEngine.Data(amqpEngine_onData);
 
             csvConfig.Delimiter = ";";
             csvConfig.IsStrictMode = true;
@@ -46,7 +46,7 @@ namespace ContentManager.GUI.Modules.SwissTiming
          * 
          * 
          */
-        void amqpEngine_onUpdate(Dictionary<string, string> message)
+        void amqpEngine_onData(Dictionary<string, string> message)
         {
             DateTime startTiming = new DateTime();
 

@@ -120,7 +120,7 @@ namespace ContentManager
                     this.engine.startAutoBroadcast();
 
                 amqpEngine = new AMQPEngine();
-                amqpEngine.onUpdate += new AMQPEngine.Update(amqpEngine_onUpdate);
+                amqpEngine.onData += new AMQPEngine.Data(amqpEngine_onData);
                 amqpEngine.start();
             }
             catch (Exception e)
@@ -129,8 +129,8 @@ namespace ContentManager
             }
         }
 
-        public void amqpEngine_onUpdate(Dictionary<string, string> message) {
-
+        public void amqpEngine_onData(Dictionary<string, string> message)
+        {
             log.Debug(message);
         }
 

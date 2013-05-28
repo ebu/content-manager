@@ -9,6 +9,7 @@ using CsvHelper;
 using ContentManager.GUI.Modules.Sports.SwisstimingData;
 using System.IO;
 using System.Threading;
+using log4net;
 
 namespace ContentManager
 {
@@ -16,9 +17,10 @@ namespace ContentManager
     {
 
 
+        private static readonly ILog log = LogManager.GetLogger(typeof(AMQPEngine));
 
-        public delegate void Update(Dictionary<string, string> message);
-        public event Update onUpdate;
+        public delegate void Data(Dictionary<string, string> message);
+        public event Data onData;
 
 
         public delegate void Trace(Dictionary<string, string> message);
@@ -48,13 +50,17 @@ namespace ContentManager
                 string messageBody = System.Text.Encoding.UTF8.GetString(amqpMessage.Body);
                 Dictionary<string, string> message = JsonConvert.DeserializeObject<Dictionary<string, string>>(messageBody);
 
-                if (amqpMessage.RoutingKey.StartsWith("trace."))
+                if (amqpMessage.RoutingKey.EndsWith("trace"))
                 {
                     if (onTrace != null) onTrace(message);
                 }
+                else if (amqpMessage.RoutingKey.EndsWith("data"))
+                {
+                    if (onData != null) onData(message);
+                }
                 else
                 {
-                    if (onUpdate != null) onUpdate(message);
+                    log.Warn("Unknown message with routing key : "+ amqpMessage.RoutingKey +" " + messageBody);
                 }
 
             }
