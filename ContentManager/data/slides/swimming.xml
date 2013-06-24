@@ -7,49 +7,58 @@
 	
 -->
 <sequence>
-	<slide>
+  <slide>
 
-		<background color="#EEEEEE" top="0" left="0"/>
-	 
-
-
-
-		<text content="@@@AMQP_LAST_PATH@@@@1_long_tv_name@1" font-color="#606060"  left="25" top="380" font-style="bold" font-size="8" />
-	
-		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#1" content="1_long_tv_name" font-color="#606060"  left="25" top="0" font-style="bold" font-size="12" />
-		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#2" content="1_long_tv_name" font-color="#606060"  left="25" top="20" font-style="bold" font-size="12" />
-		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#3" content="1_long_tv_name" font-color="#606060"  left="25" top="40" font-style="bold" font-size="12" />
-		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#4" content="1_long_tv_name" font-color="#606060"  left="25" top="60" font-style="bold" font-size="12" />
-		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#5" content="1_long_tv_name" font-color="#606060"  left="25" top="80" font-style="bold" font-size="12" />
-		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#6" content="1_long_tv_name" font-color="#606060"  left="25" top="100" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#7" content="1_long_tv_name" font-color="#606060"  left="25" top="120" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#8" content="1_long_tv_name" font-color="#606060"  left="25" top="140" font-style="bold" font-size="12" />
+    <background color="#EEEEEE" top="0" left="0"/>
 
 
 
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#1" content="1_long_tv_name" font-color="#606060"  right="25" top="0" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#2" content="1_long_tv_name" font-color="#606060"  right="25" top="20" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#3" content="1_long_tv_name" font-color="#606060"  right="25" top="40" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#4" content="1_long_tv_name" font-color="#606060"  right="25" top="60" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#5" content="1_long_tv_name" font-color="#606060"  right="25" top="80" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#6" content="1_long_tv_name" font-color="#606060"  right="25" top="100" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#7" content="1_long_tv_name" font-color="#606060"  right="25" top="120" font-style="bold" font-size="12" />
-    <text path="@@@AMQP_LAST_PATH@@@" field="country_short_tv_name#8" content="1_long_tv_name" font-color="#606060"  right="25" top="140" font-style="bold" font-size="12" />
 
-    <text content="1" font-color="#606060"  left="15" top="0" font-style="bold" font-size="12" />
-    <text content="2" font-color="#606060"  left="15" top="20" font-style="bold" font-size="12" />
-    <text content="3" font-color="#606060"  left="15" top="40" font-style="bold" font-size="12" />
-    <text content="4" font-color="#606060"  left="15" top="60" font-style="bold" font-size="12" />
-    <text content="5" font-color="#606060"  left="15" top="80" font-style="bold" font-size="12" />
-    <text content="6" font-color="#606060"  left="15" top="100" font-style="bold" font-size="12" />
-    <text content="7" font-color="#606060"  left="15" top="120" font-style="bold" font-size="12" />
-    <text content="8" font-color="#606060"  left="15" top="140" font-style="bold" font-size="12" />
-    
+    <img src="data/res/line.png" height="24" top="18" left="10" />
+    <img src="data/res/line.png" height="24" top="42" left="10" />
+    <img src="data/res/line.png" height="24" top="66" left="10" />
+    <img src="data/res/line.png" height="24" top="90" left="10" />
+    <img src="data/res/line.png" height="24" top="114" left="10" />
+    <img src="data/res/line.png" height="24" top="138" left="10" />
+    <img src="data/res/line.png" height="24" top="162" left="10" />
+    <img src="data/res/line.png" height="24" top="186" left="10" />
+
+
+    <text content="1" font-color="#ffffff"  left="19" top="21" font-style="bold" font-size="12" />
+    <text content="2" font-color="#ffffff"  left="19" top="45" font-style="bold" font-size="12" />
+    <text content="3" font-color="#ffffff"  left="19" top="69" font-style="bold" font-size="12" />
+    <text content="4" font-color="#ffffff"  left="19" top="93" font-style="bold" font-size="12" />
+    <text content="5" font-color="#ffffff"  left="19" top="116" font-style="bold" font-size="12" />
+    <text content="6" font-color="#ffffff"  left="19" top="140" font-style="bold" font-size="12" />
+    <text content="7" font-color="#ffffff"  left="19" top="166" font-style="bold" font-size="12" />
+    <text content="8" font-color="#ffffff"  left="19" top="189" font-style="bold" font-size="12" />
+
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#0" content="1_long_tv_name" font-color="#000000"  left="45" top="21" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#1" content="1_long_tv_name" font-color="#000000"  left="45" top="45" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#2" content="1_long_tv_name" font-color="#000000"  left="45" top="69" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#3" content="1_long_tv_name" font-color="#000000"  left="45" top="93" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#4" content="1_long_tv_name" font-color="#000000"  left="45" top="116" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#5" content="1_long_tv_name" font-color="#000000"  left="45" top="140" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#6" content="1_long_tv_name" font-color="#000000"  left="45" top="166" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#7" content="1_long_tv_name" font-color="#000000"  left="45" top="189" font-style="bold" font-size="12" />
+
+
+
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#0" content="1_long_tv_name" font-color="#ffffff"  left="272" top="21" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#1" content="1_long_tv_name" font-color="#ffffff"  left="272" top="45" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#2" content="1_long_tv_name" font-color="#ffffff"  left="272" top="69" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#3" content="1_long_tv_name" font-color="#ffffff"  left="272" top="93" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#4" content="1_long_tv_name" font-color="#ffffff"  left="272" top="116" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#5" content="1_long_tv_name" font-color="#ffffff"  left="272" top="140" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#6" content="1_long_tv_name" font-color="#ffffff"  left="272" top="166" font-style="bold" font-size="12" />
+    <text path="@@@AMQP_LAST_PATH@@@" field="noc_code#7" content="1_long_tv_name" font-color="#ffffff"  left="272" top="189" font-style="bold" font-size="12" />
+
+
 
     <text content="EBU Media Technology &amp; Innovation" font-color="#606060"  right="45" bottom="8" font-style="bold" font-size="14" />
-	
 
 
 
-	</slide>
+
+  </slide>
 </sequence>
