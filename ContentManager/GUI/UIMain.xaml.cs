@@ -305,7 +305,7 @@ namespace ContentManager.GUI
         private void button1_Click(object sender, RoutedEventArgs e)
         {
             
-            String slideName = availableSlidesListBox.Items.GetItemAt(availableSlidesListBox.SelectedIndex).ToString(); ;
+            String slideName = availableSlidesListBox.Items.GetItemAt(availableSlidesListBox.SelectedIndex).ToString(); 
             displayPreviewSlide(slideName);
             
         }

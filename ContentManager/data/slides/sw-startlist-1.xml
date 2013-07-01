@@ -11,7 +11,7 @@
 
 		<background color="#EEEEEE" top="0" left="0"/>
 
-		<img src="D:/Swisstiming/bg.jpg" left="-30" height="300" />
+		<img src="D:/Swisstiming/bg.jpg" left="-45" height="300" />
 
 
 
@@ -30,6 +30,8 @@
 		
 		<img src="data/res/header.png" width="300" top="14" left="10" height="60" />
 
+		<img src="data/res/omega.png" bottom="14"  left="100" height="23" />
+		
 		<img src="D:/Swisstiming/@@@SW_NOC1@@@.png" height="17" top="92" left="36"/>
 		<img src="D:/Swisstiming/@@@SW_NOC2@@@.png" height="17" top="116" left="36"/>
 		<img src="D:/Swisstiming/@@@SW_NOC3@@@.png" height="17" top="140" left="36"/>
@@ -56,8 +58,8 @@
 		
 		<!--<text content="11th"  font-color="#ffffff" left="25" top="22" font-size="9" font-style="bold"/>-->
 		<text content="FINA WORLD SWIMMING CHAMPIONSHIPS" font-color="#000080" left="62" top="22" font-size="9" font-style="bold"/>
-		<text content="@@@SW_CTX_EVENT@@@" font-color="#ffffff" left="62" top="42" font-size="11" font-style="bold" font-align="center"/>
-		<text content="@@@SW_CTX_EVENTUNIT@@@" font-color="#ffffff" left="102" top="57" font-size="11" font-style="bold" font-align="center"/>
+		<text content="@@@SW_CTX_EVENT@@@" font-color="#ffffff" left="10" top="42" font-size="11" font-style="bold" text-align="center" width="300"/>
+		<text content="@@@SW_CTX_EVENTUNIT@@@" font-color="#ffffff" left="10" top="57" font-size="11" font-style="bold" text-align="center" width="300"/>
 		
 		<!--<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#4" content="1_long_tv_name" font-color="#000000"  left="45" top="116" font-style="bold" font-size="12" />
 		<text path="@@@AMQP_LAST_PATH@@@" field="1_long_tv_name#5" content="1_long_tv_name" font-color="#000000"  left="45" top="140" font-style="bold" font-size="12" />
@@ -77,7 +79,7 @@
 -->
 
 
-		<text content="EBU Media Technology &amp; Innovation" font-color="#606060"  right="45" bottom="8" font-style="bold" font-size="14" />
+		<!--<text content="EBU Technology &amp; Innovation" font-color="#606060"  right="45" bottom="8" font-style="bold" font-size="14" />-->
 
 
 

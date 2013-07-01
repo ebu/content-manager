@@ -47,23 +47,26 @@ namespace ContentManager.GUI.Frames
 
         void engine_onChangeCart(List<string> slides)
         {
-            this.stack.Children.Clear();
-            
-            foreach (String s in slides)
+            this.Dispatcher.Invoke(DispatcherPriority.Background, new Action(() =>
             {
-                Button b = new Button();
-                b.Content = s;
-                b.Tag = s;
-                b.SetResourceReference(BackgroundProperty, "BlackBtn");
-                
-                b.Foreground = Brushes.White;
-                b.Click+=new RoutedEventHandler(Slide_Click);
-                b.MouseRightButtonDown += new MouseButtonEventHandler(b_MouseRightButtonDown);
+                this.stack.Children.Clear();
 
-                this.stack.Children.Add(b);
+                foreach (String s in slides)
+                {
+                    Button b = new Button();
+                    b.Content = s;
+                    b.Tag = s;
+                    b.SetResourceReference(BackgroundProperty, "BlackBtn");
 
-            }
-            HighlightSlideOnair();
+                    b.Foreground = Brushes.White;
+                    b.Click += new RoutedEventHandler(Slide_Click);
+                    b.MouseRightButtonDown += new MouseButtonEventHandler(b_MouseRightButtonDown);
+
+                    this.stack.Children.Add(b);
+
+                }
+                HighlightSlideOnair();
+            }));
         }
 
         void b_MouseRightButtonDown(object sender, MouseButtonEventArgs e)

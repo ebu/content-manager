@@ -109,7 +109,7 @@
       <HintPath>..\packages\Apache.NMS.ActiveMQ.1.5.6\lib\net40\Apache.NMS.ActiveMQ.dll</HintPath>
     </Reference>
     <Reference Include="Apache.NMS.Stomp">
-      <HintPath>..\lib\Apache.NMS.Stomp.dll</HintPath>
+      <HintPath>..\packages\Apache.NMS.Stomp.1.5.3\lib\net40\Apache.NMS.Stomp.dll</HintPath>
     </Reference>
     <Reference Include="Apache.NMS.Test">
       <HintPath>..\lib\Apache.NMS.Test.dll</HintPath>
@@ -242,6 +242,7 @@
     <Compile Include="Input\WCF\ContentService.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="StartList.cs" />
     <Page Include="GUI\Controls\CartPreview.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -354,6 +355,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="logger.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -392,6 +394,9 @@
     <Content Include="data\res\noc.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="data\res\omega.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="data\res\qualified.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -409,6 +414,24 @@
     </Content>
     <Content Include="data\slidecarts.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="data\slides\swimming-csv.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Content Include="data\slides\sw-startlist-2.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\slides\sw-finallist-2.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\slides\sw-arrivallist.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\slides\sw-finallist-1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="data\slides\sw-startlist-1.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="data\slides\swimming.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

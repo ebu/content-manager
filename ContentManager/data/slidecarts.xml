@@ -8,17 +8,19 @@
 -->
 <slidecarts>
 
-<!--  <slidecart name="1.2">
-    <variable name="SECTION_HEADING" value="Radio in the European Parliament"/>
-	<slide name="p-lotta"/>
-	<slide name="p-carbajo"/>
-	<slide name="p-duch"/>
-	
-  </slidecart>-->
-  
-  <!--<varcart name="1.2 Radio in the European Parliament">
-    <variable name="SECTION_HEADING" value="Radio in the European Parliament"/>
-	<variable name="SECTION_PEOPLE" value="Fernando Carbajo (European Parliament)\nJaume Duch"/>
-  </varcart>-->
+  <slidecart name="startlist">
+    <slide name="sw-startlist-1"/>
+    <slide name="sw-startlist-2"/>
+  </slidecart>
+
+
+  <slidecart name="arrivallist">
+    <slide name="sw-arrivallist"/>
+  </slidecart>
+
+  <slidecart name="finallist">
+    <slide name="sw-finallist-1"/>
+    <slide name="sw-finallist-2"/>
+  </slidecart>
 
 </slidecarts>

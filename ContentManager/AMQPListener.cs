@@ -20,10 +20,10 @@ namespace ContentManager
         {
 
             ConnectionFactory factory = new ConnectionFactory();
-            factory.HostName = "10.50.213.168";
+            factory.HostName = "ebu-io-1.ebu.ch";
             factory.Port = 5672;
-            factory.UserName = "admin";
-            factory.Password = "1234";
+            factory.UserName = "datagateway";
+            factory.Password = "";
             connection = factory.CreateConnection();
 
             channel = connection.CreateModel();
@@ -31,8 +31,8 @@ namespace ContentManager
             String queueName = channel.QueueDeclare().QueueName;
 
             channel.ExchangeDeclare(EXCHANGE_NAME, "topic");
-            channel.QueueBind(queueName, EXCHANGE_NAME, "swisstiming.data");
-            channel.QueueBind(queueName, EXCHANGE_NAME, "swisstiming.trace");
+            channel.QueueBind(queueName, EXCHANGE_NAME, "ebu.datagateway.swisstiming.sw");
+          
 
             consumer = new QueueingBasicConsumer(channel);
             channel.BasicConsume(queueName, true, consumer);
@@ -40,12 +40,13 @@ namespace ContentManager
             Console.WriteLine("Successfuly started");
 
         }
-
+        
         public BasicDeliverEventArgs getNextMessage()
         {
             BasicDeliverEventArgs e = (BasicDeliverEventArgs)consumer.Queue.Dequeue();
             
-            Console.WriteLine(" [x] Received message : " + e.Body);
+            String messageBody = System.Text.Encoding.UTF8.GetString(e.Body);
+            Console.WriteLine(" [x] Received message : " + messageBody);
 
             return e;
         }

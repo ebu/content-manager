@@ -36,6 +36,8 @@ using CsvHelper.Configuration;
 using System.Windows.Threading;
 using log4net;
 using log4net.Config;
+using log4net.Appender;
+using log4net.Layout;
 
 namespace ContentManager
 {
@@ -45,7 +47,7 @@ namespace ContentManager
     /// </summary>
     public class ContentManagerCore
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(ContentManagerCore));
+        private static readonly ILog logger = LogManager.GetLogger(typeof(ContentManagerCore));
 
         private static ContentManagerCore instance = null;
         public SlideGenerator slidegen;
@@ -66,7 +68,15 @@ namespace ContentManager
 
         private ContentManagerCore()
         {
-            BasicConfigurator.Configure();
+            ConsoleAppender appender = new ConsoleAppender();
+            PatternLayout pl = new PatternLayout();
+            pl.ConversionPattern = "%d [%2%t] %-5p [%-10c]   %m%n%n";
+            pl.ActivateOptions();
+            appender.Layout = pl;
+            BasicConfigurator.Configure(appender);
+
+            //XmlConfigurator.Configure(new System.IO.FileInfo("logger.config"));
+            logger.Info("Configure Logger");
             try
             {
                 debug = System.Configuration.ConfigurationManager.AppSettings["debug"].Equals("true");
@@ -120,8 +130,9 @@ namespace ContentManager
                     this.engine.startAutoBroadcast();
 
                 amqpEngine = new AMQPEngine();
-                amqpEngine.onData += new AMQPEngine.Data(amqpEngine_onData);
+                amqpEngine.onEvent += new AMQPEngine.Event(amqpEngine_onEvent);
                 amqpEngine.start();
+
             }
             catch (Exception e)
             {
@@ -129,10 +140,126 @@ namespace ContentManager
             }
         }
 
-        public void amqpEngine_onData(Dictionary<string, string> message)
+        void amqpEngine_onEvent(Newtonsoft.Json.Linq.JObject jsonObject)
         {
-            log.Debug(message);
+            if (jsonObject["type"].ToString().Equals("StartList"))
+            {
+                logger.Info("New StartList");
+                var compNames = jsonObject["competitors"]["long_tv_name"];
+                var compCountries = jsonObject["competitors"]["noc_code"];
+                var compLanes = jsonObject["competitors"]["lane"];
+
+
+                for (int i = 0; i < compNames.Count(); i++)
+                {
+                    UIMain.core.slidegen.setVar("SW_NAME" + compLanes[i].ToString(), compNames[i].ToString());
+                    UIMain.core.slidegen.setVar("SW_NOC" + compLanes[i].ToString(), compCountries[i].ToString());
+                    UIMain.core.slidegen.setVar("SW_LANE" + compLanes[i].ToString(), compLanes[i].ToString());
+                }
+
+                try
+                {
+                    var eventName = jsonObject["context"]["event"];
+                    UIMain.core.slidegen.setVar("SW_CTX_EVENT", eventName.ToString());
+                    var competition = jsonObject["context"]["competition"];
+                    UIMain.core.slidegen.setVar("SW_CTX_COMPETITION", competition.ToString());
+                    var eventUnit = jsonObject["context"]["eventUnit"];
+                    UIMain.core.slidegen.setVar("SW_CTX_EVENTUNIT", eventUnit.ToString());
+
+                }
+                catch (Exception e) { }
+
+                List<String> l = new List<string>();
+                l.Add("sw-startlist-1");
+                l.Add("sw-startlist-2");
+                UIMain.core.engine.setSlideCart(l);
+                UIMain.core.broadcast("sw-startlist-1");
+
+            }
+            else if (jsonObject["type"].ToString().Equals("ArrivalList"))
+            {
+                logger.Info("New ArrivalList");
+
+                var competitors = jsonObject["competitors"];
+
+                resetCompetitors();
+
+
+                for (int i = 1; i <= competitors.Count(); i++)
+                {
+                    UIMain.core.slidegen.setVar("SW_NAME" + (i - 1), competitors[i.ToString()]["long_tv_name"].ToString());
+                    UIMain.core.slidegen.setVar("SW_NOC" + (i - 1), competitors[i.ToString()]["noc_code"].ToString());
+                    UIMain.core.slidegen.setVar("SW_TIME" + (i - 1), competitors[i.ToString()]["time"].ToString());
+                }
+
+                try
+                {
+                    var eventName = jsonObject["context"]["event"];
+                    UIMain.core.slidegen.setVar("SW_CTX_EVENT", eventName.ToString());
+                    var competition = jsonObject["context"]["competition"];
+                    UIMain.core.slidegen.setVar("SW_CTX_COMPETITION", competition.ToString());
+                    var eventUnit = jsonObject["context"]["eventUnit"];
+                    UIMain.core.slidegen.setVar("SW_CTX_EVENTUNIT", eventUnit.ToString());
+
+                }
+                catch (Exception e) { logger.Error("Uncomplete notification", e); }
+
+
+                List<String> l = new List<string>();
+                l.Add("sw-arrivallist");
+                UIMain.core.engine.setSlideCart(l);
+                UIMain.core.broadcast("sw-arrivallist");
+
+            }
+            else if (jsonObject["type"].ToString().Equals("FinalList"))
+            {
+                logger.Info("New FinalList");
+
+                var competitors = jsonObject["competitors"];
+
+
+                for (int i = 1; i <= competitors.Count(); i++)
+                {
+                    UIMain.core.slidegen.setVar("SW_NAME" + i, competitors[i.ToString()]["long_tv_name"].ToString());
+                    UIMain.core.slidegen.setVar("SW_NOC" + i, competitors[i.ToString()]["noc_code"].ToString());
+                    UIMain.core.slidegen.setVar("SW_TIME" + i, competitors[i.ToString()]["time"].ToString());
+                }
+
+                try
+                {
+                    var eventName = jsonObject["context"]["event"];
+                    UIMain.core.slidegen.setVar("SW_CTX_EVENT", eventName.ToString());
+                    var competition = jsonObject["context"]["competition"];
+                    UIMain.core.slidegen.setVar("SW_CTX_COMPETITION", competition.ToString());
+                    var eventUnit = jsonObject["context"]["eventUnit"];
+                    UIMain.core.slidegen.setVar("SW_CTX_EVENTUNIT", eventUnit.ToString());
+
+                }
+                catch (Exception e) { logger.Error("Uncomplete notification", e); }
+
+                List<String> l = new List<string>();
+                l.Add("sw-finallist-1");
+                l.Add("sw-finallist-2");
+                UIMain.core.engine.setSlideCart(l);
+                UIMain.core.broadcast("sw-finallist-1");
+
+            }
+
+
+
         }
+
+        private void resetCompetitors()
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                UIMain.core.slidegen.setVar("SW_NAME" + i, "");
+                UIMain.core.slidegen.setVar("SW_NOC" + i, "");
+                UIMain.core.slidegen.setVar("SW_TIME" + i, "");
+                UIMain.core.slidegen.setVar("SW_LANE" + i, "");
+            }
+        }
+
 
         public static ContentManagerCore getInstance()
         {
