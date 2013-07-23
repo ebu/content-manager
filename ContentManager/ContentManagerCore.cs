@@ -31,7 +31,6 @@ using XMLConfig.CMS;
 using Newtonsoft.Json;
 using RabbitMQ.Client.Events;
 using CsvHelper;
-using ContentManager.GUI.Modules.Sports.SwisstimingData;
 using CsvHelper.Configuration;
 using System.Windows.Threading;
 using log4net;
@@ -144,7 +143,8 @@ namespace ContentManager
         {
             if (jsonObject["type"].ToString().Equals("StartList"))
             {
-                logger.Info("New StartList");
+                logger.Info("New StartList notification");
+
                 var compNames = jsonObject["competitors"]["long_tv_name"];
                 var compCountries = jsonObject["competitors"]["noc_code"];
                 var compLanes = jsonObject["competitors"]["lane"];
@@ -166,8 +166,11 @@ namespace ContentManager
                     var eventUnit = jsonObject["context"]["eventUnit"];
                     UIMain.core.slidegen.setVar("SW_CTX_EVENTUNIT", eventUnit.ToString());
 
+
+                    UIMain.updateSwimmingStatus(jsonObject["context"]["event"].ToString(), "START LIST");
+
                 }
-                catch (Exception e) { }
+                catch (Exception e) { logger.Error("Uncomplete notification", e); }
 
                 List<String> l = new List<string>();
                 l.Add("sw-startlist-1");
@@ -178,7 +181,7 @@ namespace ContentManager
             }
             else if (jsonObject["type"].ToString().Equals("ArrivalList"))
             {
-                logger.Info("New ArrivalList");
+                logger.Info("New ArrivalList notification");
 
                 var competitors = jsonObject["competitors"];
 
@@ -201,6 +204,9 @@ namespace ContentManager
                     var eventUnit = jsonObject["context"]["eventUnit"];
                     UIMain.core.slidegen.setVar("SW_CTX_EVENTUNIT", eventUnit.ToString());
 
+
+                    UIMain.updateSwimmingStatus(jsonObject["context"]["event"].ToString(), "ARRIVAL LIST");
+
                 }
                 catch (Exception e) { logger.Error("Uncomplete notification", e); }
 
@@ -213,16 +219,26 @@ namespace ContentManager
             }
             else if (jsonObject["type"].ToString().Equals("FinalList"))
             {
-                logger.Info("New FinalList");
+                logger.Info("New FinalList notification");
 
                 var competitors = jsonObject["competitors"];
 
 
                 for (int i = 1; i <= competitors.Count(); i++)
                 {
-                    UIMain.core.slidegen.setVar("SW_NAME" + i, competitors[i.ToString()]["long_tv_name"].ToString());
-                    UIMain.core.slidegen.setVar("SW_NOC" + i, competitors[i.ToString()]["noc_code"].ToString());
-                    UIMain.core.slidegen.setVar("SW_TIME" + i, competitors[i.ToString()]["time"].ToString());
+                    if (competitors[i.ToString()] != null)
+                    {
+                        UIMain.core.slidegen.setVar("SW_NAME" + i, competitors[i.ToString()]["long_tv_name"].ToString());
+                        UIMain.core.slidegen.setVar("SW_NOC" + i, competitors[i.ToString()]["noc_code"].ToString());
+                        UIMain.core.slidegen.setVar("SW_TIME" + i, competitors[i.ToString()]["time"].ToString());
+                    }
+                    else
+                    {
+
+                        UIMain.core.slidegen.setVar("SW_NAME" + i, "");
+                        UIMain.core.slidegen.setVar("SW_NOC" + i, "");
+                        UIMain.core.slidegen.setVar("SW_TIME" + i, "");
+                    }
                 }
 
                 try
@@ -234,6 +250,8 @@ namespace ContentManager
                     var eventUnit = jsonObject["context"]["eventUnit"];
                     UIMain.core.slidegen.setVar("SW_CTX_EVENTUNIT", eventUnit.ToString());
 
+
+                    UIMain.updateSwimmingStatus(jsonObject["context"]["event"].ToString(), "RESULTS");
                 }
                 catch (Exception e) { logger.Error("Uncomplete notification", e); }
 
@@ -243,8 +261,22 @@ namespace ContentManager
                 UIMain.core.engine.setSlideCart(l);
                 UIMain.core.broadcast("sw-finallist-1");
 
+
+
             }
 
+            else if (jsonObject["type"].ToString().Equals("Standby"))
+            {
+                logger.Info("New Standby notification");
+
+
+                List<String> l = new List<string>();
+                l.Add("logo");
+                l.Add("twitter");
+                UIMain.core.engine.setSlideCart(l);
+                UIMain.core.broadcast("logo");
+
+            }
 
 
         }

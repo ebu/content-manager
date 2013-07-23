@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+	This file is part of the project Content Manager
+	developed by European Broadcasting Union. 
+	
+	See	www.ebulabs.org for information about licensing.
+	
+-->
+<sequence>
+  <slide>
+
+    <background color="#EEEEEE" top="0" left="0"/>
+
+    <img src="data/res/bg.jpg" left="-45" height="300" />
+    <background color="#FFFFFF" top="55" left="0" height="125" opacity="90"/>
+    <img src="data/res/logos/ebulogo.png" width="200" left="65" top="70"/>
+
+	
+
+
+
+  </slide>
+</sequence>

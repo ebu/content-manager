@@ -27,15 +27,17 @@
 		<img src="data/res/line.png" height="24" top="186" left="10" />
 		-->
 		
-		
 		<img src="data/res/header.png" width="300" top="14" left="10" height="60" />
+		<img src="data/res/fina-right.png" width="45" top="16" left="263" height="56" />
+		<img src="data/res/bcn-left.png" width="40" top="16" left="12" height="55" />
 
-		<img src="data/res/omega.png" bottom="14"  left="100" height="23" />
+		<img src="data/res/omega2013.png" bottom="14"  left="107" height="20" />
 		
-		<img src="D:/Swisstiming/@@@SW_NOC1@@@.png" height="17" top="92" left="36"/>
-		<img src="D:/Swisstiming/@@@SW_NOC2@@@.png" height="17" top="116" left="36"/>
-		<img src="D:/Swisstiming/@@@SW_NOC3@@@.png" height="17" top="140" left="36"/>
-		<img src="D:/Swisstiming/@@@SW_NOC4@@@.png" height="17" top="164" left="36"/>
+		
+		<img src="data/res/flags/@@@SW_NOC1@@@.png" height="17" top="92" left="36"/>
+		<img src="data/res/flags/@@@SW_NOC2@@@.png" height="17" top="116" left="36"/>
+		<img src="data/res/flags/@@@SW_NOC3@@@.png" height="17" top="140" left="36"/>
+		<img src="data/res/flags/@@@SW_NOC4@@@.png" height="17" top="164" left="36"/>
 				
 				
 		<text content="@@@SW_TIME1@@@" font-color="#ffffff"  left="267" top="93" font-style="bold" font-size="10" />

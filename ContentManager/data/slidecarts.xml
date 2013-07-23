@@ -22,5 +22,11 @@
     <slide name="sw-finallist-1"/>
     <slide name="sw-finallist-2"/>
   </slidecart>
+  
+  
+  <slidecart name="standby">
+    <slide name="logo"/>
+    <slide name="twitter"/>
+  </slidecart>
 
 </slidecarts>

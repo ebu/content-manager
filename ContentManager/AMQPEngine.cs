@@ -6,7 +6,6 @@ using RabbitMQ.Client.Events;
 using Newtonsoft.Json;
 using CsvHelper.Configuration;
 using CsvHelper;
-using ContentManager.GUI.Modules.Sports.SwisstimingData;
 using System.IO;
 using System.Threading;
 using log4net;
@@ -53,7 +52,6 @@ namespace ContentManager
                 logger.Info("New notification of type : " + myObjects["type"]);
 
                 onEvent(myObjects);
-
 
             }
         }

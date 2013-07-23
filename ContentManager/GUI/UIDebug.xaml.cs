@@ -40,6 +40,25 @@ namespace ContentManager.GUI
         public UIDebug()
         {
             InitializeComponent();
+
+            swimmingGrid.Columns.Add(new DataGridTextColumn { Header = "Context", Binding = new Binding("Context") });
+            swimmingGrid.Columns.Add(new DataGridTextColumn { Header = "Status", Binding = new Binding("Status") });
         }
+
+        internal void updateStatus(string context, string status)
+        {
+            this.swimmingList.Items.Add(context + " : " + status);
+
+            swimmingGrid.Items.Add(new Person { Context = context, Status = status });
+        }
+
     }
+
+    public class Person
+    {
+        public string Context { set; get; }
+        public string Status { set; get; }
+    }
+
+
 }

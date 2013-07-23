@@ -23,7 +23,7 @@ namespace ContentManager
             factory.HostName = "ebu-io-1.ebu.ch";
             factory.Port = 5672;
             factory.UserName = "datagateway";
-            factory.Password = "";
+            factory.Password = "84930123";
             connection = factory.CreateConnection();
 
             channel = connection.CreateModel();

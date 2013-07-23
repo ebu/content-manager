@@ -41,7 +41,6 @@ using System.Deployment.Application;
 using System.Reflection;
 using XMLConfig.CMS;
 using System.Net;
-using ContentManager.GUI.Modules.SwissTiming;
 
 namespace ContentManager.GUI
 {
@@ -109,7 +108,6 @@ namespace ContentManager.GUI
                 stationPic.Source = new BitmapImage(new Uri(CMSConfig.stationimage));
 
 
-            MenuItem_Click_3(null, null);
         }
 
 
@@ -279,6 +277,17 @@ namespace ContentManager.GUI
                  }));
           }
           */
+        public static void updateSwimmingStatus(String context, String status)
+        {
+            if (Instance != null)
+            {
+                Instance.Dispatcher.Invoke(DispatcherPriority.Normal, (Action)(() =>
+                {
+                    Instance.uidebug.updateStatus(context, status);
+                }));
+            }
+        }
+
         public static void errorAdd(String msg, String module = "undefined")
         {
             if (Instance != null)
@@ -477,10 +486,5 @@ namespace ContentManager.GUI
             videoCapture.Show();
         }
 
-        private void MenuItem_Click_3(object sender, RoutedEventArgs e)
-        {
-            UISwimming swimming = new UISwimming();
-            swimming.Show();
-        }
     }
 }
