@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentManager", "ContentManager\ContentManager.csproj", "{55ABB063-D5DE-46B8-9B38-70C1EC528174}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContentServiceLibrary", "ContentServiceLibrary\ContentServiceLibrary.csproj", "{EE6EE0B5-3040-4C41-85E0-2628A306E724}"
@@ -8,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlideGeneratorLib", "SlideGenerator\SlideGeneratorLib.csproj", "{152547F4-2CB4-454B-BDE7-183B9F1E4E91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XMLConfig", "XMLConfig\XMLConfig.csproj", "{DE526998-D6B6-4BAF-826E-0F5EE0F796BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "io.ebu.eis.contentmanager", "io.ebu.eis.contentmanager\io.ebu.eis.contentmanager.csproj", "{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "io.ebu.eis.datastructures", "io.ebu.eis.datastructures\io.ebu.eis.datastructures.csproj", "{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +65,26 @@ Global
 		{DE526998-D6B6-4BAF-826E-0F5EE0F796BB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{DE526998-D6B6-4BAF-826E-0F5EE0F796BB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{DE526998-D6B6-4BAF-826E-0F5EE0F796BB}.Release|x86.ActiveCfg = Release|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}.Release|x86.ActiveCfg = Release|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7CE61FC1-D140-4EB3-B2A0-EFD395F8D1DB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
