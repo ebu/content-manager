@@ -6,28 +6,105 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace io.ebu.eis.contentmanager
 {
     public class ManagerContext : INotifyPropertyChanged
     {
+        private DispatchedObservableCollection<DataMessage> _dataBase;
+        public DispatchedObservableCollection<DataMessage> DataBase { get { return _dataBase; } set { _dataBase = value; OnPropertyChanged("DataBase"); } }
+
         private DispatchedObservableCollection<EventFlow> _runningEvents;
         public DispatchedObservableCollection<EventFlow> RunningEvents { get { return _runningEvents; } set { _runningEvents = value; OnPropertyChanged("RunningEvents"); } }
 
         private DispatchedObservableCollection<DataFlowItem> _dataFlowItems;
         public DispatchedObservableCollection<DataFlowItem> DataFlowItems { get { return _dataFlowItems; } set { _dataFlowItems = value; OnPropertyChanged("DataFlowItems"); } }
+        public ICollectionView DataFlowItemsView;
 
         private DispatchedObservableCollection<DataFlowItem> _imageFlowItems;
         public DispatchedObservableCollection<DataFlowItem> ImageFlowItems { get { return _imageFlowItems; } set { _imageFlowItems = value; OnPropertyChanged("ImageFlowItems"); } }
+        public ICollectionView ImageFlowItemsView;
 
 
         public ManagerContext()
         {
+            DataBase = new DispatchedObservableCollection<DataMessage>();
             RunningEvents = new DispatchedObservableCollection<EventFlow>();
             DataFlowItems = new DispatchedObservableCollection<DataFlowItem>();
             ImageFlowItems = new DispatchedObservableCollection<DataFlowItem>();
+
+            DataFlowItemsView = CollectionViewSource.GetDefaultView(DataFlowItems);
+            DataFlowItemsView.Filter = DataFlowNameFilter;
+
+            ImageFlowItemsView = CollectionViewSource.GetDefaultView(ImageFlowItems);
+            ImageFlowItemsView.Filter = ImageFlowNameFilter;
         }
 
+        #region FilteringAndSorting
+
+        /** DATAFLOW Filter **/
+        private bool DataFlowNameFilter(object item)
+        {
+            DataFlowItem data = item as DataFlowItem;
+            return data.Name.ToLower().Contains(_dataFlowFilterString.ToLower()) 
+                || data.Category.ToLower().Contains(_dataFlowFilterString.ToLower())
+                || data.Type.ToLower().Contains(_dataFlowFilterString.ToLower());
+        }
+        private string _dataFlowFilterString = "";
+        public string DataFlowFilterString
+        {
+            get { return _dataFlowFilterString; }
+            set
+            {
+                _dataFlowFilterString = value;
+                OnPropertyChanged("DataFlowFilterString");
+                DataFlowItemsView.Refresh();
+            }
+        }
+
+        /** IMAGE Filter **/
+        private bool ImageFlowNameFilter(object item)
+        {
+            DataFlowItem data = item as DataFlowItem;
+            return data.Name.ToLower().Contains(_imageFlowFilterString.ToLower())
+                || data.Category.ToLower().Contains(_imageFlowFilterString.ToLower())
+                || data.Type.ToLower().Contains(_imageFlowFilterString.ToLower());
+        }
+        private string _imageFlowFilterString = "";
+        public string ImageFlowFilterString
+        {
+            get { return _imageFlowFilterString; }
+            set
+            {
+                _imageFlowFilterString = value;
+                OnPropertyChanged("ImageFlowFilterString");
+                DataFlowItemsView.Refresh();
+            }
+        }
+
+        #endregion FilteringAndSorting
+
+        #region DataBaseManagement
+
+        public void UpdateDataBase(DataMessage message)
+        {
+            var r = DataBase.FirstOrDefault(x => x.DataType == message.DataType && x.Key == message.Key);
+            if (r != null)
+                DataBase.Remove(r);
+            DataBase.Add(message);
+        }
+        public String GetValueFromDataBase(String itemType, String itemKey, String path)
+        {
+            var r = DataBase.FirstOrDefault(x => x.DataType == itemType && x.Key == itemKey);
+            if (r != null)
+                return r.GetValue(path);
+            return "";
+        }
+
+        #endregion DataBaseManagement
+
+        #region DummyData
         public void DummyData()
         {
             // Dummy Data
@@ -43,7 +120,7 @@ namespace io.ebu.eis.contentmanager
             RunningEvents.Add(e3);
             RunningEvents.Add(e4);
 
-            DataFlowItem d1 = new DataFlowItem() { Name = "Data 15", Category = "100M", Type = "Results", Short="Short text describing this", Priority=DataFlowPriority.High };
+            DataFlowItem d1 = new DataFlowItem() { Name = "Data 15", Category = "100M", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.High };
             DataFlowItem d2 = new DataFlowItem() { Name = "Data 25", Category = "ABC", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.Medium };
             DataFlowItem d3 = new DataFlowItem() { Name = "Data 35", Category = "DDC", Type = "StartList", Short = "Short text describing this", Priority = DataFlowPriority.Low };
             DataFlowItem d4 = new DataFlowItem() { Name = "Data 45", Category = "DDC", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.Neglectable };
@@ -68,8 +145,9 @@ namespace io.ebu.eis.contentmanager
             ImageFlowItems.Add(i1);
             ImageFlowItems.Add(i2);
             ImageFlowItems.Add(i3);
-            
+
         }
+        #endregion DummyData
 
         #region PropertyChanged
         public event PropertyChangedEventHandler PropertyChanged;

@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -143,6 +144,10 @@
     <ProjectReference Include="..\io.ebu.eis.datastructures\io.ebu.eis.datastructures.csproj">
       <Project>{7ce61fc1-d140-4eb3-b2a0-efd395f8d1db}</Project>
       <Name>io.ebu.eis.datastructures</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.mq\io.ebu.eis.mq.csproj">
+      <Project>{36c58a7c-8fc5-4290-bcd5-8b56e2802497}</Project>
+      <Name>io.ebu.eis.mq</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -123,11 +123,13 @@
                 </Grid.ColumnDefinitions>
                 <Grid>
                     <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="ImageFlow" VerticalAlignment="Top"/>
-                    <ListBox x:Name="ImageFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,35,0,0" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource DataImageTemplate1}" ItemsSource="{Binding ImageFlowItems}"/>
+                    <ListBox x:Name="ImageFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,64,0,0" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource DataImageTemplate1}" ItemsSource="{Binding ImageFlowItems}"/>
+                    <TextBox Height="24" Margin="0,29,1,0" TextWrapping="Wrap" Text="{Binding ImageFlowFilterString, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
                 </Grid>
                 <Grid Grid.Column="1">
-                    <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="DataFLow" VerticalAlignment="Top"/>
-                    <ListBox x:Name="DataFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,35,0,0" Background="{StaticResource BackgroundKey}" ItemsSource="{Binding DataFlowItems}" ItemTemplate="{DynamicResource DataFlowTemplate1}"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="DataFlow" VerticalAlignment="Top"/>
+                    <ListBox x:Name="DataFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,64,0,0" Background="{StaticResource BackgroundKey}" ItemsSource="{Binding DataFlowItems}" ItemTemplate="{DynamicResource DataFlowTemplate1}"/>
+                    <TextBox Height="24" Margin="0,29,0,0" TextWrapping="Wrap" Text="{Binding DataFlowFilterString, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
                 </Grid>
 
             </Grid>

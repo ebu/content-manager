@@ -20,6 +20,9 @@ namespace io.ebu.eis.datastructures
     }
     public class DataFlowItem : INotifyPropertyChanged
     {
+        private DataMessage _dataMessage;
+        public DataMessage DataMessage { get { return _dataMessage; } set { _dataMessage = value; OnPropertyChanged("DataMessage"); } }
+
         private DateTime _timestamp;
         public DateTime Timestamp { get { return _timestamp; } set { _timestamp = value; OnPropertyChanged("Timestamp"); } }
 
