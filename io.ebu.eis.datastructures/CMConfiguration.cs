@@ -60,6 +60,17 @@ namespace io.ebu.eis.datastructures
             get { return (String)this["DataBaseKey"]; }
             set { this["DataBaseKey"] = value; }
         }
+
+        [ConfigurationProperty("DataItemDisplayConfigurations")]
+        public DataItemDisplayCollection DataItemDisplayConfigurations
+        {
+            get { return ((DataItemDisplayCollection)(base["DataItemDisplayConfigurations"])); }
+        }
+
+        public DataItemDisplayConfiguration GetPathByDataType(string dataType)
+        {
+            return DataItemDisplayConfigurations.Cast<DataItemDisplayConfiguration>().FirstOrDefault(e => e.DataType == dataType);
+        }
     }
 
     public class MQConfiguration : ConfigurationElement
@@ -81,107 +92,77 @@ namespace io.ebu.eis.datastructures
     }
 
 
-    //[ConfigurationCollection(typeof(TaskConfiguration), AddItemName = "WFSTask")]
-    //public class WFSTaskCollection : ConfigurationElementCollection
-    //{
-    //    protected override ConfigurationElement CreateNewElement()
-    //    {
-    //        return new TaskConfiguration();
-    //    }
+    [ConfigurationCollection(typeof(DataItemDisplayConfiguration), AddItemName = "DataItemDisplayConfiguration")]
+    public class DataItemDisplayCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new DataItemDisplayConfiguration();
+        }
 
-    //    protected override object GetElementKey(ConfigurationElement element)
-    //    {
-    //        return ((TaskConfiguration)(element)).Name;
-    //    }
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((DataItemDisplayConfiguration)(element)).DataType;
+        }
 
-    //    public TaskConfiguration this[int idx]
-    //    {
-    //        get { return (TaskConfiguration)BaseGet(idx); }
-    //    }
-    //}
+        public DataItemDisplayConfiguration this[int idx]
+        {
+            get { return (DataItemDisplayConfiguration)BaseGet(idx); }
+        }
+    }
 
-    //public class TaskConfiguration : ConfigurationElement
-    //{
-    //    public override string ToString()
-    //    {
-    //        // Vary by type
-    //        return TaskType + " : " + Sources + " >> TO >> " + Destinations;
-    //    }
+    public class DataItemDisplayConfiguration : ConfigurationElement
+    {
+        public override string ToString()
+        {
+            // Vary by type
+            return DataType + " : ";
+        }
 
-    //    [ConfigurationProperty("TaskType", DefaultValue = "FileSync", IsRequired = false)]
-    //    public string TaskType
-    //    {
-    //        get { return (string)this["TaskType"]; }
-    //        set { this["TaskType"] = value; }
-    //    }
+        [ConfigurationProperty("DataType", DefaultValue = "", IsRequired = false)]
+        public string DataType
+        {
+            get { return (string)this["DataType"]; }
+            set { this["DataType"] = value; }
+        }
 
-    //    [ConfigurationProperty("SyncMode", DefaultValue = "All", IsRequired = false)]
-    //    public string SyncMode
-    //    {
-    //        get { return (string)this["SyncMode"]; }
-    //        set { this["SyncMode"] = value; }
-    //    }
+        [ConfigurationProperty("NamePath", DefaultValue = "TITLE", IsRequired = false)]
+        public string NamePath
+        {
+            get { return (string)this["NamePath"]; }
+            set { this["NamePath"] = value; }
+        }
 
-    //    [ConfigurationProperty("LastSyncDate", DefaultValue = null, IsRequired = false)]
-    //    public DateTime LastSyncDate
-    //    {
-    //        get { return (DateTime)this["LastSyncDate"]; }
-    //        set { this["LastSyncDate"] = value; }
-    //    }
+        [ConfigurationProperty("CategoryPath", DefaultValue = "CATEGORY", IsRequired = false)]
+        public string CategoryPath
+        {
+            get { return (string)this["CategoryPath"]; }
+            set { this["CategoryPath"] = value; }
+        }
 
-    //    [ConfigurationProperty("Sources", DefaultValue = "", IsRequired = false)]
-    //    public string Sources
-    //    {
-    //        get { return (string)this["Sources"]; }
-    //        set { this["Sources"] = value; }
-    //    }
+        [ConfigurationProperty("TypePath", DefaultValue = "TYPE", IsRequired = false)]
+        public string TypePath
+        {
+            get { return (string)this["TypePath"]; }
+            set { this["TypePath"] = value; }
+        }
 
-    //    [ConfigurationProperty("Destinations", DefaultValue = "", IsRequired = false)]
-    //    public string Destinations
-    //    {
-    //        get { return (string)this["Destinations"]; }
-    //        set { this["Destinations"] = value; }
-    //    }
+        [ConfigurationProperty("ShortPath", DefaultValue = "SHORT", IsRequired = false)]
+        public string ShortPath
+        {
+            get { return (string)this["ShortPath"]; }
+            set { this["ShortPath"] = value; }
+        }
 
-    //    [ConfigurationProperty("BytesPerSecond", DefaultValue = 1024L, IsRequired = false)]
-    //    public long BytesPerSecond
-    //    {
-    //        get { return (long)this["BytesPerSecond"]; }
-    //        set { this["BytesPerSecond"] = value; }
-    //    }
+        [ConfigurationProperty("PriorityPath", DefaultValue = "PRIORITY", IsRequired = false)]
+        public string PriorityPath
+        {
+            get { return (string)this["PriorityPath"]; }
+            set { this["PriorityPath"] = value; }
+        }
 
-    //    [ConfigurationProperty("CDNLocations", DefaultValue = "", IsRequired = false)]
-    //    public string CDNLocations
-    //    {
-    //        get { return (string)this["CDNLocations"]; }
-    //        set { this["CDNLocations"] = value; }
-    //    }
-
-    //    [ConfigurationProperty("CDNBytesPerSecond", DefaultValue = 1024L, IsRequired = false)]
-    //    public long CDNBytesPerSecond
-    //    {
-    //        get { return (long)this["CDNBytesPerSecond"]; }
-    //        set { this["CDNBytesPerSecond"] = value; }
-    //    }
-
-    //    [ConfigurationProperty("DataSources")]
-    //    public WFSDataSourcesCollection DataSources
-    //    {
-    //        get { return ((WFSDataSourcesCollection)(base["DataSources"])); }
-    //    }
-
-    //    [ConfigurationProperty("DataDestinations")]
-    //    public WFSDataDestinationsCollection DataDestinations
-    //    {
-    //        get { return ((WFSDataDestinationsCollection)(base["DataDestinations"])); }
-    //    }
-
-    //    public string Name
-    //    {
-    //        get { return this.Sources + ":" + this.Destinations; }
-    //    }
-
-    //}
+        
+    }
 
 
 }

@@ -36,8 +36,9 @@
                         <Rectangle x:Name="statusIndicator"  Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="Auto" Stroke="{x:Null}" VerticalAlignment="Stretch" Width="8"/>
                         <StackPanel Orientation="Vertical" Margin="5,0,0,0">
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Type, FallbackValue=Type, TargetNullValue=Type}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
-                                <TextBlock HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Text="{Binding Category, FallbackValue=Category, TargetNullValue=Category}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
+                                <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Category, FallbackValue=Category, TargetNullValue=Category}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
+                                <TextBlock HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Text="{Binding Type, FallbackValue=Type, TargetNullValue=Type}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
+                                
                             </StackPanel>
                             <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" />
                             <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" />

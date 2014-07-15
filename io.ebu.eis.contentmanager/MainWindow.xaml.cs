@@ -63,10 +63,10 @@ namespace io.ebu.eis.contentmanager
                     // Add the message to the data flow
                     DataFlowItem d = new DataFlowItem()
                     {
-                        Name = message.Value,
-                        Category = message.Key,
-                        Type = message.DataType,
-                        Short = message.Data.ToString(),
+                        Name = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).NamePath),
+                        Category = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).CategoryPath),
+                        Type = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).TypePath),
+                        Short = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).ShortPath),
                         Priority = DataFlowPriority.Low
                     };
 
@@ -77,10 +77,10 @@ namespace io.ebu.eis.contentmanager
                     // Add the message to the image flow
                     DataFlowItem d = new DataFlowItem()
                     {
-                        Name = message.Value,
-                        Category = message.Key,
-                        Type = message.DataType,
-                        Short = message.Data.ToString(),
+                        Name = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).NamePath),
+                        Category = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).CategoryPath),
+                        Type = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).TypePath),
+                        Short = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).ShortPath),
                         Priority = DataFlowPriority.Low
                     };
 
