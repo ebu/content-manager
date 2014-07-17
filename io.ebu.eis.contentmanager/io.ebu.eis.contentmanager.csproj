@@ -141,6 +141,10 @@
     <None Include="LICENSE.md" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\io.ebu.eis.canvasgenerator\io.ebu.eis.canvasgenerator.csproj">
+      <Project>{490ca7a2-b578-490f-9561-4892d96969d4}</Project>
+      <Name>io.ebu.eis.canvasgenerator</Name>
+    </ProjectReference>
     <ProjectReference Include="..\io.ebu.eis.datastructures\io.ebu.eis.datastructures.csproj">
       <Project>{7ce61fc1-d140-4eb3-b2a0-efd395f8d1db}</Project>
       <Name>io.ebu.eis.datastructures</Name>

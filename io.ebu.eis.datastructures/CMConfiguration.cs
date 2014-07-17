@@ -31,6 +31,13 @@ namespace io.ebu.eis.datastructures
             set { this["MQConfiguration"] = value; }
         }
 
+        [ConfigurationProperty("SlideConfiguration")]
+        public SlideConfiguration SlideConfiguration
+        {
+            get { return (SlideConfiguration)this["SlideConfiguration"]; }
+            set { this["SlideConfiguration"] = value; }
+        }
+
     }
 
 
@@ -89,6 +96,17 @@ namespace io.ebu.eis.datastructures
             set { this["DPExchange"] = value; }
         }
 
+    }
+
+    public class SlideConfiguration : ConfigurationElement
+    {
+        [ConfigurationProperty("TemplatePath", DefaultValue = "", IsRequired = true)]
+        public String TemplatePath
+        {
+            get { return (String)this["TemplatePath"]; }
+            set { this["TemplatePath"] = value; }
+        }
+        
     }
 
 

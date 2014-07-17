@@ -33,6 +33,15 @@ namespace io.ebu.eis.datastructures
         public String GetValue(String path)
         {
             var splitPath = path.Split('.');
+
+            // TODO Enhance
+            // Evaluate Special Functions
+            if(splitPath[0] == "ToDateTime")
+            {
+                DateTime t = new DateTime(Convert.ToInt32(Value) * 1000);
+                return t.ToString();
+            }
+
             if(splitPath.Length == 1)
             {
                 // Current Element return KeyValue

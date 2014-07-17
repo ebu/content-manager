@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace io.ebu.eis.contentmanager
 {
@@ -104,6 +106,18 @@ namespace io.ebu.eis.contentmanager
 
         #endregion DataBaseManagement
 
+        #region ImagesAndPreviews
+
+        private BitmapImage _mainimage;
+        public BitmapImage MainImage { get { return _mainimage; } set { _mainimage = value; OnPropertyChanged("MainImage"); OnPropertyChanged("MainImageSource"); } }
+        public ImageSource MainImageSource { get { return MainImage; } }
+
+        private BitmapImage _previewimage;
+        public BitmapImage PreviewImage { get { return _previewimage; } set { _previewimage = value; OnPropertyChanged("PreviewImage"); OnPropertyChanged("PreviewImageSource"); } }
+        public ImageSource PreviewImageSource { get { return PreviewImage; } }
+
+        #endregion ImagesAndPreviews
+
         #region DummyData
         public void DummyData()
         {
@@ -126,6 +140,7 @@ namespace io.ebu.eis.contentmanager
             DataFlowItem d4 = new DataFlowItem() { Name = "Data 45", Category = "DDC", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.Neglectable };
             DataFlowItem d5 = new DataFlowItem() { Name = "Data 55", Category = "DDC", Type = "Official Results", Short = "Short text describing this", Priority = DataFlowPriority.Medium };
             DataFlowItem d6 = new DataFlowItem() { Name = "Data 65", Category = "DDC", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.Neglectable };
+            DataFlowItem d7 = new DataFlowItem() { Name = "Data 65", Category = "WEATHER", Type = "WEATHER", Short = "Stadium", Priority = DataFlowPriority.Neglectable };
 
             DataFlowItems.Add(d1);
             DataFlowItems.Add(d2);
@@ -133,6 +148,7 @@ namespace io.ebu.eis.contentmanager
             DataFlowItems.Add(d4);
             DataFlowItems.Add(d5);
             DataFlowItems.Add(d6);
+            DataFlowItems.Add(d7);
 
 
             DataFlowItem i1 = new DataFlowItem() { Name = "Image 1", Category = "Getty", Type = "Image", Short = "Short text describing this", Priority = DataFlowPriority.High };
