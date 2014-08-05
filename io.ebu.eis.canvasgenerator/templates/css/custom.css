@@ -1,0 +1,113 @@
+/*!
+ * 
+ */
+ 
+ /** Fonts **/
+ @import "../fonts/opensans/opensans_regular/stylesheet.css";
+
+body {
+  background: #AAAAAA;
+  font-family: open_sansregular, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+}
+
+/** Images **/
+
+#zurichlogobox {
+    position:absolute;
+    left: 10px;
+    top: 0;
+    width: 50px;
+    height: 80px;
+    background-image:url('../img/logos/zurich_2014.jpg');
+    background-size:contain;
+	background-repeat:no-repeat;
+    z-index:1000;
+}
+
+#backgroundimage {
+	position:absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-image:url('../img/generic_bg/solarzellen (2).jpg');
+    background-size:cover;
+	background-position:center; 
+	background-repeat:no-repeat;
+}
+
+#gettycredits {
+	position:absolute;
+    bottom: 5px;
+    right: 10px;
+    width: 80px;
+    height: 15px;
+    background-image:url('../img/logos/getty_white.png');
+    background-size:contain;
+	background-position:center; 
+	background-repeat:no-repeat;
+}
+#ebucredits {
+	position:absolute;
+    bottom: 5px;
+    left: 7px;
+    width: 80px;
+    height: 15px;
+    background-image:url('../img/logos/ebu_white.png');
+    background-size:contain;
+	background-position:center; 
+	background-repeat:no-repeat;
+}
+
+/** Texts and Boxes */
+
+#generictext {
+    position:relative;
+    top: 150px;
+    font-size:24px;
+    width:150px;
+    margin:0px auto;
+}
+
+.bluebox{
+	background-color: rgba(0,63,154,0.8);;
+}
+
+#singlebox {
+	position:absolute;
+	top: 125px;
+	bottom: 30px;
+	left: 10px;
+	right: 10px;
+	padding: 0 10px;
+    margin:0px auto;
+}
+#singletitle {
+	color: #fff;
+    font-size: 26px;
+    width:100%;
+    margin:0px auto;
+	text-align: center;
+}
+#singlebigtitle {
+	color: #fff;
+    font-size: 52px;
+    width:100%;
+    margin:0px auto;
+	text-align: center;
+}
+#singlesubtitle {
+	color: #fff;
+    font-size: 22px;
+    width:100%;
+    margin:0px auto;
+	text-align: center;
+}
+#singlerightheader{
+	position:absolute;
+	color: #fff;
+    font-size: 18px;
+    right:10px;
+	top:10px;
+	text-align: right;
+}
