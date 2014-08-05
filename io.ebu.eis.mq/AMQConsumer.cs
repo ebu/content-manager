@@ -18,7 +18,7 @@ namespace io.ebu.eis.mq
 
         private IAMQDataMessageHandler _handler;
 
-        private bool running = false;
+        private bool _running = false;
 
         QueueingBasicConsumer _consumer;
 
@@ -61,16 +61,21 @@ namespace io.ebu.eis.mq
             amq.channel.BasicConsume(queueName, true, _consumer);
 
             // Start Processing in other Thread
-            running = true;
+            _running = true;
             Thread t = new Thread(Process);
             t.Start();
 
             Console.WriteLine("AMQConsumer started and connected to " + _amqpUri + ":" + _amqpExchange);
         }
 
+        public void Disconnect()
+        {
+            _running = false;
+        }
+
         private void Process()
         {
-            while (running)
+            while (_running)
             {
                 var ea = (BasicDeliverEventArgs)_consumer.Queue.Dequeue();
                 var body = ea.Body;

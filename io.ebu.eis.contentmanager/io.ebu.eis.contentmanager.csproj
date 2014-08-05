@@ -54,7 +54,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ManagerCart.cs" />
     <Compile Include="ManagerContext.cs" />
+    <Compile Include="ManagerImageReference.cs" />
     <Compile Include="Utils\AspectRatioConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -135,7 +137,9 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="LICENSE.md" />
@@ -144,6 +148,10 @@
     <ProjectReference Include="..\io.ebu.eis.canvasgenerator\io.ebu.eis.canvasgenerator.csproj">
       <Project>{490ca7a2-b578-490f-9561-4892d96969d4}</Project>
       <Name>io.ebu.eis.canvasgenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.data.s3\io.ebu.eis.data.s3.csproj">
+      <Project>{afbc1f4d-b0ad-4ac8-8d0d-ac2b7298c4bd}</Project>
+      <Name>io.ebu.eis.data.s3</Name>
     </ProjectReference>
     <ProjectReference Include="..\io.ebu.eis.datastructures\io.ebu.eis.datastructures.csproj">
       <Project>{7ce61fc1-d140-4eb3-b2a0-efd395f8d1db}</Project>

@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
         xmlns:structures="clr-namespace:io.ebu.eis.datastructures" 
         x:Class="io.ebu.eis.contentmanager.MainWindow"
-        Title="EBU.io Content Manager" Height="600" Width="1024" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}">
+        Title="EBU.io Content Manager" Height="600" Width="1024" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -38,7 +38,7 @@
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Category, FallbackValue=Category, TargetNullValue=Category}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
                                 <TextBlock HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Text="{Binding Type, FallbackValue=Type, TargetNullValue=Type}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
-                                
+
                             </StackPanel>
                             <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" />
                             <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" />
@@ -160,15 +160,17 @@
                         </Style>
                     </StackPanel.Resources>
                     <Border x:Name="MainImageBorder" BorderThickness="1" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
-                        <Image x:Name="mainImg" HorizontalAlignment="Left" Margin="0" Source="{Binding MainImageSource, Mode=OneWay}"/>
+                        <Image x:Name="mainImg" Margin="0" Source="{Binding MainImageSource, Mode=OneWay}"/>
                     </Border>
                     <Border x:Name="PreviewImageBorder" BorderThickness="1" BorderBrush="#FF00FF00" Margin="0,0,339,0" HorizontalAlignment="Right" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
-                        <Image HorizontalAlignment="Left" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
+                        <Image Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
                     </Border>
                 </StackPanel>
             </Grid>
         </Grid>
-        <Button x:Name="rendreButtonTest" Content="RENDER" HorizontalAlignment="Left" Margin="468,10,0,0" VerticalAlignment="Top" Width="75" Click="rendreButtonTest_Click"/>
+        <Button x:Name="rendreButtonTest" Content="RERENDER" HorizontalAlignment="Left" Margin="441,10,0,0" VerticalAlignment="Top" Width="102" Click="rendreButtonTest_Click"/>
+        <ToggleButton x:Name="autoButton" Content="AUTO" HorizontalAlignment="Left" Margin="548,10,0,0" VerticalAlignment="Top" Width="102" IsChecked="{Binding InAutomationMode}"/>
+        <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="23" Margin="655,9,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding AutomationInterval}" VerticalAlignment="Top" Width="36"/>
 
     </Grid>
 </Window>

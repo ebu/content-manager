@@ -31,11 +31,18 @@ namespace io.ebu.eis.datastructures
             set { this["MQConfiguration"] = value; }
         }
 
-        [ConfigurationProperty("SlideConfiguration")]
-        public SlideConfiguration SlideConfiguration
+        [ConfigurationProperty("S3Configuration")]
+        public S3Configuration S3Configuration
         {
-            get { return (SlideConfiguration)this["SlideConfiguration"]; }
-            set { this["SlideConfiguration"] = value; }
+            get { return (S3Configuration)this["S3Configuration"]; }
+            set { this["S3Configuration"] = value; }
+        }
+
+        [ConfigurationProperty("SlidesConfiguration")]
+        public SlidesConfiguration SlidesConfiguration
+        {
+            get { return (SlidesConfiguration)this["SlidesConfiguration"]; }
+            set { this["SlidesConfiguration"] = value; }
         }
 
     }
@@ -96,9 +103,55 @@ namespace io.ebu.eis.datastructures
             set { this["DPExchange"] = value; }
         }
 
+        [ConfigurationProperty("DDExchange", DefaultValue = "", IsRequired = true)]
+        public String DDExchange
+        {
+            get { return (String)this["DDExchange"]; }
+            set { this["DDExchange"] = value; }
+        }
+
     }
 
-    public class SlideConfiguration : ConfigurationElement
+    public class S3Configuration : ConfigurationElement
+    {
+        [ConfigurationProperty("AWSAccessKey", DefaultValue = "", IsRequired = true)]
+        public String AWSAccessKey
+        {
+            get { return (String)this["AWSAccessKey"]; }
+            set { this["AWSAccessKey"] = value; }
+        }
+
+        [ConfigurationProperty("AWSSecretKey", DefaultValue = "", IsRequired = true)]
+        public String AWSSecretKey
+        {
+            get { return (String)this["AWSSecretKey"]; }
+            set { this["AWSSecretKey"] = value; }
+        }
+
+        [ConfigurationProperty("S3BucketName", DefaultValue = "", IsRequired = true)]
+        public String S3BucketName
+        {
+            get { return (String)this["S3BucketName"]; }
+            set { this["S3BucketName"] = value; }
+        }
+
+        [ConfigurationProperty("S3Subfolder", DefaultValue = "", IsRequired = true)]
+        public String S3Subfolder
+        {
+            get { return (String)this["S3Subfolder"]; }
+            set { this["S3Subfolder"] = value; }
+        }
+
+        [ConfigurationProperty("S3PublicUriBase", DefaultValue = "", IsRequired = true)]
+        public String S3PublicUriBase
+        {
+            get { return (String)this["S3PublicUriBase"]; }
+            set { this["S3PublicUriBase"] = value; }
+        }
+
+    }
+
+    public class SlidesConfiguration : ConfigurationElement
     {
         [ConfigurationProperty("TemplatePath", DefaultValue = "", IsRequired = true)]
         public String TemplatePath
@@ -106,7 +159,13 @@ namespace io.ebu.eis.datastructures
             get { return (String)this["TemplatePath"]; }
             set { this["TemplatePath"] = value; }
         }
-        
+
+        [ConfigurationProperty("CartConfigurations")]
+        public CartCollection CartConfigurations
+        {
+            get { return ((CartCollection)(base["CartConfigurations"])); }
+        }
+
     }
 
 
@@ -179,7 +238,94 @@ namespace io.ebu.eis.datastructures
             set { this["PriorityPath"] = value; }
         }
 
-        
+
+    }
+
+
+
+    [ConfigurationCollection(typeof(CartConfiguration), AddItemName = "CartConfiguration")]
+    public class CartCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new CartConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((CartConfiguration)(element)).Name;
+        }
+
+        public CartConfiguration this[int idx]
+        {
+            get { return (CartConfiguration)BaseGet(idx); }
+        }
+    }
+
+    public class CartConfiguration : ConfigurationElement
+    {
+        public override string ToString()
+        {
+            // Vary by type
+            return Name + " : ";
+        }
+
+        [ConfigurationProperty("Name", DefaultValue = "", IsRequired = false)]
+        public string Name
+        {
+            get { return (string)this["Name"]; }
+            set { this["Name"] = value; }
+        }
+
+        [ConfigurationProperty("Active", DefaultValue = false, IsRequired = false)]
+        public bool Active
+        {
+            get { return (bool)this["Active"]; }
+            set { this["Active"] = value; }
+        }
+
+        [ConfigurationProperty("Slides")]
+        public SlideCollection Slides
+        {
+            get { return ((SlideCollection)(base["Slides"])); }
+        }
+    }
+
+
+    
+    [ConfigurationCollection(typeof(SlideConfiguration), AddItemName = "Slide")]
+    public class SlideCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new SlideConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((SlideConfiguration)(element)).Filename;
+        }
+
+        public SlideConfiguration this[int idx]
+        {
+            get { return (SlideConfiguration)BaseGet(idx); }
+        }
+    }
+
+    public class SlideConfiguration : ConfigurationElement
+    {
+        public override string ToString()
+        {
+            // Vary by type
+            return Filename + " : ";
+        }
+
+        [ConfigurationProperty("Filename", DefaultValue = "", IsRequired = false)]
+        public string Filename
+        {
+            get { return (string)this["Filename"]; }
+            set { this["Filename"] = value; }
+        }
     }
 
 

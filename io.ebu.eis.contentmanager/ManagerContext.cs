@@ -1,4 +1,6 @@
-﻿using io.ebu.eis.datastructures;
+﻿using System.Configuration;
+using io.ebu.eis.canvasgenerator;
+using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
 using System;
 using System.Collections.Generic;
@@ -9,11 +11,32 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using io.ebu.eis.mq;
 
 namespace io.ebu.eis.contentmanager
 {
-    public class ManagerContext : INotifyPropertyChanged
+    public class ManagerContext : INotifyPropertyChanged, IAMQDataMessageHandler
     {
+        private CMConfigurationSection _config;
+        private AMQConsumer _dataInConnection;
+        private AMQQueuePublisher _dataOutConnection;
+
+        private HTMLRenderer _renderer;
+        public HTMLRenderer Renderer { get { return _renderer; } }
+
+        private bool _inAutomationMode;
+        public bool InAutomationMode { get { return _inAutomationMode; } set { _inAutomationMode = value; OnPropertyChanged("InAutomationMode"); } }
+
+        private int _automationInterval = 15;
+        public int AutomationInterval { get { return _automationInterval; } set { _automationInterval = value; OnPropertyChanged("AutomationInterval"); } }
+
+        private ManagerCart _activeCart;
+        public ManagerCart ActiveCart { get { return _activeCart; } set { _activeCart = value; OnPropertyChanged("ActiveCart"); } }
+
+        private DispatchedObservableCollection<ManagerCart> _carts;
+        public DispatchedObservableCollection<ManagerCart> Carts { get { return _carts; } set { _carts = value; OnPropertyChanged("Carts"); } }
+
+        #region Database
         private DispatchedObservableCollection<DataMessage> _dataBase;
         public DispatchedObservableCollection<DataMessage> DataBase { get { return _dataBase; } set { _dataBase = value; OnPropertyChanged("DataBase"); } }
 
@@ -27,10 +50,18 @@ namespace io.ebu.eis.contentmanager
         private DispatchedObservableCollection<DataFlowItem> _imageFlowItems;
         public DispatchedObservableCollection<DataFlowItem> ImageFlowItems { get { return _imageFlowItems; } set { _imageFlowItems = value; OnPropertyChanged("ImageFlowItems"); } }
         public ICollectionView ImageFlowItemsView;
-
+        #endregion Database
 
         public ManagerContext()
         {
+            _config = (CMConfigurationSection)ConfigurationManager.GetSection("CMConfiguration");
+
+            // Initialize HTML Renderer
+            _renderer = new HTMLRenderer(_config.SlidesConfiguration.TemplatePath);
+
+            Carts = new DispatchedObservableCollection<ManagerCart>();
+            ActiveCart = new ManagerCart("INIT");
+
             DataBase = new DispatchedObservableCollection<DataMessage>();
             RunningEvents = new DispatchedObservableCollection<EventFlow>();
             DataFlowItems = new DispatchedObservableCollection<DataFlowItem>();
@@ -41,6 +72,56 @@ namespace io.ebu.eis.contentmanager
 
             ImageFlowItemsView = CollectionViewSource.GetDefaultView(ImageFlowItems);
             ImageFlowItemsView.Filter = ImageFlowNameFilter;
+
+            // Open Connection to INBOUND and OUTBOUND MQ
+            var amquri = _config.MQConfiguration.Uri;
+            var amqinexchange = _config.MQConfiguration.DPExchange;
+            _dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
+            _dataInConnection.Connect();
+
+            var amqoutexchange = _config.MQConfiguration.DDExchange;
+            _dataOutConnection = new AMQQueuePublisher(amquri, amqoutexchange);
+            _dataOutConnection.Connect();
+            // TODO Catch hand handle connection exceptions and reconnect
+
+            LoadCarts();
+        }
+
+        public void Stop()
+        {
+            _dataInConnection.Disconnect();
+        }
+
+        private void LoadCarts()
+        {
+            foreach (CartConfiguration cart in _config.SlidesConfiguration.CartConfigurations)
+            {
+                var c = new ManagerCart(cart.Name);
+                Carts.Add(c);
+                foreach (SlideConfiguration s in cart.Slides)
+                {
+                    var sl = new ManagerImageReference(Renderer, _config)
+                    {
+                        Template = s.Filename
+                    };
+                    c.Slides.Add(sl);
+                }
+
+                if (cart.Active)
+                {
+                    // Set current cart as active
+                    ActiveCart = c;
+                }
+            }
+        }
+        public void SwitchToNextSlide()
+        {
+            if (ActiveCart != null && ActiveCart.Slides.Count > 1)
+            {
+                // We can switch to the next one.
+                MainImage = ActiveCart.GetNextSlide();
+                PreviewImage = ActiveCart.PreviewNextSlide();
+            }
         }
 
         #region FilteringAndSorting
@@ -49,7 +130,7 @@ namespace io.ebu.eis.contentmanager
         private bool DataFlowNameFilter(object item)
         {
             DataFlowItem data = item as DataFlowItem;
-            return data.Name.ToLower().Contains(_dataFlowFilterString.ToLower()) 
+            return data.Name.ToLower().Contains(_dataFlowFilterString.ToLower())
                 || data.Category.ToLower().Contains(_dataFlowFilterString.ToLower())
                 || data.Type.ToLower().Contains(_dataFlowFilterString.ToLower());
         }
@@ -108,15 +189,109 @@ namespace io.ebu.eis.contentmanager
 
         #region ImagesAndPreviews
 
-        private BitmapImage _mainimage;
-        public BitmapImage MainImage { get { return _mainimage; } set { _mainimage = value; OnPropertyChanged("MainImage"); OnPropertyChanged("MainImageSource"); } }
-        public ImageSource MainImageSource { get { return MainImage; } }
+        private ManagerImageReference _mainimage;
 
-        private BitmapImage _previewimage;
-        public BitmapImage PreviewImage { get { return _previewimage; } set { _previewimage = value; OnPropertyChanged("PreviewImage"); OnPropertyChanged("PreviewImageSource"); } }
-        public ImageSource PreviewImageSource { get { return PreviewImage; } }
+        public ManagerImageReference MainImage
+        {
+            get
+            {
+                return _mainimage;
+            }
+            set
+            {
+                _mainimage = value;
+                OnPropertyChanged("MainImage");
+                OnPropertyChanged("MainImageSource");
+                DispatchMainImage();
+            }
+        }
+
+        public ImageSource MainImageSource
+        {
+            get
+            {
+                if (MainImage != null) return MainImage.PreviewImageSource;
+                return null;
+            }
+        }
+
+        private ManagerImageReference _previewimage;
+        public ManagerImageReference PreviewImage { get { return _previewimage; } set { _previewimage = value; OnPropertyChanged("PreviewImage"); OnPropertyChanged("PreviewImageSource"); } }
+
+        public ImageSource PreviewImageSource
+        {
+            get
+            {
+                if (PreviewImage != null) return PreviewImage.PreviewImageSource;
+                return null;
+            }
+        }
 
         #endregion ImagesAndPreviews
+
+        private void DispatchMainImage()
+        {
+            // Main Image changed, i.e. Push to MQ !
+
+            // Dispatch to Dispatcher for publication
+            // DispatchNotificationMessage
+            var m = new DispatchNotificationMessage()
+            {
+                Account = "EBU.io",
+                ContentType = "application/json",
+                Imageurl = MainImage.PublicImageUrl,
+                Link = "",
+                NotificationKey = Guid.NewGuid().ToString(),
+                NotificationMessage = "Dispatch Message",
+                ReceiveTime = DateTime.Now,
+                Source = "EBU.io EIS Content Manager",
+                Title = ""
+            };
+
+            _dataOutConnection.Dispatch(m);
+        }
+
+
+        public void OnReceive(DataMessage message)
+        {
+            if (_config.DataConfiguration.DataFlowTypes.Split(';').Contains(message.DataType))
+            {
+                // TODO Generalize Message creation
+                // Add the message to the data flow
+                var d = new DataFlowItem()
+                {
+                    DataMessage = message,
+                    Name = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).NamePath),
+                    Category = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).CategoryPath),
+                    Type = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).TypePath),
+                    Short = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).ShortPath),
+                    Priority = DataFlowPriority.Low
+                };
+
+                DataFlowItems.Add(d);
+            }
+            if (_config.DataConfiguration.ImageFlowTypes.Split(';').Contains(message.DataType))
+            {
+                // Add the message to the image flow
+                var d = new DataFlowItem()
+                {
+                    DataMessage = message,
+                    Name = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).NamePath),
+                    Category = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).CategoryPath),
+                    Type = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).TypePath),
+                    Short = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).ShortPath),
+                    Priority = DataFlowPriority.Low
+                };
+
+                ImageFlowItems.Add(d);
+            }
+
+            if (_config.DataConfiguration.DataBaseTypes.Split(';').Contains(message.DataType))
+            {
+                // Add the message to the database
+                UpdateDataBase(message);
+            }
+        }
 
         #region DummyData
         public void DummyData()
