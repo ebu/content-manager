@@ -38,11 +38,25 @@ namespace io.ebu.eis.datastructures
         private string _short;
         public string Short { get { return _short; } set { _short = value; OnPropertyChanged("Short"); } }
 
+        private string _url;
+        public string Url { get { return _url; } set { _url = value; OnPropertyChanged("Url"); } }
+
         private DataFlowPriority _priority;
         public DataFlowPriority Priority { get { return _priority; } set { _priority = value; OnPropertyChanged("Priority"); } }
 
         private BitmapImage _image;
-        public BitmapImage Image { get { return _image; } set { _image = value; OnPropertyChanged("Image"); } }
+        public BitmapImage Image
+        {
+            get
+            {
+                if (_image == null)
+                {
+                    LoadImageFromUrl(Url);
+                }
+                return _image;
+            }
+            set { _image = value; OnPropertyChanged("Image"); }
+        }
         public double ImageHeight { get { return Image.Height; } }
         public double ImageWidth { get { return Image.Width; } }
         public ImageSource ImageSource { get { return Image; } }
@@ -53,12 +67,20 @@ namespace io.ebu.eis.datastructures
         }
 
 
-        public void LoadImageFromUrl(string url)
+        private void LoadImageFromUrl(string url)
         {
-            Image = new BitmapImage();
-            Image.BeginInit();
-            Image.UriSource = new Uri(url, UriKind.RelativeOrAbsolute);
-            Image.EndInit();
+            try
+            {
+                Image = new BitmapImage();
+                Image.BeginInit();
+                Image.UriSource = new Uri(url, UriKind.RelativeOrAbsolute);
+                Image.DecodePixelWidth = 200;
+                Image.EndInit();
+            }
+            catch (Exception)
+            {
+                // TODO handle exceptions !
+            }
         }
 
 

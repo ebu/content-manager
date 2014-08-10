@@ -1,4 +1,7 @@
 ﻿using System.Configuration;
+using System.IO;
+using System.Net;
+using System.Threading;
 using io.ebu.eis.canvasgenerator;
 using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
@@ -30,8 +33,16 @@ namespace io.ebu.eis.contentmanager
         private int _automationInterval = 15;
         public int AutomationInterval { get { return _automationInterval; } set { _automationInterval = value; OnPropertyChanged("AutomationInterval"); } }
 
+        private double automationProgress = 0.0;
+        public double AutomationProgress { get { return automationProgress; } set { automationProgress = value; OnPropertyChanged("AutomationProgress"); } }
+
         private ManagerCart _activeCart;
         public ManagerCart ActiveCart { get { return _activeCart; } set { _activeCart = value; OnPropertyChanged("ActiveCart"); } }
+
+
+        private ManagerCart _editorCart;
+        public ManagerCart EditorCart { get { return _editorCart; } set { _editorCart = value; OnPropertyChanged("EditorCart"); } }
+
 
         private DispatchedObservableCollection<ManagerCart> _carts;
         public DispatchedObservableCollection<ManagerCart> Carts { get { return _carts; } set { _carts = value; OnPropertyChanged("Carts"); } }
@@ -40,8 +51,8 @@ namespace io.ebu.eis.contentmanager
         private DispatchedObservableCollection<DataMessage> _dataBase;
         public DispatchedObservableCollection<DataMessage> DataBase { get { return _dataBase; } set { _dataBase = value; OnPropertyChanged("DataBase"); } }
 
-        private DispatchedObservableCollection<EventFlow> _runningEvents;
-        public DispatchedObservableCollection<EventFlow> RunningEvents { get { return _runningEvents; } set { _runningEvents = value; OnPropertyChanged("RunningEvents"); } }
+        //private DispatchedObservableCollection<EventFlow> _runningEvents;
+        //public DispatchedObservableCollection<EventFlow> RunningEvents { get { return _runningEvents; } set { _runningEvents = value; OnPropertyChanged("RunningEvents"); } }
 
         private DispatchedObservableCollection<DataFlowItem> _dataFlowItems;
         public DispatchedObservableCollection<DataFlowItem> DataFlowItems { get { return _dataFlowItems; } set { _dataFlowItems = value; OnPropertyChanged("DataFlowItems"); } }
@@ -63,15 +74,19 @@ namespace io.ebu.eis.contentmanager
             ActiveCart = new ManagerCart("INIT");
 
             DataBase = new DispatchedObservableCollection<DataMessage>();
-            RunningEvents = new DispatchedObservableCollection<EventFlow>();
+            //RunningEvents = new DispatchedObservableCollection<EventFlow>();
             DataFlowItems = new DispatchedObservableCollection<DataFlowItem>();
             ImageFlowItems = new DispatchedObservableCollection<DataFlowItem>();
 
             DataFlowItemsView = CollectionViewSource.GetDefaultView(DataFlowItems);
             DataFlowItemsView.Filter = DataFlowNameFilter;
+            var sortData = new SortDescription {Direction = ListSortDirection.Descending, PropertyName = "Timestamp"};
+            DataFlowItemsView.SortDescriptions.Add(sortData);
 
             ImageFlowItemsView = CollectionViewSource.GetDefaultView(ImageFlowItems);
             ImageFlowItemsView.Filter = ImageFlowNameFilter;
+            var sortImage = new SortDescription {Direction = ListSortDirection.Descending, PropertyName = "Timestamp"};
+            ImageFlowItemsView.SortDescriptions.Add(sortImage);
 
             // Open Connection to INBOUND and OUTBOUND MQ
             var amquri = _config.MQConfiguration.Uri;
@@ -85,11 +100,14 @@ namespace io.ebu.eis.contentmanager
             // TODO Catch hand handle connection exceptions and reconnect
 
             LoadCarts();
+            LoadInitialImages();
+            LoadReceivedImages();
         }
 
         public void Stop()
         {
             _dataInConnection.Disconnect();
+            _dataOutConnection.Disconnect();
         }
 
         private void LoadCarts()
@@ -102,7 +120,9 @@ namespace io.ebu.eis.contentmanager
                 {
                     var sl = new ManagerImageReference(Renderer, _config)
                     {
-                        Template = s.Filename
+                        Template = s.Filename,
+                        Link = s.DefaultLink,
+                        CanRepeate = s.CanRepeat
                     };
                     c.Slides.Add(sl);
                 }
@@ -112,16 +132,88 @@ namespace io.ebu.eis.contentmanager
                     // Set current cart as active
                     ActiveCart = c;
                 }
+                if (cart.EditorDefault)
+                {
+                    // Set current editor cart
+                    EditorCart = c;
+                }
             }
         }
+
+        public void LoadInitialImages()
+        {
+            ReloadLoadImages(_config.DataConfiguration.InitialPictureFolder);
+        }
+
+        public void LoadReceivedImages()
+        {
+            ReloadLoadImages(_config.DataConfiguration.IncomingPictureFolder);
+        }
+
+        private void ReloadLoadImages(string path)
+        {
+            if (!Directory.Exists(path))
+            {
+                try
+                {
+                    Directory.CreateDirectory(path);
+                }
+                catch (Exception)
+                {
+                    // TODO LOG
+                    return;
+                }
+            }
+
+            foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories).Where(s => s.EndsWith(".jpg") || s.EndsWith(".png") || s.EndsWith(".gif") || s.EndsWith(".jpeg")))
+            {
+                IngestImage(file);
+            }
+        }
+
+        public void IngestImage(string file)
+        {
+            try
+            {
+                var title = new DataMessage() {Key = "TITLE", Value = Path.GetFileName(file)};
+                var url = new DataMessage() {Key = "URL", Value = file};
+                var type = new DataMessage() {Key = "TYPE", Value = Path.GetExtension(file)};
+                var im = new DataMessage()
+                {
+                    DataType = "IMAGE",
+                    Key = Path.GetFileName(file),
+                    Value = file
+                };
+                im.Data.Add(title);
+                im.Data.Add(url);
+                im.Data.Add(type);
+
+                OnReceive(im);
+            }
+            catch (Exception) { }
+        }
+
         public void SwitchToNextSlide()
         {
-            if (ActiveCart != null && ActiveCart.Slides.Count > 1)
+            if (ActiveCart != null && ActiveCart.Slides.Count > 0)
             {
                 // We can switch to the next one.
                 MainImage = ActiveCart.GetNextSlide();
-                PreviewImage = ActiveCart.PreviewNextSlide();
+                ReloadPreview();
             }
+        }
+
+        public void ReloadPreview()
+        {
+            PreviewImage = ActiveCart.PreviewNextSlide();
+        }
+        public void SwitchToSlide(ManagerImageReference newImage)
+        {
+            // We can switch to the next one.
+            ActiveCart.SetAllSlidesInactive();
+            MainImage = newImage;
+            newImage.IsActive = true;
+            ReloadPreview();
         }
 
         #region FilteringAndSorting
@@ -162,7 +254,7 @@ namespace io.ebu.eis.contentmanager
             {
                 _imageFlowFilterString = value;
                 OnPropertyChanged("ImageFlowFilterString");
-                DataFlowItemsView.Refresh();
+                ImageFlowItemsView.Refresh();
             }
         }
 
@@ -227,6 +319,19 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+
+        private ManagerImageReference _editorimage;
+        public ManagerImageReference EditorImage { get { return _editorimage; } set { _editorimage = value; OnPropertyChanged("EditorImage"); OnPropertyChanged("EditorImageSource"); } }
+
+        public ImageSource EditorImageSource
+        {
+            get
+            {
+                if (EditorImage != null) return EditorImage.PreviewImageSource;
+                return null;
+            }
+        }
+
         #endregion ImagesAndPreviews
 
         private void DispatchMainImage()
@@ -240,7 +345,7 @@ namespace io.ebu.eis.contentmanager
                 Account = "EBU.io",
                 ContentType = "application/json",
                 Imageurl = MainImage.PublicImageUrl,
-                Link = "",
+                Link = MainImage.Link,
                 NotificationKey = Guid.NewGuid().ToString(),
                 NotificationMessage = "Dispatch Message",
                 ReceiveTime = DateTime.Now,
@@ -265,7 +370,8 @@ namespace io.ebu.eis.contentmanager
                     Category = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).CategoryPath),
                     Type = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).TypePath),
                     Short = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).ShortPath),
-                    Priority = DataFlowPriority.Low
+                    Priority = DataFlowPriority.Low,
+                    Timestamp = DateTime.Now
                 };
 
                 DataFlowItems.Add(d);
@@ -280,8 +386,22 @@ namespace io.ebu.eis.contentmanager
                     Category = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).CategoryPath),
                     Type = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).TypePath),
                     Short = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).ShortPath),
-                    Priority = DataFlowPriority.Low
+                    Url = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).UrlPath),
+                    Priority = DataFlowPriority.Low,
+                    Timestamp = DateTime.Now
                 };
+                if (string.IsNullOrEmpty(d.Name))
+                {
+                    //Generate random name
+                    d.Name = Guid.NewGuid().ToString() + ".jpg";
+                }
+                // Save the image to local folder
+                if (d.Url.StartsWith("http"))
+                {
+                    var filepath = Path.Combine(_config.DataConfiguration.IncomingPictureFolder, d.Name);
+                    var dli = new Thread(() => DownloadImageToLocal(d.Url, filepath));
+                    dli.Start();
+                }
 
                 ImageFlowItems.Add(d);
             }
@@ -293,21 +413,34 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+        private void DownloadImageToLocal(string url, string localpath)
+        {
+            try
+            {
+                using (WebClient myWebClient = new WebClient())
+                {
+                    // Download the Web resource and save it into the current filesystem folder.
+                    myWebClient.DownloadFile(url, localpath);
+                }
+            }
+            catch (Exception) { }
+        }
+
         #region DummyData
         public void DummyData()
         {
             // Dummy Data
-            EventFlow e0 = new EventFlow() { Name = "General" };
-            EventFlow e1 = new EventFlow() { Name = "100M Men" };
-            EventFlow e2 = new EventFlow() { Name = "High Jump Women" };
-            EventFlow e3 = new EventFlow() { Name = "4x100m Relay Women" };
-            EventFlow e4 = new EventFlow() { Name = "400m Hurdles Men" };
+            //EventFlow e0 = new EventFlow() { Name = "General" };
+            //EventFlow e1 = new EventFlow() { Name = "100M Men" };
+            //EventFlow e2 = new EventFlow() { Name = "High Jump Women" };
+            //EventFlow e3 = new EventFlow() { Name = "4x100m Relay Women" };
+            //EventFlow e4 = new EventFlow() { Name = "400m Hurdles Men" };
 
-            RunningEvents.Add(e0);
-            RunningEvents.Add(e1);
-            RunningEvents.Add(e2);
-            RunningEvents.Add(e3);
-            RunningEvents.Add(e4);
+            //RunningEvents.Add(e0);
+            //RunningEvents.Add(e1);
+            //RunningEvents.Add(e2);
+            //RunningEvents.Add(e3);
+            //RunningEvents.Add(e4);
 
             DataFlowItem d1 = new DataFlowItem() { Name = "Data 15", Category = "100M", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.High };
             DataFlowItem d2 = new DataFlowItem() { Name = "Data 25", Category = "ABC", Type = "Results", Short = "Short text describing this", Priority = DataFlowPriority.Medium };
@@ -326,12 +459,33 @@ namespace io.ebu.eis.contentmanager
             DataFlowItems.Add(d7);
 
 
-            DataFlowItem i1 = new DataFlowItem() { Name = "Image 1", Category = "Getty", Type = "Image", Short = "Short text describing this", Priority = DataFlowPriority.High };
-            i1.LoadImageFromUrl(@"Z:\mh On My Mac\EBU\Assets\GETTY Images Day 1 Braunschweig\450987746.jpg");
-            DataFlowItem i2 = new DataFlowItem() { Name = "Image 2", Category = "Getty", Type = "Image", Short = "Short text describing this", Priority = DataFlowPriority.Medium };
-            i2.LoadImageFromUrl(@"Z:\mh On My Mac\EBU\Assets\GETTY Images Day 1 Braunschweig\450987748.jpg");
-            DataFlowItem i3 = new DataFlowItem() { Name = "Image 3", Category = "Getty", Type = "Image", Short = "Short text describing this", Priority = DataFlowPriority.Low };
-            i3.LoadImageFromUrl(@"Z:\mh On My Mac\EBU\Assets\GETTY Images Day 1 Braunschweig\450987750.jpg");
+            DataFlowItem i1 = new DataFlowItem()
+            {
+                Name = "Image 1",
+                Category = "Getty",
+                Type = "Image",
+                Short = "Short text describing this",
+                Priority = DataFlowPriority.High,
+                Url = @"Z:\mh On My Mac\EBU\Assets\GETTY Images Day 1 Braunschweig\450987746.jpg"
+            };
+            DataFlowItem i2 = new DataFlowItem()
+            {
+                Name = "Image 2",
+                Category = "Getty",
+                Type = "Image",
+                Short = "Short text describing this",
+                Priority = DataFlowPriority.Medium,
+                Url = @"Z:\mh On My Mac\EBU\Assets\GETTY Images Day 1 Braunschweig\450987748.jpg"
+            };
+            DataFlowItem i3 = new DataFlowItem()
+            {
+                Name = "Image 3",
+                Category = "Getty",
+                Type = "Image",
+                Short = "Short text describing this",
+                Priority = DataFlowPriority.Low,
+                Url = @"Z:\mh On My Mac\EBU\Assets\GETTY Images Day 1 Braunschweig\450987750.jpg"
+            };
 
             ImageFlowItems.Add(i1);
             ImageFlowItems.Add(i2);

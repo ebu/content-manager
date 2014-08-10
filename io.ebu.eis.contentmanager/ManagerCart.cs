@@ -27,14 +27,51 @@ namespace io.ebu.eis.contentmanager
 
         public ManagerImageReference GetNextSlide()
         {
-            var slide = Slides.OrderBy(x => x.LastUsed).FirstOrDefault();
+            var currentIndex = 0;
+            var currentSlide = Slides.FirstOrDefault(x => x.IsActive);
+            if (currentSlide != null)
+                currentIndex = Slides.IndexOf(currentSlide);
+            else
+                currentIndex = -1;
+            var nextIndex = (currentIndex + 1)%Slides.Count;
+
+            SetAllSlidesInactive();
+            var slide = Slides[nextIndex];
             slide.LastUsed = DateTime.Now;
+            slide.IsActive = true;
             return slide;
+        }
+
+        public void SetAllSlidesInactive()
+        {
+            foreach (var s in Slides)
+            {
+                s.IsActive = false;
+            }
         }
 
         public ManagerImageReference PreviewNextSlide()
         {
-            return Slides.OrderBy(x => x.LastUsed).FirstOrDefault();
+            var currentIndex = 0;
+            var currentSlide = Slides.FirstOrDefault(x => x.IsActive);
+            if (currentSlide != null)
+                currentIndex = Slides.IndexOf(currentSlide);
+            else
+                currentIndex = 0;
+            var nextIndex = (currentIndex + 1) % Slides.Count;
+
+            return Slides[nextIndex];
+        }
+
+        public ManagerCart Clone()
+        {
+            var newCart = new ManagerCart(this.Name);
+            foreach (var s in this.Slides)
+            {
+                newCart.Slides.Add(s.Clone());
+            }
+            newCart.SetAllSlidesInactive();
+            return newCart;
         }
 
         #region PropertyChanged

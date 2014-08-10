@@ -15,8 +15,8 @@ namespace io.ebu.eis.canvasgenerator
     {
         private string _pathToExe = "phantomjs.exe";
         private string _pathToWorkingDir = "templates/";
-        private string _phantomPageGenerator = "../sliderenderer.js";
-        private string _phantomHtmlGenerator = "../htmlrenderer.js";
+        private string _phantomPageGenerator = "sliderenderer.js";
+        private string _phantomHtmlGenerator = "htmlrenderer.js";
         private string _phantomArgumentProperties = "320px*240px";
         private int _timeToExit = 500;
 
@@ -47,15 +47,20 @@ namespace io.ebu.eis.canvasgenerator
             //string error = p.StandardError.ReadToEnd();
             //Read the Output:
             var base64image = p.StandardOutput.ReadToEnd().Trim();
+            var error = p.StandardError.ReadToEnd().Trim();
             var bytes = Convert.FromBase64CharArray(base64image.ToCharArray(), 0, base64image.Length);
-            var image = GetBitmapImage(bytes);
-            return image;
+            if (bytes.Length > 0)
+            {
+                var image = GetBitmapImage(bytes);
+                return image;
+            }
+            return null;
         }
 
         public BitmapImage RenderHtml(string html)
         {
             // TODO Pass as argument and decode
-            var tempFilename = Guid.NewGuid().ToString()+".html";
+            var tempFilename = Guid.NewGuid().ToString() + ".html";
             var tempfile = Path.Combine(_pathToWorkingDir, tempFilename);
             var file = File.Create(tempfile);
             var content = Encoding.UTF8.GetBytes(html);
@@ -88,10 +93,14 @@ namespace io.ebu.eis.canvasgenerator
 
             // TODO This is ugly but works : )
             var image = Render(System.IO.Path.GetFileName(tempfile));
-            
+
             // TODO Remove
             // Delete Temp file
-            File.Delete(tempfile);
+            try
+            {
+                File.Delete(tempfile);
+            }
+            catch (Exception) { }
 
             return image;
         }

@@ -42,6 +42,9 @@ namespace io.ebu.eis.datastructures
                 return t.ToString();
             }
 
+            if (Data == null)
+                return "";
+
             if(splitPath.Length == 1)
             {
                 // Current Element return KeyValue
@@ -51,6 +54,14 @@ namespace io.ebu.eis.datastructures
             }
             else
             {
+                var searchFor = splitPath.FirstOrDefault();
+                if(searchFor.StartsWith("[") && searchFor.EndsWith("]"))
+                {
+                    // We need to extract by index
+                    var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
+                    var r2 = Data[index];
+                    return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                }
                 var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
                 return r.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length-1).Reverse()));
             }
@@ -60,6 +71,17 @@ namespace io.ebu.eis.datastructures
         public DataMessage()
         {
             Data = new List<DataMessage>();
+        }
+
+        public DataMessage Clone()
+        {
+            var js = this.Serialize();
+            return Deserialize(js);
+        }
+
+        public string JSONMessage
+        {
+            get { return Serialize(); }
         }
 
         #region Serialization

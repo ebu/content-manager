@@ -75,6 +75,20 @@ namespace io.ebu.eis.datastructures
             set { this["DataBaseKey"] = value; }
         }
 
+        [ConfigurationProperty("InitialPictureFolder", DefaultValue = "", IsRequired = false)]
+        public String InitialPictureFolder
+        {
+            get { return (String)this["InitialPictureFolder"]; }
+            set { this["InitialPictureFolder"] = value; }
+        }
+
+        [ConfigurationProperty("IncomingPictureFolder", DefaultValue = "", IsRequired = false)]
+        public String IncomingPictureFolder
+        {
+            get { return (String)this["IncomingPictureFolder"]; }
+            set { this["IncomingPictureFolder"] = value; }
+        }
+
         [ConfigurationProperty("DataItemDisplayConfigurations")]
         public DataItemDisplayCollection DataItemDisplayConfigurations
         {
@@ -83,7 +97,11 @@ namespace io.ebu.eis.datastructures
 
         public DataItemDisplayConfiguration GetPathByDataType(string dataType)
         {
-            return DataItemDisplayConfigurations.Cast<DataItemDisplayConfiguration>().FirstOrDefault(e => e.DataType == dataType);
+            if (DataItemDisplayConfigurations.Cast<DataItemDisplayConfiguration>().Count(e => e.DataType == dataType) > 0)
+            {
+                return DataItemDisplayConfigurations.Cast<DataItemDisplayConfiguration>().FirstOrDefault(e => e.DataType == dataType);
+            }
+            return new DataItemDisplayConfiguration();
         }
     }
 
@@ -231,6 +249,13 @@ namespace io.ebu.eis.datastructures
             set { this["ShortPath"] = value; }
         }
 
+        [ConfigurationProperty("UrlPath", DefaultValue = "", IsRequired = false)]
+        public string UrlPath
+        {
+            get { return (string)this["UrlPath"]; }
+            set { this["UrlPath"] = value; }
+        }
+
         [ConfigurationProperty("PriorityPath", DefaultValue = "PRIORITY", IsRequired = false)]
         public string PriorityPath
         {
@@ -284,6 +309,13 @@ namespace io.ebu.eis.datastructures
             set { this["Active"] = value; }
         }
 
+        [ConfigurationProperty("EditorDefault", DefaultValue = false, IsRequired = false)]
+        public bool EditorDefault
+        {
+            get { return (bool)this["EditorDefault"]; }
+            set { this["EditorDefault"] = value; }
+        }
+
         [ConfigurationProperty("Slides")]
         public SlideCollection Slides
         {
@@ -292,7 +324,7 @@ namespace io.ebu.eis.datastructures
     }
 
 
-    
+
     [ConfigurationCollection(typeof(SlideConfiguration), AddItemName = "Slide")]
     public class SlideCollection : ConfigurationElementCollection
     {
@@ -325,6 +357,20 @@ namespace io.ebu.eis.datastructures
         {
             get { return (string)this["Filename"]; }
             set { this["Filename"] = value; }
+        }
+
+        [ConfigurationProperty("CanRepeat", DefaultValue = false, IsRequired = false)]
+        public bool CanRepeat
+        {
+            get { return (bool)this["CanRepeat"]; }
+            set { this["CanRepeat"] = value; }
+        }
+
+        [ConfigurationProperty("DefaultLink", DefaultValue = "", IsRequired = false)]
+        public string DefaultLink
+        {
+            get { return (string)this["DefaultLink"]; }
+            set { this["DefaultLink"] = value; }
         }
     }
 

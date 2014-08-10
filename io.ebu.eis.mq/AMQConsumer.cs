@@ -18,9 +18,12 @@ namespace io.ebu.eis.mq
 
         private IAMQDataMessageHandler _handler;
 
+        private Thread _t;
         private bool _running = false;
 
-        QueueingBasicConsumer _consumer;
+        private AMQClient _amq;
+        private IConnection _conn;
+        private QueueingBasicConsumer _consumer;
 
         public AMQConsumer(string uri, string exchange, IAMQDataMessageHandler handler)
         {
@@ -34,12 +37,12 @@ namespace io.ebu.eis.mq
             ConnectionFactory factory = new ConnectionFactory();
             factory.Uri = _amqpUri;
 
-            var conn = factory.CreateConnection();
-            var amq = new AMQClient();
-            amq.channel = conn.CreateModel();
+            _conn = factory.CreateConnection();
+            _amq = new AMQClient();
+            _amq.channel = _conn.CreateModel();
 
-            amq.channel.ExchangeDeclare(_amqpExchange, "topic");
-            var queueName = amq.channel.QueueDeclare();
+            _amq.channel.ExchangeDeclare(_amqpExchange, "topic");
+            var queueName = _amq.channel.QueueDeclare();
 
             // TODO Handle filtering of message
             //if (args.Length < 1)
@@ -52,18 +55,18 @@ namespace io.ebu.eis.mq
                         
             //foreach (var bindingKey in args)
             //{
-            amq.channel.QueueBind(queueName, _amqpExchange, filter);
+            _amq.channel.QueueBind(queueName, _amqpExchange, filter);
             //}
 
             //Console.WriteLine(" [*] Waiting for messages. " + "To exit press CTRL+C");
 
-            _consumer = new QueueingBasicConsumer(amq.channel);
-            amq.channel.BasicConsume(queueName, true, _consumer);
+            _consumer = new QueueingBasicConsumer(_amq.channel);
+            _amq.channel.BasicConsume(queueName, true, _consumer);
 
             // Start Processing in other Thread
             _running = true;
-            Thread t = new Thread(Process);
-            t.Start();
+            _t = new Thread(Process);
+            _t.Start();
 
             Console.WriteLine("AMQConsumer started and connected to " + _amqpUri + ":" + _amqpExchange);
         }
@@ -71,6 +74,16 @@ namespace io.ebu.eis.mq
         public void Disconnect()
         {
             _running = false;
+            if (_t != null && _t.IsAlive)
+                _t.Abort();
+            try
+            {
+                _consumer.Queue.Enqueue(new BasicDeliverEventArgs());
+                _consumer.Queue.Close();
+                _amq.channel.Close();
+                _conn.Close();
+            }
+            catch (Exception) { }
         }
 
         private void Process()

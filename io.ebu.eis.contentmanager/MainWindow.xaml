@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:Utils="clr-namespace:io.ebu.eis.contentmanager.Utils" 
         xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
-        xmlns:structures="clr-namespace:io.ebu.eis.datastructures" 
+        xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures" 
         x:Class="io.ebu.eis.contentmanager.MainWindow"
         Title="EBU.io Content Manager" Height="600" Width="1024" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing">
     <Window.Resources>
@@ -26,6 +26,7 @@
             <!--<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />-->
 
             <Utils:AspectRatioConverter x:Key="AspectRatioConverter"/>
+            <Utils:AspectRatioConverter x:Key="AspectRatioConverter2"/>
             <!-- Dark Theme -->
             <SolidColorBrush x:Key="BackgroundKey" Color="#FF181818" />
 
@@ -100,6 +101,46 @@
                     <Button Content="Button" HorizontalAlignment="Stretch" Margin="3" VerticalAlignment="Stretch" Width="Auto" Height="35"/>
                 </Grid>
             </DataTemplate>
+            <DataTemplate x:Key="RunningCartDataTemplate"  DataType="local:ManagerImageReference">
+                <Grid MouseDown="PreviewListBox_MouseDown">
+                    <Border x:Name="ImageBorder" Height="100" BorderThickness="4" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter2}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image x:Name="mainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
+                    </Border>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}" Value="true">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FFFF0000" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive}" Value="false">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FF181818" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="EditorCartDataTemplate"  DataType="local:ManagerImageReference">
+                <Grid>
+                    <Border x:Name="ImageBorder" Height="70" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter2}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image x:Name="mainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
+                    </Border>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}" Value="true">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FFFF0000" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive}" Value="false">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FF181818" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="EditorFieldDataTemplate1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding Title}" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="0" TextWrapping="Wrap" Text="{Binding Value}" Width="Auto" VerticalAlignment="Center"/>
+                </Grid>
+            </DataTemplate>
 
         </ResourceDictionary>
     </Window.Resources>
@@ -124,7 +165,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid>
                     <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="ImageFlow" VerticalAlignment="Top"/>
-                    <ListBox x:Name="ImageFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,64,0,0" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource DataImageTemplate1}" ItemsSource="{Binding ImageFlowItems}"/>
+                    <ListBox x:Name="ImageFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" AllowDrop="True" Margin="0,64,0,0" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource DataImageTemplate1}" ItemsSource="{Binding ImageFlowItems}" SelectionChanged="ImageFlowList_SelectionChanged" Drop="ImageFlowList_Drop"/>
                     <TextBox Height="24" Margin="0,29,1,0" TextWrapping="Wrap" Text="{Binding ImageFlowFilterString, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
                 </Grid>
                 <Grid Grid.Column="1">
@@ -136,22 +177,27 @@
             </Grid>
             <Grid Margin="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="77*"/>
+                    <RowDefinition Height="110"/>
+                    <RowDefinition Height="92*"/>
+                    <RowDefinition Height="78"/>
                 </Grid.RowDefinitions>
                 <Grid Margin="0" Grid.Row="1" Background="Black">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="50"/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <ListBox Margin="0" ItemsSource="{Binding RunningEvents}" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource RunningEventsTemplate1}">
+                    <!--<ListBox Margin="0,5,0,0" Grid.Row="1"  ItemsSource="{Binding RunningEvents}" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource RunningEventsTemplate1}">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal"/>
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
+                    </ListBox>-->
+                    <ListBox Margin="130,0,0,0"  KeyDown="PreviewListBox_KeyDown" ItemTemplate="{DynamicResource RunningCartDataTemplate}" ItemsSource="{Binding ActiveCart.Slides}" SelectionChanged="PreviewListBox_SelectionChanged">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal" CanVerticallyScroll="False"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
                     </ListBox>
+                    <TextBlock HorizontalAlignment="Left" Margin="10,42,0,0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="Running Cart" VerticalAlignment="Top"/>
                 </Grid>
                 <StackPanel x:Name="MainPreviewStackPanel" Margin="10" Orientation="Horizontal">
                     <StackPanel.Resources>
@@ -159,18 +205,49 @@
                             <Setter Property="Margin" Value="0,0,10,0"/>
                         </Style>
                     </StackPanel.Resources>
-                    <Border x:Name="MainImageBorder" BorderThickness="1" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
-                        <Image x:Name="mainImg" Margin="0" Source="{Binding MainImageSource, Mode=OneWay}"/>
+                    <Border x:Name="MainImageBorder" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image x:Name="mainImg" Margin="0" Source="{Binding MainImageSource, Mode=OneWay}" MouseDown="mainImg_MouseDown"/>
                     </Border>
-                    <Border x:Name="PreviewImageBorder" BorderThickness="1" BorderBrush="#FF00FF00" Margin="0,0,339,0" HorizontalAlignment="Right" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                    <Border x:Name="PreviewImageBorder" BorderThickness="2" BorderBrush="#FF00FF00" Margin="0,0,339,0" HorizontalAlignment="Right" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                         <Image Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
                     </Border>
                 </StackPanel>
+                <Grid Margin="0,5" Grid.Row="2" Background="Black">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="130"/>
+                        <ColumnDefinition Width="316*"/>
+                        <ColumnDefinition Width="175*"/>
+                        <ColumnDefinition Width="57"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="2" Margin="10">
+                        <Border x:Name="EditorImageBorder" BorderThickness="1" BorderBrush="#FFFF8800"  HorizontalAlignment="Center" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}" Height="150" VerticalAlignment="Center">
+                            <Image Margin="0" Source="{Binding EditorImageSource, Mode=OneWay}"/>
+                        </Border>
+                    </Grid>
+                    <Grid Grid.Column="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Button x:Name="editorAddButton" Content="+" Margin="10" FontWeight="Bold" FontSize="16" Foreground="Lime" Click="editorAddButton_Click" />
+                        <Button x:Name="editorAddButtonAndMain" Content="+" Margin="10,13,10,10" FontWeight="Bold" FontSize="16" Grid.Row="1" Foreground="Red" Click="editorAddButtonAndMain_Click" />
+                    </Grid>
+                    <ListBox Grid.Column="1" Margin="0,0,5,35" ItemsSource="{Binding EditorImage.TemplateFields}" ItemTemplate="{DynamicResource EditorFieldDataTemplate1}"/>
+                    <Button x:Name="rendreButtonTest" Content="RERENDER" HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Bottom" Width="102" Click="rendreButtonTest_Click" Grid.Column="1"/>
+                </Grid>
+                <ListBox Grid.Row="3" Margin="130,0,0,0" ItemTemplate="{DynamicResource EditorCartDataTemplate}" ItemsSource="{Binding EditorCart.Slides}" SelectionChanged="EditorListBox_SelectionChanged">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" CanVerticallyScroll="False"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+                <TextBlock HorizontalAlignment="Left" Margin="10,25,0,0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="Templates" VerticalAlignment="Top" Grid.Row="3"/>
             </Grid>
         </Grid>
-        <Button x:Name="rendreButtonTest" Content="RERENDER" HorizontalAlignment="Left" Margin="441,10,0,0" VerticalAlignment="Top" Width="102" Click="rendreButtonTest_Click"/>
         <ToggleButton x:Name="autoButton" Content="AUTO" HorizontalAlignment="Left" Margin="548,10,0,0" VerticalAlignment="Top" Width="102" IsChecked="{Binding InAutomationMode}"/>
         <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="23" Margin="655,9,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding AutomationInterval}" VerticalAlignment="Top" Width="36"/>
+        <ProgressBar HorizontalAlignment="Left" Height="29" Margin="696,10,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding AutomationProgress}"/>
 
     </Grid>
 </Window>

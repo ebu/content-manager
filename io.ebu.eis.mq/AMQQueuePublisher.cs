@@ -16,6 +16,8 @@ namespace io.ebu.eis.mq
         private string _amqpUri;
         private string _amqpExchange;
 
+        private ConnectionFactory _factory;
+        private IConnection _conn;
         private AMQClient _amq;
 
         public AMQQueuePublisher(string uri, string exchange)
@@ -26,15 +28,21 @@ namespace io.ebu.eis.mq
 
         public void Connect(string filter = "#")
         {
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.Uri = _amqpUri;
+            _factory = new ConnectionFactory();
+            _factory.Uri = _amqpUri;
 
-            var conn = factory.CreateConnection();
+            _conn = _factory.CreateConnection();
             _amq = new AMQClient();
-            _amq.channel = conn.CreateModel();
+            _amq.channel = _conn.CreateModel();
             _amq.channel.QueueDeclare(_amqpExchange, true, false, false, null);
 
             Console.WriteLine("AMQPublisher started and connected to queue " + _amqpUri + ":" + _amqpExchange);
+        }
+
+        public void Disconnect()
+        {
+            _amq.channel.Close();
+            _conn.Close();
         }
 
         public void Dispatch(DispatchNotificationMessage message)
