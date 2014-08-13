@@ -204,6 +204,13 @@ namespace io.ebu.eis.datastructures
             set { this["TemplatePath"] = value; }
         }
 
+        [ConfigurationProperty("DefaultLink", DefaultValue = "", IsRequired = true)]
+        public String DefaultLink
+        {
+            get { return (String)this["DefaultLink"]; }
+            set { this["DefaultLink"] = value; }
+        }
+
         [ConfigurationProperty("CartConfigurations")]
         public CartCollection CartConfigurations
         {

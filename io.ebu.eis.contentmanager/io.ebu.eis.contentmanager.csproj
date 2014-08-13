@@ -62,6 +62,7 @@
     <Compile Include="ManagerContext.cs" />
     <Compile Include="ManagerImageReference.cs" />
     <Compile Include="ManagerTemplateField.cs" />
+    <Compile Include="Utils\HeightAspectRatioConverter.cs" />
     <Compile Include="Utils\AspectRatioConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

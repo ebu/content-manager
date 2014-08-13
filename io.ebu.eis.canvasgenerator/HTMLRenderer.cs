@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace io.ebu.eis.canvasgenerator
-{
+{ 
     public class HTMLRenderer
     {
         private string _pathToExe = "phantomjs.exe";

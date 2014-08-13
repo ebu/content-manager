@@ -1,6 +1,7 @@
 ﻿using io.ebu.eis.datastructures;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 using SMPAG.MM.MMConnector;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,8 @@ namespace io.ebu.eis.mq
         private IConnection _conn;
         private QueueingBasicConsumer _consumer;
 
+        private bool _connected;
+
         public AMQConsumer(string uri, string exchange, IAMQDataMessageHandler handler)
         {
             _amqpUri = uri;
@@ -34,41 +37,46 @@ namespace io.ebu.eis.mq
 
         public void Connect(string filter = "#")
         {
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.Uri = _amqpUri;
+            try
+            {
+                ConnectionFactory factory = new ConnectionFactory();
+                factory.Uri = _amqpUri;
 
-            _conn = factory.CreateConnection();
-            _amq = new AMQClient();
-            _amq.channel = _conn.CreateModel();
+                _conn = factory.CreateConnection();
+                _amq = new AMQClient();
+                _amq.channel = _conn.CreateModel();
 
-            _amq.channel.ExchangeDeclare(_amqpExchange, "topic");
-            var queueName = _amq.channel.QueueDeclare();
+                _amq.channel.ExchangeDeclare(_amqpExchange, "topic");
+                var queueName = _amq.channel.QueueDeclare();
 
-            // TODO Handle filtering of message
-            //if (args.Length < 1)
-            //{
-            //    Console.Error.WriteLine("Usage: {0} [binding_key...]",
-            //                            Environment.GetCommandLineArgs()[0]);
-            //    Environment.ExitCode = 1;
-            //    return;
-            //}
-                        
-            //foreach (var bindingKey in args)
-            //{
-            _amq.channel.QueueBind(queueName, _amqpExchange, filter);
-            //}
+                // TODO Handle filtering of message
+                //if (args.Length < 1)
+                //{
+                //    Console.Error.WriteLine("Usage: {0} [binding_key...]",
+                //                            Environment.GetCommandLineArgs()[0]);
+                //    Environment.ExitCode = 1;
+                //    return;
+                //}
 
-            //Console.WriteLine(" [*] Waiting for messages. " + "To exit press CTRL+C");
+                //foreach (var bindingKey in args)
+                //{
+                _amq.channel.QueueBind(queueName, _amqpExchange, filter);
+                //}
 
-            _consumer = new QueueingBasicConsumer(_amq.channel);
-            _amq.channel.BasicConsume(queueName, true, _consumer);
+                //Console.WriteLine(" [*] Waiting for messages. " + "To exit press CTRL+C");
 
-            // Start Processing in other Thread
-            _running = true;
-            _t = new Thread(Process);
-            _t.Start();
+                _consumer = new QueueingBasicConsumer(_amq.channel);
+                _amq.channel.BasicConsume(queueName, true, _consumer);
 
-            Console.WriteLine("AMQConsumer started and connected to " + _amqpUri + ":" + _amqpExchange);
+                // Start Processing in other Thread
+                _running = true;
+                _t = new Thread(Process);
+                _t.Start();
+
+                Console.WriteLine("AMQConsumer started and connected to " + _amqpUri + ":" + _amqpExchange);
+                _connected = true;
+            }
+            catch (BrokerUnreachableException bu) { }
         }
 
         public void Disconnect()

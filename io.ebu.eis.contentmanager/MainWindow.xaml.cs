@@ -126,7 +126,6 @@ namespace io.ebu.eis.contentmanager
             {
                 __lastSelectedManagerImageRef = e.AddedItems[0] as ManagerImageReference;
             }
-
         }
 
         private void PreviewListBox_MouseDown(object sender, MouseButtonEventArgs e)
@@ -198,6 +197,28 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+        private ManagerImageReference __lastSelectedEditorImageRef;
+        private void EditorListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Remove the last selected Slide from the active Cart
+            if (e.Key == Key.Delete)
+            {
+                Dispatcher.BeginInvoke(DispatcherPriority.Render,
+                (SendOrPostCallback)delegate
+                {
+                    _context = (ManagerContext)DataContext;
+                    if (__lastSelectedEditorImageRef != null)
+                    {
+                        if (_context.EditorCart.Slides.Contains(__lastSelectedEditorImageRef) && _context.EditorCart.Slides.Count > 1)
+                        {
+                            _context.EditorCart.Slides.Remove(__lastSelectedEditorImageRef);
+                            _context.ReloadPreview();
+                        }
+                    }
+
+                }, null);
+            }
+        }
 
         private void EditorListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -208,8 +229,8 @@ namespace io.ebu.eis.contentmanager
                 _context = (ManagerContext)DataContext;
                 if (e.AddedItems.Count > 0 && e.AddedItems[0] is ManagerImageReference)
                 {
-                    var newImage = e.AddedItems[0] as ManagerImageReference;
-                    _context.EditorImage = newImage.Clone();
+                    __lastSelectedEditorImageRef = e.AddedItems[0] as ManagerImageReference;
+                    _context.EditorImage = __lastSelectedEditorImageRef.Clone();
                 }
 
             }, null);
@@ -417,6 +438,30 @@ namespace io.ebu.eis.contentmanager
 
         }
 
+
+        private void TemplateListBox_Drop(object sender, DragEventArgs e)
+        {
+            Dispatcher.BeginInvoke(DispatcherPriority.Render,
+          (SendOrPostCallback)delegate
+          {
+              _context = (ManagerContext)DataContext;
+              var data = e.Data;
+              if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
+              {
+                  string[] droppedFilePaths = e.Data.GetData(DataFormats.FileDrop, true) as string[];
+                  foreach (var path in droppedFilePaths)
+                  {
+                      if (path.EndsWith(".html"))
+                      {
+                          // Add the template as slide to the Templates list
+                          _context.AddEditorTemplate(path);
+                      }
+                  }
+              }
+
+          }, null);
+        }
+
         private void cancelPreviewCartButton_Click(object sender, RoutedEventArgs e)
         {
             _context = (ManagerContext)DataContext;
@@ -481,6 +526,19 @@ namespace io.ebu.eis.contentmanager
             _context.PreviewCart = c;
 
         }
+
+        private void ClearImageFlowFilter_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext) DataContext;
+            _context.ImageFlowFilterString = "";
+        }
+
+        private void ClearDataFlowFilter_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext)DataContext;
+            _context.DataFlowFilterString = "";
+        }
+
 
 
 

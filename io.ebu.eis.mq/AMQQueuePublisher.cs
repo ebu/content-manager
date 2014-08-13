@@ -1,6 +1,7 @@
 ﻿using io.ebu.eis.datastructures;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 using SMPAG.MM.MMConnector;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace io.ebu.eis.mq
         private IConnection _conn;
         private AMQClient _amq;
 
+        private bool _connected;
+
         public AMQQueuePublisher(string uri, string exchange)
         {
             _amqpUri = uri;
@@ -28,21 +31,28 @@ namespace io.ebu.eis.mq
 
         public void Connect(string filter = "#")
         {
-            _factory = new ConnectionFactory();
-            _factory.Uri = _amqpUri;
+            try
+            {
+                _factory = new ConnectionFactory();
+                _factory.Uri = _amqpUri;
 
-            _conn = _factory.CreateConnection();
-            _amq = new AMQClient();
-            _amq.channel = _conn.CreateModel();
-            _amq.channel.QueueDeclare(_amqpExchange, true, false, false, null);
+                _conn = _factory.CreateConnection();
+                _amq = new AMQClient();
+                _amq.channel = _conn.CreateModel();
+                _amq.channel.QueueDeclare(_amqpExchange, true, false, false, null);
 
-            Console.WriteLine("AMQPublisher started and connected to queue " + _amqpUri + ":" + _amqpExchange);
+                Console.WriteLine("AMQPublisher started and connected to queue " + _amqpUri + ":" + _amqpExchange);
+                _connected = true;
+            }
+            catch (BrokerUnreachableException bu) { }
         }
 
         public void Disconnect()
         {
-            _amq.channel.Close();
-            _conn.Close();
+            if (_amq != null)
+                _amq.channel.Close();
+            if (_conn != null)
+                _conn.Close();
         }
 
         public void Dispatch(DispatchNotificationMessage message)

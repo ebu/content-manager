@@ -262,6 +262,18 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+        public void AddEditorTemplate(string path)
+        {
+            var newTemplate = new ManagerImageReference(Renderer, _config)
+            {
+                Template = path,
+                Link = _config.SlidesConfiguration.DefaultLink,
+                CanRepeate = false
+            };
+
+            EditorCart.Slides.Add(newTemplate);
+        }
+
         private void ResetAllCartsInactive()
         {
             foreach (var c in Carts)
@@ -580,14 +592,35 @@ namespace io.ebu.eis.contentmanager
                         // TODO This needs to be generic !
                         var context = m.DataMessage.Clone();
 
-                        var ath = context.Data.FirstOrDefault(x => x.Key == "ATHLETES");
-                        var teams = false;
-                        if (ath.Data.Count == 0)
+                        var ath = context.Data.FirstOrDefault(x => x.Key == "STARTPOSITIONS");
+
+                        // Sort the list first try by int then by alpha num
+                        bool ordered = false;
+                        try
                         {
-                            // TRY With teams
-                            teams = true;
-                            ath = context.Data.FirstOrDefault(x => x.Key == "TEAMS");
+                            ath.Data =
+                                ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                    .ThenBy(x => Convert.ToInt32("0" + x.Key))
+                                    .ToList();
+                            ordered = true;
                         }
+                        catch (Exception) { }
+                        if (!ordered)
+                        {
+                            // Try alpha order
+                            try
+                            {
+                                ath.Data =
+                                    ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                        .ThenBy(x => x.Key)
+                                        .ToList();
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+
+
                         newCart.Slides.First().Context = context;
                         var offset = 4;
                         while (ath.Data.Count > 4)
@@ -598,10 +631,7 @@ namespace io.ebu.eis.contentmanager
                             var newSlide = newCart.Slides.First().Clone();
                             newSlide.IndexOffset = offset;
                             var contextClone = context.Clone();
-                            if (!teams)
-                                contextClone.Data.First(x => x.Key == "ATHLETES").Data = clone.Data;
-                            else
-                                contextClone.Data.First(x => x.Key == "TEAMS").Data = clone.Data;
+                            contextClone.Data.First(x => x.Key == "STARTPOSITIONS").Data = clone.Data;
                             newSlide.Context = contextClone;
                             newCart.Slides.Add(newSlide);
                             ath = clone;
