@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="CMConfiguration.cs" />
     <Compile Include="DataFlowItem.cs" />
+    <Compile Include="ImageVariant.cs" />
     <Compile Include="DispatchNotificationMessage.cs" />
     <Compile Include="DataMessage.cs" />
     <Compile Include="EventFlow.cs" />

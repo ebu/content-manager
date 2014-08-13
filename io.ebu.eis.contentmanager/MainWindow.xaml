@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
         xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures" 
         x:Class="io.ebu.eis.contentmanager.MainWindow"
-        Title="EBU.io Content Manager" Height="600" Width="1024" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing">
+        Title="EBU.io Content Manager" Height="700" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -21,6 +21,7 @@
                 <ResourceDictionary Source="Themes/Metro/Dark/MetroDark.MSControls.Toolkit.Implicit.xaml" />
 
             </ResourceDictionary.MergedDictionaries>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Light Theme -->
             <!--<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />-->
@@ -54,10 +55,10 @@
                         <Setter TargetName="statusIndicator" Property="Fill" Value="Orange" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Priority}" Value="Low">
-                        <Setter TargetName="statusIndicator" Property="Fill" Value="Blue" />
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF00AADE" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Priority}" Value="Neglectable">
-                        <Setter TargetName="statusIndicator" Property="Fill" Value="DarkBlue" />
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF181818" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Priority}" Value="Unknown">
                         <Setter TargetName="statusIndicator" Property="Fill" Value="White" />
@@ -74,7 +75,7 @@
                                 <TextBlock HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Text="{Binding Category, FallbackValue=Category, TargetNullValue=Category}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" />
                             </StackPanel>
                             <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" />
-                            <Image x:Name="img" MinHeight="50" Source="{Binding ImageSource}" MaxHeight="100"/>
+                            <Image x:Name="img" MinHeight="50" Source="{Binding ImageSource}" MaxHeight="100" HorizontalAlignment="Left"/>
                         </StackPanel>
                     </StackPanel>
                 </Grid>
@@ -86,10 +87,10 @@
                         <Setter TargetName="statusIndicator" Property="Fill" Value="Orange" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Priority}" Value="Low">
-                        <Setter TargetName="statusIndicator" Property="Fill" Value="Blue" />
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF00AADE" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Priority}" Value="Neglectable">
-                        <Setter TargetName="statusIndicator" Property="Fill" Value="DarkBlue" />
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF181818" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding Priority}" Value="Unknown">
                         <Setter TargetName="statusIndicator" Property="Fill" Value="White" />
@@ -102,7 +103,7 @@
                 </Grid>
             </DataTemplate>
             <DataTemplate x:Key="RunningCartDataTemplate"  DataType="local:ManagerImageReference">
-                <Grid MouseDown="PreviewListBox_MouseDown">
+                <Grid>
                     <Border x:Name="ImageBorder" Height="100" BorderThickness="4" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter2}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                         <Image x:Name="mainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
                     </Border>
@@ -141,6 +142,21 @@
                     <TextBox Grid.Column="1" HorizontalAlignment="Stretch" Height="Auto" Margin="0" TextWrapping="Wrap" Text="{Binding Value}" Width="Auto" VerticalAlignment="Center"/>
                 </Grid>
             </DataTemplate>
+            <DataTemplate x:Key="CartLIstDataTemplate1">
+                <Grid>
+                    <Border x:Name="CartNameBorder" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Stretch">
+                        <TextBlock  HorizontalAlignment="Stretch" Margin="5" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Name, TargetNullValue=Name}" VerticalAlignment="Stretch" Style="{StaticResource TextBlockStyle}"/>
+                    </Border>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}" Value="true">
+                        <Setter TargetName="CartNameBorder" Property="BorderBrush" Value="#FFFF0000" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive}" Value="false">
+                        <Setter TargetName="CartNameBorder" Property="BorderBrush" Value="#FF181818" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
 
         </ResourceDictionary>
     </Window.Resources>
@@ -170,7 +186,7 @@
                 </Grid>
                 <Grid Grid.Column="1">
                     <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="DataFlow" VerticalAlignment="Top"/>
-                    <ListBox x:Name="DataFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,64,0,0" Background="{StaticResource BackgroundKey}" ItemsSource="{Binding DataFlowItems}" ItemTemplate="{DynamicResource DataFlowTemplate1}" SelectionChanged="DataFlowList_SelectionChanged"/>
+                    <ListBox x:Name="DataFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" Margin="0,64,0,0" Background="{StaticResource BackgroundKey}" ItemsSource="{Binding DataFlowItems}" ItemTemplate="{DynamicResource DataFlowTemplate1}" SelectionChanged="DataFlowList_SelectionChanged" KeyDown="DataFlowList_KeyDown"/>
                     <TextBox Height="24" Margin="0,29,0,0" TextWrapping="Wrap" Text="{Binding DataFlowFilterString, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top"/>
                 </Grid>
 
@@ -190,7 +206,7 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>-->
-                    <ListBox Margin="130,0,0,0"  KeyDown="PreviewListBox_KeyDown" ItemTemplate="{DynamicResource RunningCartDataTemplate}" ItemsSource="{Binding ActiveCart.Slides}" SelectionChanged="PreviewListBox_SelectionChanged">
+                    <ListBox Margin="150,0,0,0"  KeyDown="PreviewListBox_KeyDown" ItemTemplate="{DynamicResource RunningCartDataTemplate}" ItemsSource="{Binding PreviewCart.Slides}" SelectionChanged="PreviewListBox_SelectionChanged" PreviewMouseDown="PreviewListBox_MouseDown">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <StackPanel Orientation="Horizontal" CanVerticallyScroll="False"/>
@@ -198,6 +214,11 @@
                         </ListBox.ItemsPanel>
                     </ListBox>
                     <TextBlock HorizontalAlignment="Left" Margin="10,42,0,0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="Running Cart" VerticalAlignment="Top"/>
+                    <Button x:Name="cancelPreviewCartButton" Content="CLOSE" HorizontalAlignment="Left" Margin="5,0,0,5" VerticalAlignment="Bottom" Width="140" Click="cancelPreviewCartButton_Click" Height="30" Visibility="{Binding IsPreviewCartOffAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
+                    <Button x:Name="onAirPreviewCartButton" Content="PUT ON AIR" HorizontalAlignment="Left" Margin="5,0,0,75" VerticalAlignment="Bottom" Width="140" Click="onAirPreviewCartButton_Click" Height="30" Foreground="Red" Visibility="{Binding IsPreviewCartOffAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
+                    <Button x:Name="newCartButton" Content="+" HorizontalAlignment="Left" Margin="5,0,0,5" VerticalAlignment="Bottom" Width="57" Click="newCartButton_Click" Height="30" Visibility="{Binding IsPreviewCartOnAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
+                    <Button x:Name="clearAllCartsButton" Content="Clear All" HorizontalAlignment="Left" Margin="67,0,0,5" VerticalAlignment="Bottom" Width="78" Click="clearAllCartsButton_Click" Height="30" Visibility="{Binding IsPreviewCartOnAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
+                    <Button x:Name="addPreviewCartButton" Content="ADD TO ACTIVE" HorizontalAlignment="Left" Margin="5,0,0,40" VerticalAlignment="Bottom" Width="140" Click="addPreviewCartButton_Click" Height="30" Foreground="#FF00FF0C" Visibility="{Binding IsPreviewCartOffAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}"/>
                 </Grid>
                 <StackPanel x:Name="MainPreviewStackPanel" Margin="10" Orientation="Horizontal">
                     <StackPanel.Resources>
@@ -205,22 +226,22 @@
                             <Setter Property="Margin" Value="0,0,10,0"/>
                         </Style>
                     </StackPanel.Resources>
-                    <Border x:Name="MainImageBorder" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                    <Border x:Name="MainImageBorder" BorderThickness="3" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                         <Image x:Name="mainImg" Margin="0" Source="{Binding MainImageSource, Mode=OneWay}" MouseDown="mainImg_MouseDown"/>
                     </Border>
-                    <Border x:Name="PreviewImageBorder" BorderThickness="2" BorderBrush="#FF00FF00" Margin="0,0,339,0" HorizontalAlignment="Right" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                    <Border x:Name="PreviewImageBorder" BorderThickness="3" BorderBrush="#FF00FF00" Margin="0,0,339,0" HorizontalAlignment="Right" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                         <Image Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay}"/>
                     </Border>
                 </StackPanel>
                 <Grid Margin="0,5" Grid.Row="2" Background="Black">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="130"/>
-                        <ColumnDefinition Width="316*"/>
-                        <ColumnDefinition Width="175*"/>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="193*"/>
+                        <ColumnDefinition Width="120*"/>
                         <ColumnDefinition Width="57"/>
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="2" Margin="10">
-                        <Border x:Name="EditorImageBorder" BorderThickness="1" BorderBrush="#FFFF8800"  HorizontalAlignment="Center" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}" Height="150" VerticalAlignment="Center">
+                        <Border x:Name="EditorImageBorder" BorderThickness="2" BorderBrush="#FF00AADE"  HorizontalAlignment="Center" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}" Height="150" VerticalAlignment="Center">
                             <Image Margin="0" Source="{Binding EditorImageSource, Mode=OneWay}"/>
                         </Border>
                     </Grid>
@@ -233,9 +254,11 @@
                         <Button x:Name="editorAddButtonAndMain" Content="+" Margin="10,13,10,10" FontWeight="Bold" FontSize="16" Grid.Row="1" Foreground="Red" Click="editorAddButtonAndMain_Click" />
                     </Grid>
                     <ListBox Grid.Column="1" Margin="0,0,5,35" ItemsSource="{Binding EditorImage.TemplateFields}" ItemTemplate="{DynamicResource EditorFieldDataTemplate1}"/>
-                    <Button x:Name="rendreButtonTest" Content="RERENDER" HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Bottom" Width="102" Click="rendreButtonTest_Click" Grid.Column="1"/>
+                    <Button x:Name="rendreButtonTest" Content="RERENDER" HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Bottom" Width="102" Click="rendreButtonTest_Click" Grid.Column="1" Height="30"/>
+                    <ListBox Margin="0,0,5,35" HorizontalContentAlignment="Stretch" ItemsSource="{Binding Carts}" ItemTemplate="{DynamicResource CartLIstDataTemplate1}" SelectionChanged="CartListBox_SelectionChanged" PreviewMouseDown="CartListBox_MouseDown" KeyDown="ListBox_KeyDown"/>
+
                 </Grid>
-                <ListBox Grid.Row="3" Margin="130,0,0,0" ItemTemplate="{DynamicResource EditorCartDataTemplate}" ItemsSource="{Binding EditorCart.Slides}" SelectionChanged="EditorListBox_SelectionChanged">
+                <ListBox Grid.Row="3" Margin="150,0,0,0" ItemTemplate="{DynamicResource EditorCartDataTemplate}" ItemsSource="{Binding EditorCart.Slides}" SelectionChanged="EditorListBox_SelectionChanged">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" CanVerticallyScroll="False"/>
@@ -245,9 +268,12 @@
                 <TextBlock HorizontalAlignment="Left" Margin="10,25,0,0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="Templates" VerticalAlignment="Top" Grid.Row="3"/>
             </Grid>
         </Grid>
-        <ToggleButton x:Name="autoButton" Content="AUTO" HorizontalAlignment="Left" Margin="548,10,0,0" VerticalAlignment="Top" Width="102" IsChecked="{Binding InAutomationMode}"/>
-        <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="23" Margin="655,9,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding AutomationInterval}" VerticalAlignment="Top" Width="36"/>
-        <ProgressBar HorizontalAlignment="Left" Height="29" Margin="696,10,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding AutomationProgress}"/>
+        <ToggleButton x:Name="autoButton" Content="AUTO Slideshow" HorizontalAlignment="Left" Margin="510,10,0,0" VerticalAlignment="Top" Width="140" IsChecked="{Binding InAutomationMode}"/>
+        <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="23" Margin="655,10,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding AutomationInterval}" VerticalAlignment="Top" Width="36"/>
+        <ProgressBar HorizontalAlignment="Left" Height="30" Margin="696,10,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding AutomationProgress}"/>
+        <ToggleButton x:Name="autoButton_Copy" Content="ALLOW Override" HorizontalAlignment="Left" Margin="838,10,0,0" VerticalAlignment="Top" Width="140" IsChecked="{Binding AllowOverride}"/>
+        <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="23" Margin="983,10,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding OverrideRotationCount}" VerticalAlignment="Top" Width="36"/>
+        <ProgressBar HorizontalAlignment="Left" Height="30" Margin="1024,10,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding OverrideProgress}"/>
 
     </Grid>
 </Window>

@@ -16,6 +16,10 @@ namespace io.ebu.eis.datastructures
     [DataContract]
     public class DispatchNotificationMessage
     {
+        public DispatchNotificationMessage()
+        {
+            ImageVariants = new List<ImageVariant>();
+        }
 
         [DataMember(Name = "receiveTime")]
         public long receiveTime
@@ -49,6 +53,9 @@ namespace io.ebu.eis.datastructures
 
         [DataMember(Name = "imageurl")]
         public string Imageurl { get; set; }
+
+        [DataMember(Name = "imagevariants")]
+        public List<ImageVariant> ImageVariants { get; set; }
 
 
         #region Serialization

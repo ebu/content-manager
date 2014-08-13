@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using io.ebu.eis.datastructures;
@@ -9,6 +10,7 @@ using io.ebu.eis.datastructures.Plain.Collections;
 
 namespace io.ebu.eis.contentmanager
 {
+    [DataContract]
     public class ManagerCart : INotifyPropertyChanged
     {
 
@@ -19,10 +21,24 @@ namespace io.ebu.eis.contentmanager
         }
 
         private string _name;
+        [DataMember(Name = "name")]
         public string Name { get { return _name; } set { _name = value; OnPropertyChanged("Name"); } }
+
+        private bool _isActive;
+        [DataMember(Name = "isactive")]
+        public bool IsActive { get { return _isActive; } set { _isActive = value; OnPropertyChanged("IsActive"); } }
+
+        private bool _showInCartList = true;
+        [DataMember(Name = "showincartlist")]
+        public bool ShowInCartList { get { return _showInCartList; } set { _showInCartList = value; OnPropertyChanged("ShowInCartList"); } }
+
+        private bool _canBeDeleted = true;
+        [DataMember(Name = "canbedeleted")]
+        public bool CanBeDeleted { get { return _canBeDeleted; } set { _canBeDeleted = value; OnPropertyChanged("CanBeDeleted"); } }
 
 
         private DispatchedObservableCollection<ManagerImageReference> _slides;
+        [DataMember(Name = "slides")]
         public DispatchedObservableCollection<ManagerImageReference> Slides { get { return _slides; } set { _slides = value; OnPropertyChanged("Slides"); } }
 
         public ManagerImageReference GetNextSlide()

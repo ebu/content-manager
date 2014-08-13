@@ -38,6 +38,13 @@ namespace io.ebu.eis.datastructures
             set { this["S3Configuration"] = value; }
         }
 
+        [ConfigurationProperty("OutputConfigurations")]
+        public OutputConfigurationCollection OutputConfigurations
+        {
+            get { return ((OutputConfigurationCollection)(base["OutputConfigurations"])); }
+        }
+
+
         [ConfigurationProperty("SlidesConfiguration")]
         public SlidesConfiguration SlidesConfiguration
         {
@@ -89,10 +96,29 @@ namespace io.ebu.eis.datastructures
             set { this["IncomingPictureFolder"] = value; }
         }
 
+        [ConfigurationProperty("StateConfigurationFile", DefaultValue = "state.txt", IsRequired = false)]
+        public String StateConfigurationFile
+        {
+            get { return (String)this["StateConfigurationFile"]; }
+            set { this["StateConfigurationFile"] = value; }
+        }
+
         [ConfigurationProperty("DataItemDisplayConfigurations")]
         public DataItemDisplayCollection DataItemDisplayConfigurations
         {
             get { return ((DataItemDisplayCollection)(base["DataItemDisplayConfigurations"])); }
+        }
+
+        [ConfigurationProperty("DataPriorityConfigurations")]
+        public DataPriorityCollection DataPriorityConfigurations
+        {
+            get { return ((DataPriorityCollection)(base["DataPriorityConfigurations"])); }
+        }
+
+        [ConfigurationProperty("OnAirCartOverrideConfiguration")]
+        public OnAirCartOverrideCollection OnAirCartOverrideConfiguration
+        {
+            get { return ((OnAirCartOverrideCollection)(base["OnAirCartOverrideConfiguration"])); }
         }
 
         public DataItemDisplayConfiguration GetPathByDataType(string dataType)
@@ -186,6 +212,176 @@ namespace io.ebu.eis.datastructures
 
     }
 
+    [ConfigurationCollection(typeof(OutputConfiguration), AddItemName = "OutputConfiguration")]
+    public class OutputConfigurationCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new OutputConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((OutputConfiguration)(element)).Name + element.ToString();
+        }
+
+        public OutputConfiguration this[int idx]
+        {
+            get { return (OutputConfiguration)BaseGet(idx); }
+        }
+    }
+
+    public class OutputConfiguration : ConfigurationElement
+    {
+        public override string ToString()
+        {
+            // Vary by type
+            return Name + " : " + Width + ":" + Height + ":" + Encoder + ":" + Quality;
+        }
+
+        [ConfigurationProperty("IsDefault", DefaultValue = false, IsRequired = false)]
+        public bool IsDefault
+        {
+            get { return (bool)this["IsDefault"]; }
+            set { this["IsDefault"] = value; }
+        }
+
+        [ConfigurationProperty("Name", DefaultValue = "DEFAULT", IsRequired = false)]
+        public string Name
+        {
+            get { return (string)this["Name"]; }
+            set { this["Name"] = value; }
+        }
+
+        [ConfigurationProperty("Width", DefaultValue = 320, IsRequired = false)]
+        public int Width
+        {
+            get { return (int)this["Width"]; }
+            set { this["Width"] = value; }
+        }
+
+        [ConfigurationProperty("Height", DefaultValue = 240, IsRequired = false)]
+        public int Height
+        {
+            get { return (int)this["Height"]; }
+            set { this["Height"] = value; }
+        }
+
+        [ConfigurationProperty("Encoder", DefaultValue = "PNG", IsRequired = false)]
+        public string Encoder
+        {
+            get { return (string)this["Encoder"]; }
+            set { this["Encoder"] = value; }
+        }
+
+        [ConfigurationProperty("Quality", DefaultValue = 100, IsRequired = false)]
+        public int Quality
+        {
+            get { return (int)this["Quality"]; }
+            set { this["Quality"] = value; }
+        }
+
+    }
+
+    [ConfigurationCollection(typeof(OnAirCartOverrideCondition), AddItemName = "OnAirCartOverrideCondition")]
+    public class OnAirCartOverrideCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new OnAirCartOverrideCondition();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((OnAirCartOverrideCondition)(element)).DataPath + element.ToString();
+        }
+
+        public OnAirCartOverrideCondition this[int idx]
+        {
+            get { return (OnAirCartOverrideCondition)BaseGet(idx); }
+        }
+    }
+
+
+    public class OnAirCartOverrideCondition : ConfigurationElement
+    {
+        public override string ToString()
+        {
+            // Vary by type
+            return DataPath + " : " + ExpectedValue + ":" + Operator;
+        }
+
+        [ConfigurationProperty("DataPath", DefaultValue = "", IsRequired = false)]
+        public string DataPath
+        {
+            get { return (string)this["DataPath"]; }
+            set { this["DataPath"] = value; }
+        }
+
+        [ConfigurationProperty("ExpectedValue", DefaultValue = "", IsRequired = false)]
+        public string ExpectedValue
+        {
+            get { return (string)this["ExpectedValue"]; }
+            set { this["ExpectedValue"] = value; }
+        }
+
+        [ConfigurationProperty("Operator", DefaultValue = "EQUALS", IsRequired = false)]
+        public string Operator
+        {
+            get { return (string)this["Operator"]; }
+            set { this["Operator"] = value; }
+        }
+    }
+
+    [ConfigurationCollection(typeof(DataPriorityConfiguration), AddItemName = "DataPriorityConfiguration")]
+    public class DataPriorityCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new DataPriorityConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((DataPriorityConfiguration)(element)).DataPath + element.ToString();
+        }
+
+        public DataPriorityConfiguration this[int idx]
+        {
+            get { return (DataPriorityConfiguration)BaseGet(idx); }
+        }
+    }
+
+    public class DataPriorityConfiguration : ConfigurationElement
+    {
+        public override string ToString()
+        {
+            // Vary by type
+            return DataPath + " : " + ExpectedValue + ":" + Priority;
+        }
+
+        [ConfigurationProperty("DataPath", DefaultValue = "", IsRequired = false)]
+        public string DataPath
+        {
+            get { return (string)this["DataPath"]; }
+            set { this["DataPath"] = value; }
+        }
+
+        [ConfigurationProperty("ExpectedValue", DefaultValue = "", IsRequired = false)]
+        public string ExpectedValue
+        {
+            get { return (string)this["ExpectedValue"]; }
+            set { this["ExpectedValue"] = value; }
+        }
+
+        [ConfigurationProperty("Priority", DefaultValue = "Neglectable", IsRequired = false)]
+        public string Priority
+        {
+            get { return (string)this["Priority"]; }
+            set { this["Priority"] = value; }
+        }
+    }
+
 
     [ConfigurationCollection(typeof(DataItemDisplayConfiguration), AddItemName = "DataItemDisplayConfiguration")]
     public class DataItemDisplayCollection : ConfigurationElementCollection
@@ -197,7 +393,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DataItemDisplayConfiguration)(element)).DataType;
+            return ((DataItemDisplayConfiguration)(element)).DataType + element.ToString();
         }
 
         public DataItemDisplayConfiguration this[int idx]
@@ -211,7 +407,7 @@ namespace io.ebu.eis.datastructures
         public override string ToString()
         {
             // Vary by type
-            return DataType + " : ";
+            return DataType + " : " + NamePath + ":" + CategoryPath;
         }
 
         [ConfigurationProperty("DataType", DefaultValue = "", IsRequired = false)]
@@ -314,6 +510,13 @@ namespace io.ebu.eis.datastructures
         {
             get { return (bool)this["EditorDefault"]; }
             set { this["EditorDefault"] = value; }
+        }
+
+        [ConfigurationProperty("ShowInCartList", DefaultValue = false, IsRequired = false)]
+        public bool ShowInCartList
+        {
+            get { return (bool)this["ShowInCartList"]; }
+            set { this["ShowInCartList"] = value; }
         }
 
         [ConfigurationProperty("Slides")]

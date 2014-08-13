@@ -41,7 +41,7 @@ namespace io.ebu.eis.contentmanager
             InitializeComponent();
 
             _context = (ManagerContext)DataContext;
-            
+
             //Enable the cross acces to this collection elsewhere
             BindingOperations.EnableCollectionSynchronization(_context.Carts, _synLock);
 
@@ -75,14 +75,39 @@ namespace io.ebu.eis.contentmanager
                                 _context.AutomationProgress = 1.0;
                             }
 
-                            // Update internal values
+                            // Update internal values progresses
                             var millisToNextChange = Math.Max(0, lastAutomationChange.AddSeconds(_context.AutomationInterval).Subtract(DateTime.Now).TotalMilliseconds);
                             _context.AutomationProgress = (0.0 + millisToNextChange) / (_context.AutomationInterval * 1000);
 
+                            if (_context.IsInOverrideCart)
+                            {
+                                var millisToOverride = Math.Max(0,
+                                    lastAutomationChange.AddSeconds(_context.AutomationInterval)
+                                        .Subtract(DateTime.Now)
+                                        .TotalMilliseconds);
+                                _context.OverrideProgress = (0.0 + millisToNextChange +
+                                                             1000 * _context.OverrideSlideCountDown * _context.AutomationInterval) /
+                                                            (_context.OverrideRotationCount *
+                                                             _context.ActiveCart.Slides.Count *
+                                                             _context.AutomationInterval * 1000);
+                            }
                         }
                         else
                         {
                             _context.AutomationProgress = 0.0;
+                        }
+
+                        // Override Mode and Back to INITIAL Cart
+                        if (_context.IsInOverrideCart && _context.OverrideSlideCountDown == 0)
+                        {
+                            var initCart = _context.Carts.FirstOrDefault(x => x.Name == "INITIAL");
+                            if (initCart != null)
+                            {
+                                _context.ActiveCart = initCart;
+                                _context.IsInOverrideCart = false;
+                                _context.ReloadPreview();
+                            }
+                            _context.OverrideProgress = 0.0;
                         }
 
                         DataContext = _context;
@@ -162,9 +187,9 @@ namespace io.ebu.eis.contentmanager
                     _context = (ManagerContext)DataContext;
                     if (__lastSelectedManagerImageRef != null)
                     {
-                        if (_context.ActiveCart.Slides.Contains(__lastSelectedManagerImageRef))
+                        if (_context.PreviewCart.Slides.Contains(__lastSelectedManagerImageRef) && _context.PreviewCart.Slides.Count > 1)
                         {
-                            _context.ActiveCart.Slides.Remove(__lastSelectedManagerImageRef);
+                            _context.PreviewCart.Slides.Remove(__lastSelectedManagerImageRef);
                             _context.ReloadPreview();
                         }
                     }
@@ -218,71 +243,26 @@ namespace io.ebu.eis.contentmanager
                     {
                         var m = box.SelectedItem as DataFlowItem;
 
-                        var cartName = "";
-                        switch (m.DataMessage.DataType)
-                        {
-                            case "WEATHER": cartName = "WEATHER"; break;
-                            case "STARTLIST": cartName = "STARTLIST"; break;
-                            case "RESULTLIST": cartName = "RESULTLIST"; break;
-                        }
-
-                        _context = (ManagerContext)DataContext;
-
-                        var existingCart = _context.Carts.FirstOrDefault(x => x.Name.ToUpper() == cartName);
-                        if (existingCart != null)
-                        {
-                            // TODO ASK IF Switch Cart or add to cart
-
-                            var newCart = existingCart.Clone();
-                            newCart.Name = newCart.Name + " - " + m.DataMessage.GetValue("EVENTNAME");
-                            if (newCart.Slides.Count == 1 && newCart.Slides.First().CanRepeate)
-                            {
-                                // We might need to repeate the slide due to data and slit the context
-                                // We assume 4 line per slide
-                                // TODO This needs to be generic !
-                                var context = m.DataMessage.Clone();
-
-                                var ath = context.Data.FirstOrDefault(x => x.Key == "ATHLETES");
-                                newCart.Slides.First().Context = context;
-                                var offset = 4;
-                                while (ath.Data.Count > 4)
-                                {
-                                    var clone = ath.Clone();
-                                    clone.Data.RemoveRange(0, 4);
-                                    ath.Data.RemoveRange(4, ath.Data.Count - 4);
-                                    var newSlide = newCart.Slides.First().Clone();
-                                    newSlide.IndexOffset = offset;
-                                    var contextCLone = context.Clone();
-                                    contextCLone.Data.First(x => x.Key == "ATHLETES").Data = clone.Data;
-                                    newSlide.Context = contextCLone;
-                                    newCart.Slides.Add(newSlide);
-                                    ath = clone;
-                                    offset = offset + 4;
-                                }
-                            }
-                            else
-                            {
-                                foreach (var s in newCart.Slides)
-                                {
-                                    // Set the context on all slides
-                                    s.Context = m.DataMessage;
-                                }
-                            }
-
-                            _context.Carts.Add(newCart);
-                            _context.ActiveCart = newCart;
-                            _context.ReloadPreview();
-                        }
-                        else
-                        {
-                            // TODO if no cart the apply to editor template as context
-                        }
+                        _context.CreateCartForDataFlowItem(m);
                     }
                 }
             }
             catch (Exception ex)
             {
                 // TODO HAndle and not generic Exceltion
+            }
+        }
+
+        private void DataFlowList_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                // Reset the preview cart to the active cart
+                _context = (ManagerContext)DataContext;
+                if (_context.ActiveCart != _context.PreviewCart)
+                {
+                    _context.PreviewCart = _context.ActiveCart;
+                }
             }
         }
 
@@ -310,6 +290,70 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+        #region CartSelection
+
+        private ManagerCart _lastSelectedCart;
+        private void CartListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (sender is ListBox)
+                {
+                    var box = sender as ListBox;
+                    if (box.SelectedItem is ManagerCart)
+                    {
+                        var selectedCart = box.SelectedItem as ManagerCart;
+                        _lastSelectedCart = selectedCart;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO HAndle and not generic Exceltion
+            }
+        }
+
+        private void CartListBox_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ClickCount == 2 && e.LeftButton == MouseButtonState.Pressed)
+            {
+                // Selected other Slide to be pushed !
+                Dispatcher.BeginInvoke(DispatcherPriority.Render,
+                (SendOrPostCallback)delegate
+                {
+                    _context = (ManagerContext)DataContext;
+                    if (_lastSelectedCart != null)
+                    {
+                        _context.PreviewCart = _lastSelectedCart;
+                        _context.ReloadPreview();
+                    }
+
+                }, null);
+
+                e.Handled = true;
+            }
+        }
+
+
+        private void ListBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            // Remove the last selected Cart from the list
+            if (e.Key == Key.Delete)
+            {
+                _context = (ManagerContext)DataContext;
+                if (_lastSelectedCart != null)
+                {
+                    if (_context.Carts.Contains(_lastSelectedCart))
+                    {
+                        _context.Carts.Remove(_lastSelectedCart);
+                    }
+                }
+
+            }
+        }
+
+        #endregion CartSelection
+
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _context = (ManagerContext)DataContext;
@@ -320,14 +364,7 @@ namespace io.ebu.eis.contentmanager
                 Monitor.PulseAll(_synLock);
             }
             _context.Stop();
-            Dispatcher.BeginInvoke(DispatcherPriority.Render,
-           (SendOrPostCallback)delegate
-           {
-               _context = (ManagerContext)DataContext;
-               _running = false;
-               _context.Stop();
-
-           }, null);
+            _context.SerializeToFile();
         }
 
         private void editorAddButton_Click(object sender, RoutedEventArgs e)
@@ -337,7 +374,7 @@ namespace io.ebu.eis.contentmanager
            (SendOrPostCallback)delegate
            {
                _context = (ManagerContext)DataContext;
-               _context.ActiveCart.Slides.Add(_context.EditorImage.Clone());
+               _context.PreviewCart.Slides.Add(_context.EditorImage.Clone());
                _context.ReloadPreview();
 
            }, null);
@@ -351,7 +388,7 @@ namespace io.ebu.eis.contentmanager
            {
                _context = (ManagerContext)DataContext;
                var newImg = _context.EditorImage.Clone();
-               _context.ActiveCart.Slides.Add(newImg);
+               _context.PreviewCart.Slides.Add(newImg);
                _context.ReloadPreview();
                lastAutomationChange = DateTime.Now;
                _context.SwitchToSlide(newImg);
@@ -379,6 +416,76 @@ namespace io.ebu.eis.contentmanager
           }, null);
 
         }
+
+        private void cancelPreviewCartButton_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext)DataContext;
+            _context.PreviewCart = _context.ActiveCart;
+            _context.ReloadPreview();
+        }
+
+        private void onAirPreviewCartButton_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext)DataContext;
+            if (_context.PreviewCart.Slides.Count > 0)
+            {
+                _context.ActiveCart = _context.PreviewCart;
+                _context.ReloadPreview();
+            }
+            else
+            {
+                // TODO Error
+            }
+        }
+
+
+        private void addPreviewCartButton_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext)DataContext;
+            if (_context.PreviewCart.Slides.Count > 0)
+            {
+                foreach (var s in _context.PreviewCart.Slides)
+                {
+                    _context.ActiveCart.Slides.Add(s);
+                }
+                _context.PreviewCart = _context.ActiveCart;
+                _context.ReloadPreview();
+            }
+            else
+            {
+                // TODO Error
+            }
+        }
+
+        private void clearAllCartsButton_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext)DataContext;
+            while (_context.Carts.Count(x => x.CanBeDeleted && x != _context.ActiveCart && x != _context.PreviewCart) > 0)
+            {
+                var todelCart = _context.Carts.FirstOrDefault(x => x.CanBeDeleted && x != _context.ActiveCart && x != _context.PreviewCart);
+                if (todelCart != null)
+                {
+                    _context.Carts.Remove(todelCart);
+                }
+            }
+        }
+
+        private void newCartButton_Click(object sender, RoutedEventArgs e)
+        {
+            _context = (ManagerContext)DataContext;
+            var c = new ManagerCart("TEMP CART");
+            c.CanBeDeleted = true;
+            c.ShowInCartList = true;
+
+            _context.Carts.Add(c);
+            _context.PreviewCart = c;
+
+        }
+
+
+
+
+
 
 
 
