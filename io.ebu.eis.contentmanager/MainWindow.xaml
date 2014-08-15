@@ -68,7 +68,7 @@
             </Style>
             <DataTemplate x:Key="DataFlowTemplate1" DataType="structures:DataFlowItem">
                 <Grid>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel x:Name="dataPanel" Orientation="Horizontal">
                         <Rectangle x:Name="statusIndicator"  Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="Auto" Stroke="{x:Null}" VerticalAlignment="Stretch" Width="8"/>
                         <StackPanel Orientation="Vertical" Margin="5,0,0,0">
                             <StackPanel Orientation="Horizontal">
@@ -80,6 +80,16 @@
                             <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" />
                         </StackPanel>
                     </StackPanel>
+                    <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=dataPanel}"
+                       Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="-20">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
+                            <StackPanel Orientation="Vertical" MinWidth="200" MaxWidth="400">
+                                <TextBlock  HorizontalAlignment="Left" Margin="2,2,2,2" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" />
+                                <TextBlock HorizontalAlignment="Left" Margin="2,2,2,2" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" />
+                                <Image Margin="2,2,2,2" Source="{Binding ImageSource, Mode=OneWay}" MaxWidth="300" />
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                 </Grid>
                 <DataTemplate.Triggers>
                     <DataTrigger Binding="{Binding Priority}" Value="High">
@@ -101,7 +111,7 @@
             </DataTemplate>
             <DataTemplate x:Key="DataImageTemplate1" DataType="structures:DataFlowItem">
                 <Grid>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel x:Name="dataPanel" Orientation="Horizontal">
                         <Rectangle x:Name="statusIndicator"  Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="Auto" Stroke="{x:Null}" VerticalAlignment="Stretch" Width="8"/>
                         <StackPanel Orientation="Vertical" Margin="5,0,0,0">
                             <StackPanel Orientation="Horizontal">
@@ -143,7 +153,7 @@
                     </Border>
                     <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=MainImg}"
                        Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="-20">
-                        <Border BorderThickness="2" BorderBrush="#FF006AAE">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
                             <Grid Height="320" MinWidth="240">
                                 <Image Margin="1,1,1,1" Source="{Binding PreviewImageSource, Mode=OneWay}" />
                             </Grid>
@@ -166,7 +176,7 @@
                     </Border>
                     <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=MainImg}"
                        Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="20">
-                        <Border BorderThickness="2" BorderBrush="#FF006AAE">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
                             <Grid Height="320" MinWidth="240">
                                 <Image Margin="1,1,1,1" Source="{Binding PreviewImageSource, Mode=OneWay}" />
                             </Grid>
@@ -325,7 +335,7 @@
                     <ListBox Margin="0,0,5,10" HorizontalContentAlignment="Stretch" ItemsSource="{Binding Carts}" ItemTemplate="{DynamicResource CartLIstDataTemplate1}" SelectionChanged="CartListBox_SelectionChanged" PreviewMouseDown="CartListBox_MouseDown" KeyDown="ListBox_KeyDown"/>
 
                 </Grid>
-                <ListBox Grid.Row="3" Margin="150,0,0,0" KeyDown="EditorListBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled" ItemTemplate="{DynamicResource EditorCartDataTemplate}" ItemsSource="{Binding EditorCart.Slides}" SelectionChanged="EditorListBox_SelectionChanged" AllowDrop="True" Drop="TemplateListBox_Drop">
+                <ListBox Grid.Row="3" Margin="150,0,0,0" KeyDown="EditorListBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled" ItemTemplate="{DynamicResource EditorCartDataTemplate}" ItemsSource="{Binding EditorCart.Slides}" SelectionChanged="EditorListBox_SelectionChanged" AllowDrop="True" Drop="TemplateListBox_Drop" PreviewMouseUp="TemplateListBox_PreviewMouseDown">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"

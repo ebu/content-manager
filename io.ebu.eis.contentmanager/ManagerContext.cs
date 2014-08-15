@@ -574,6 +574,8 @@ namespace io.ebu.eis.contentmanager
                 case "STARTLIST": cartName = "STARTLIST"; break;
                 case "RESULTLIST": cartName = "RESULTLIST"; break;
                 case "PHOTOFINISH": cartName = "PHOTOFINISH"; break;
+                case "NEWS": cartName = "NEWS"; break;
+                case "INSTAGRAM": cartName = "INSTAGRAM"; break;
             }
             
             var existingCart = Carts.FirstOrDefault(x => x.Name.ToUpper() == cartName);
@@ -734,6 +736,11 @@ namespace io.ebu.eis.contentmanager
                     Priority = DataFlowPriority.Neglectable,
                     Timestamp = DateTime.Now
                 };
+                if (!string.IsNullOrEmpty(_config.DataConfiguration.GetPathByDataType(message.DataType).UrlPath))
+                {
+                    // Set Url if available
+                    d.Url = message.GetValue(_config.DataConfiguration.GetPathByDataType(message.DataType).UrlPath);
+                }
                 SetFlowItemPriority(d);
                 DataFlowItems.Add(d);
 

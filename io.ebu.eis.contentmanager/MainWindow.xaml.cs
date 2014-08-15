@@ -462,6 +462,23 @@ namespace io.ebu.eis.contentmanager
           }, null);
         }
 
+
+        private void TemplateListBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)
+        {
+            // Does not work 'cause SelectionChanged happens after mouse down
+          //  Dispatcher.BeginInvoke(DispatcherPriority.Render,
+          //(SendOrPostCallback)delegate
+          //{
+          //    _context = (ManagerContext)DataContext;
+
+          //    if (_context.EditorImage.Template != __lastSelectedEditorImageRef.Template)
+          //    {
+          //        // Add the template as slide to the Templates list
+          //        _context.EditorImage = __lastSelectedEditorImageRef.Clone();
+          //    }
+          //}, null);
+        }
+
         private void cancelPreviewCartButton_Click(object sender, RoutedEventArgs e)
         {
             _context = (ManagerContext)DataContext;
@@ -529,7 +546,7 @@ namespace io.ebu.eis.contentmanager
 
         private void ClearImageFlowFilter_Click(object sender, RoutedEventArgs e)
         {
-            _context = (ManagerContext) DataContext;
+            _context = (ManagerContext)DataContext;
             _context.ImageFlowFilterString = "";
         }
 
@@ -538,6 +555,7 @@ namespace io.ebu.eis.contentmanager
             _context = (ManagerContext)DataContext;
             _context.DataFlowFilterString = "";
         }
+
 
 
 

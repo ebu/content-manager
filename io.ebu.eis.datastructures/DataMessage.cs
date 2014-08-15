@@ -64,6 +64,12 @@ namespace io.ebu.eis.datastructures
                     var r2 = Data[index];
                     return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
                 }
+                else if (searchFor.StartsWith("(") && searchFor.EndsWith(")"))
+                {
+                    // We need to extract by DataType
+                    var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
+                    return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                }
                 var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
                 if (r == null)
                     return "";
