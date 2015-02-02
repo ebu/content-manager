@@ -51,17 +51,24 @@ namespace io.ebu.eis.mq
         {
             if (_amq != null)
                 _amq.channel.Close();
-            if (_conn != null)
+            if (_conn != null && _conn.IsOpen)
                 _conn.Close();
         }
 
         public void Dispatch(DispatchNotificationMessage message)
         {
             // Create Persistence
-            var properties = _amq.channel.CreateBasicProperties();
-            properties.SetPersistent(true);
+            if (_amq != null)
+            {
+                var properties = _amq.channel.CreateBasicProperties();
+                properties.SetPersistent(true);
 
-            _amq.channel.BasicPublish("", _amqpExchange, properties, Encoding.UTF8.GetBytes(message.Serialize()));
+                _amq.channel.BasicPublish("", _amqpExchange, properties, Encoding.UTF8.GetBytes(message.Serialize()));
+            }
+            else
+            {
+                // TODO LOG 
+            }
         }
 
     }

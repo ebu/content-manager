@@ -32,50 +32,72 @@ namespace io.ebu.eis.datastructures
 
         public String GetValue(String path)
         {
-            var splitPath = path.Split('.');
-
-            // TODO Enhance
-            // Evaluate Special Functions
-            if(splitPath[0] == "ToDateTime")
+            if (path.Contains(";"))
             {
-                DateTime t = new DateTime(Convert.ToInt32(Value) * 1000);
-                return t.ToString();
-            }
-
-            if (Data == null)
-                return "";
-
-            if(splitPath.Length == 1)
-            {
-                // Current Element return KeyValue
-                var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
-                if (r != null)
-                    return r.Value;
+                var valSplit = path.Split(';');
+                var result = "";
+                var first = true;
+                var i = 0;
+                while (i < valSplit.Length)
+                {
+                    if (!first)
+                        result += " - ";
+                    first = false;
+                    result += GetValue(valSplit[i]);
+                    ++i;
+                }
+                return result;
             }
             else
             {
-                var searchFor = splitPath.FirstOrDefault();
-                if(searchFor.StartsWith("[") && searchFor.EndsWith("]"))
+
+                var splitPath = path.Split('.');
+
+                // TODO Enhance
+                // Evaluate Special Functions
+                if (splitPath[0] == "ToDateTime")
                 {
-                    // We need to extract by index
-                    var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
-                    if (index >= Data.Count)
-                        return "";
-                    var r2 = Data[index];
-                    return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                    DateTime t = new DateTime(Convert.ToInt32(Value)*1000);
+                    return t.ToString();
                 }
-                else if (searchFor.StartsWith("(") && searchFor.EndsWith(")"))
-                {
-                    // We need to extract by DataType
-                    var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
-                    return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
-                }
-                var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
-                if (r == null)
+
+                if (Data == null)
                     return "";
-                return r.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length-1).Reverse()));
+
+                if (splitPath.Length == 1)
+                {
+                    // Current Element return KeyValue
+                    var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
+                    if (r != null)
+                        return r.Value;
+                }
+                else
+                {
+                    var searchFor = splitPath.FirstOrDefault();
+                    if (searchFor.StartsWith("[") && searchFor.EndsWith("]"))
+                    {
+                        // We need to extract by index
+                        var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
+                        if (index < 0)
+                            index = Data.Count + index;
+                        if (index >= Data.Count)
+                            return "";
+                        var r2 = Data[index];
+                        return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                    }
+                    else if (searchFor.StartsWith("(") && searchFor.EndsWith(")"))
+                    {
+                        // We need to extract by DataType
+                        var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
+                        return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                    }
+                    var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
+                    if (r == null)
+                        return "";
+                    return r.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                }
+                return "";
             }
-            return "";
         }
 
         public DataMessage()

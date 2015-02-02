@@ -1,35 +1,33 @@
-﻿using System;
+﻿using io.ebu.eis.canvasgenerator;
+using io.ebu.eis.data.s3;
+using io.ebu.eis.datastructures;
+using io.ebu.eis.datastructures.Plain.Collections;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.IO.IsolatedStorage;
 using System.Linq;
-using System.Text;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using System.Threading;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using io.ebu.eis.canvasgenerator;
-using io.ebu.eis.datastructures;
-using io.ebu.eis.data.s3;
-using System.Runtime.Serialization;
-using io.ebu.eis.datastructures.Plain.Collections;
+using System.Windows.Threading;
 
 namespace io.ebu.eis.contentmanager
 {
     [DataContract]
     public class ManagerImageReference : INotifyPropertyChanged
     {
-        internal HTMLRenderer _renderer;
-        internal CMConfigurationSection _config;
+        internal CMConfigurationSection Config;
 
-        public ManagerImageReference(HTMLRenderer renderer, CMConfigurationSection config)
+        public ManagerImageReference(CMConfigurationSection config)
         {
             TemplateFields = new DispatchedObservableCollection<ManagerTemplateField>();
-            _renderer = renderer;
-            _config = config;
+            Config = config;
             IndexOffset = 0;
             ImageVariants = new List<ImageVariant>();
         }
@@ -67,6 +65,9 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "canrepeate")]
         public bool CanRepeate { get { return _canRepeate; } set { _canRepeate = value; OnPropertyChanged("CanRepeate"); } }
 
+        private int _itemsPerSlide = 4;
+        [DataMember(Name = "itemsperslide", IsRequired = false)]
+        public int ItemsPerSlide { get { return _itemsPerSlide; } set { _itemsPerSlide = value; OnPropertyChanged("ItemsPerSlide"); } }
 
         private string _publicImageUrl;
 
@@ -76,7 +77,7 @@ namespace io.ebu.eis.contentmanager
             {
                 if (String.IsNullOrEmpty(_publicImageUrl))
                 {
-                    MakePublic();
+                    PublicImageUrl = MakePublic();
                 }
                 return _publicImageUrl;
             }
@@ -101,19 +102,33 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "lastused")]
         public long LastUsedBinary { get { return _lastUsed; } set { _lastUsed = value; OnPropertyChanged("LastUsed"); OnPropertyChanged("LastUsedBinary"); } }
 
+        private bool _rendering;
         private BitmapImage _previewImage;
         public BitmapImage PreviewImage
         {
             get
             {
-                if (_previewImage == null) Render();
+                if (_previewImage == null)
+                {
+                    if (!_rendering)
+                    {
+                        _rendering = true;
+                        var t = new Thread(Render);
+                        t.Start();
+                    }
+                    // Return null so default dummy image is loaded while rendering image for preview
+                    return null;
+                }
                 return _previewImage;
             }
             set
             {
                 _previewImage = value;
-                OnPropertyChanged("PreviewImage");
-                OnPropertyChanged("PreviewImageSource");
+                if (_previewImage != null)
+                {
+                    OnPropertyChanged("PreviewImage");
+                    OnPropertyChanged("PreviewImageSource");
+                }
             }
         }
         public ImageSource PreviewImageSource { get { return PreviewImage; } }
@@ -122,11 +137,35 @@ namespace io.ebu.eis.contentmanager
 
         #region Rendering
 
-        public void Render()
+        public void ReRender()
         {
+            // Initiate rerender by nulling out reference
+            PreviewImage = null;
             PublicImageUrl = null;
-            PreviewImage = renderImageWithTemplateContext();
+            //if (!_rendering)
+            //{
+            //    _rendering = true;
+            //    var t = new Thread(Render);
+            //    t.Start();
+            //}
         }
+
+        private void Render()
+        {
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+            (SendOrPostCallback)delegate
+            {
+                PublicImageUrl = null;
+                PreviewImage = renderImageWithTemplateContext();
+                _rendering = false;
+
+            }, null);
+        }
+        //public async void RenderAsync()
+        //{
+        //    PublicImageUrl = null;
+        //    PreviewImage = await renderImageWithTemplateContextAsync();
+        //}
 
         public void Destroy()
         {
@@ -139,9 +178,13 @@ namespace io.ebu.eis.contentmanager
             {
                 return;
             }
-            if (!File.Exists(Template) && File.Exists(Path.Combine(_config.SlidesConfiguration.TemplatePath, Template)))
+            if (!File.Exists(Template) && File.Exists(Path.Combine(Config.SlidesConfiguration.TemplatePath, Template)))
             {
-                Template = Path.Combine(_config.SlidesConfiguration.TemplatePath, Template);
+                Template = Path.Combine(Config.SlidesConfiguration.TemplatePath, Template);
+            }
+            else if (!File.Exists(Template) && File.Exists(Path.Combine(Config.SlidesConfiguration.TemplatePath, Path.GetFileName(Template))))
+            {
+                Template = Path.Combine(Config.SlidesConfiguration.TemplatePath, Path.GetFileName(Template));
             }
             else if (!File.Exists(Template))
             {
@@ -172,22 +215,83 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+        //async Task<BitmapImage> renderImageWithTemplateContextAsync()
+        //{
+        //    //var filename = System.IO.Path.Combine(_config.SlidesConfiguration.TemplatePath, template);
+        //    if (Template == null || TemplateFields == null)
+        //    {
+        //        return null;
+        //    }
+        //    if (!File.Exists(Template) && File.Exists(Path.Combine(_config.SlidesConfiguration.TemplatePath, Template)))
+        //    {
+        //        Template = Path.Combine(_config.SlidesConfiguration.TemplatePath, Template);
+        //    }
+        //    else if (!File.Exists(Template))
+        //    {
+        //        return null;
+        //    }
+
+        //    var templateHtml = File.ReadAllText(Template);
+
+        //    // Replace @@values@@ with context Values
+        //    const string pattern = "@@(.*?)@@";
+        //    foreach (Match m in Regex.Matches(templateHtml, pattern))
+        //    {
+        //        var variable = m.Groups[1].Value;
+        //        var matchedValue = m.Value;
+        //        var replaceField = TemplateFields.FirstOrDefault(x => x.Title == variable);
+        //        var replaceValue = "";
+        //        if (replaceField != null)
+        //            replaceValue = replaceField.Value;
+        //        templateHtml = templateHtml.Replace(matchedValue, replaceValue);
+        //    }
+
+        //    // Replace ##index## with offseted Values
+        //    const string indexpattern = "##(.*?)##";
+        //    foreach (Match m in Regex.Matches(templateHtml, indexpattern))
+        //    {
+        //        var variable = Convert.ToInt32(m.Groups[1].Value);
+        //        var matchedValue = m.Value;
+        //        var replaceValue = (IndexOffset + variable).ToString();
+        //        templateHtml = templateHtml.Replace(matchedValue, replaceValue);
+        //    }
+
+        //    // Background Management
+        //    const string bgpattern = "\"backgroundimage\": ?\"(?<image>.*?)\"";
+        //    Match mbg = Regex.Match(templateHtml, bgpattern);
+        //    if (mbg.Success && !String.IsNullOrEmpty(Background))
+        //    {
+        //        var variable = mbg.Groups[1].Value;
+        //        var filepath = Background.Replace("\\", "/"); //"file://" +
+        //        templateHtml = templateHtml.Replace(variable, filepath);
+        //    }
+
+        //    // Render the image
+        //    var rendered = HTMLRenderer.RenderHtml(templateHtml, _config.SlidesConfiguration.TemplatePath);
+
+        //    return rendered;
+        //}
+
         private BitmapImage renderImageWithTemplateContext()
         {
             //var filename = System.IO.Path.Combine(_config.SlidesConfiguration.TemplatePath, template);
-            if (Template == null || TemplateFields == null || _renderer == null)
+            if (Template == null || TemplateFields == null)
             {
                 return null;
             }
-            if (!File.Exists(Template) && File.Exists(Path.Combine(_config.SlidesConfiguration.TemplatePath, Template)))
+            if (!File.Exists(Template) && File.Exists(Path.Combine(Config.SlidesConfiguration.TemplatePath, Template)))
             {
-                Template = Path.Combine(_config.SlidesConfiguration.TemplatePath, Template);
+                Template = Path.Combine(Config.SlidesConfiguration.TemplatePath, Template);
+            }
+            else if (!File.Exists(Template) && File.Exists(Path.Combine(Config.SlidesConfiguration.TemplatePath, Path.GetFileName(Template))))
+            {
+                Template = Path.Combine(Config.SlidesConfiguration.TemplatePath, Path.GetFileName(Template));
             }
             else if (!File.Exists(Template))
             {
                 return null;
             }
-
+            
             var templateHtml = File.ReadAllText(Template);
 
             // Replace @@values@@ with context Values
@@ -223,94 +327,186 @@ namespace io.ebu.eis.contentmanager
                 templateHtml = templateHtml.Replace(variable, filepath);
             }
 
+            // Render the image
+            var rendered = HTMLRenderer.RenderHtml(templateHtml, Config.SlidesConfiguration.TemplatePath);
 
-            return _renderer.RenderHtml(templateHtml);
-
+            return rendered;
         }
 
-        private void MakePublic()
+        //private async Task<string> MakePublicAsync()
+        //{
+        //    // Reset Variants
+        //    ImageVariants = new List<ImageVariant>(); // zFWx@-djeG6
+
+        //    // Save image to temporary location
+        //    foreach (OutputConfiguration output in _config.OutputConfigurations)
+        //    {
+        //        var imagePath = "";
+
+        //        if (output.Encoder == "PNG")
+        //        {
+        //            BitmapEncoder encoder = new PngBitmapEncoder();
+
+        //            imagePath = Path.Combine(_config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".png");
+
+        //            encoder.Frames.Add(BitmapFrame.Create(PreviewImage));
+        //            using (var filestream = new FileStream(imagePath, FileMode.Create))
+        //            {
+        //                encoder.Save(filestream);
+        //            }
+        //        }
+        //        if (output.Encoder == "JPEG")
+        //        {
+        //            //encoder = new JpegBitmapEncoder();
+        //            //((JpegBitmapEncoder)encoder).QualityLevel = output.Quality;
+        //            //extention = ".jpg";
+        //            // Compress IMAGE
+        //            var encoder = GetEncoder(ImageFormat.Jpeg);
+
+        //            // Create an Encoder object based on the GUID
+        //            // for the Quality parameter category.
+        //            System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Compression;
+        //            System.Drawing.Imaging.Encoder myEncoder2 = System.Drawing.Imaging.Encoder.Quality;
+
+
+        //            // Create an EncoderParameters object.
+        //            // An EncoderParameters object has an array of EncoderParameter
+        //            // objects. In this case, there is only one
+        //            // EncoderParameter object in the array.
+        //            var myEncoderParameters = new EncoderParameters(2);
+
+        //            var myEncoderParameter = new EncoderParameter(myEncoder, 0L);
+        //            var myEncoderParameter2 = new EncoderParameter(myEncoder2, output.Quality);
+        //            myEncoderParameters.Param[0] = myEncoderParameter;
+        //            myEncoderParameters.Param[1] = myEncoderParameter2;
+
+        //            imagePath = Path.Combine(_config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".jpg");
+
+        //            using (var outStream = new MemoryStream())
+        //            {
+        //                BitmapEncoder enc = new BmpBitmapEncoder();
+        //                enc.Frames.Add(BitmapFrame.Create(PreviewImage));
+        //                enc.Save(outStream);
+        //                var bitmap = new Bitmap(outStream);
+
+        //                bitmap.Save(imagePath, encoder, myEncoderParameters);
+        //            }
+
+        //        }
+
+        //        // Upload Image to Amazon S3
+        //        var publicUrl = AWSS3Uploader.Upload(imagePath, _config.S3Configuration.AWSAccessKey,
+        //                _config.S3Configuration.AWSSecretKey, _config.S3Configuration.S3BucketName,
+        //                _config.S3Configuration.S3Subfolder, _config.S3Configuration.S3PublicUriBase);
+
+        //        // Add to variants
+        //        ImageVariants.Add(new ImageVariant() { Name = output.Name, Url = publicUrl });
+
+        //        // Save the Url
+        //        if (output.Name == "DEFAULT")
+        //        {
+        //            PublicImageUrl = publicUrl;
+        //        }
+
+        //        // Delete temporary Image
+        //        File.Delete(imagePath);
+        //    }
+
+        //    if (string.IsNullOrEmpty(_publicImageUrl))
+        //    {
+        //        // TODO No default thus choose one
+        //    }
+
+        //    return PublicImageUrl;
+        //}
+
+        private string MakePublic()
         {
             // Reset Variants
             ImageVariants = new List<ImageVariant>(); // zFWx@-djeG6
 
-            // Save image to temporary location
-            foreach (OutputConfiguration output in _config.OutputConfigurations)
+            if (PreviewImage != null)
             {
-                var imagePath = "";
-
-                if (output.Encoder == "PNG")
+                // Save image to temporary location
+                foreach (OutputConfiguration output in Config.OutputConfigurations)
                 {
-                    BitmapEncoder encoder = new PngBitmapEncoder();
+                    var imagePath = "";
 
-                    imagePath = Path.Combine(_config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".png");
-
-                    encoder.Frames.Add(BitmapFrame.Create(PreviewImage));
-                    using (var filestream = new FileStream(imagePath, FileMode.Create))
+                    if (output.Encoder == "PNG")
                     {
-                        encoder.Save(filestream);
+                        BitmapEncoder encoder = new PngBitmapEncoder();
+
+                        imagePath = Path.Combine(Config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".png");
+
+                        encoder.Frames.Add(BitmapFrame.Create(PreviewImage));
+                        using (var filestream = new FileStream(imagePath, FileMode.Create))
+                        {
+                            encoder.Save(filestream);
+                        }
                     }
-                }
-                if (output.Encoder == "JPEG")
-                {
-                    //encoder = new JpegBitmapEncoder();
-                    //((JpegBitmapEncoder)encoder).QualityLevel = output.Quality;
-                    //extention = ".jpg";
-                    // Compress IMAGE
-                    var encoder = GetEncoder(ImageFormat.Jpeg);
-
-                    // Create an Encoder object based on the GUID
-                    // for the Quality parameter category.
-                    System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Compression;
-                    System.Drawing.Imaging.Encoder myEncoder2 = System.Drawing.Imaging.Encoder.Quality;
-
-
-                    // Create an EncoderParameters object.
-                    // An EncoderParameters object has an array of EncoderParameter
-                    // objects. In this case, there is only one
-                    // EncoderParameter object in the array.
-                    var myEncoderParameters = new EncoderParameters(2);
-
-                    var myEncoderParameter = new EncoderParameter(myEncoder, 0L);
-                    var myEncoderParameter2 = new EncoderParameter(myEncoder2, output.Quality);
-                    myEncoderParameters.Param[0] = myEncoderParameter;
-                    myEncoderParameters.Param[1] = myEncoderParameter2;
-
-                    imagePath = Path.Combine(_config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".jpg");
-
-                    using (var outStream = new MemoryStream())
+                    if (output.Encoder == "JPEG")
                     {
-                        BitmapEncoder enc = new BmpBitmapEncoder();
-                        enc.Frames.Add(BitmapFrame.Create(PreviewImage));
-                        enc.Save(outStream);
-                        var bitmap = new Bitmap(outStream);
+                        //encoder = new JpegBitmapEncoder();
+                        //((JpegBitmapEncoder)encoder).QualityLevel = output.Quality;
+                        //extention = ".jpg";
+                        // Compress IMAGE
+                        var encoder = GetEncoder(ImageFormat.Jpeg);
 
-                        bitmap.Save(imagePath, encoder, myEncoderParameters);
+                        // Create an Encoder object based on the GUID
+                        // for the Quality parameter category.
+                        System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Compression;
+                        System.Drawing.Imaging.Encoder myEncoder2 = System.Drawing.Imaging.Encoder.Quality;
+
+
+                        // Create an EncoderParameters object.
+                        // An EncoderParameters object has an array of EncoderParameter
+                        // objects. In this case, there is only one
+                        // EncoderParameter object in the array.
+                        var myEncoderParameters = new EncoderParameters(2);
+
+                        var myEncoderParameter = new EncoderParameter(myEncoder, 0L);
+                        var myEncoderParameter2 = new EncoderParameter(myEncoder2, output.Quality);
+                        myEncoderParameters.Param[0] = myEncoderParameter;
+                        myEncoderParameters.Param[1] = myEncoderParameter2;
+
+                        imagePath = Path.Combine(Config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".jpg");
+
+                        using (var outStream = new MemoryStream())
+                        {
+                            BitmapEncoder enc = new BmpBitmapEncoder();
+                            enc.Frames.Add(BitmapFrame.Create(PreviewImage));
+                            enc.Save(outStream);
+                            var bitmap = new Bitmap(outStream);
+
+                            bitmap.Save(imagePath, encoder, myEncoderParameters);
+                        }
+
                     }
 
+                    // Upload Image to Amazon S3
+                    var publicUrl = AWSS3Uploader.Upload(imagePath, Config.S3Configuration.AWSAccessKey,
+                            Config.S3Configuration.AWSSecretKey, Config.S3Configuration.S3BucketName,
+                            Config.S3Configuration.S3Subfolder, Config.S3Configuration.S3PublicUriBase);
+
+                    // Add to variants
+                    ImageVariants.Add(new ImageVariant() { Name = output.Name, Url = publicUrl });
+
+                    // Save the Url
+                    if (output.Name == "DEFAULT")
+                    {
+                        PublicImageUrl = publicUrl;
+                    }
+
+                    // Delete temporary Image
+                    File.Delete(imagePath);
                 }
-                
-                // Upload Image to Amazon S3
-                var publicUrl = AWSS3Uploader.Upload(imagePath, _config.S3Configuration.AWSAccessKey,
-                        _config.S3Configuration.AWSSecretKey, _config.S3Configuration.S3BucketName,
-                        _config.S3Configuration.S3Subfolder, _config.S3Configuration.S3PublicUriBase);
-
-                // Add to variants
-                ImageVariants.Add(new ImageVariant() { Name = output.Name, Url = publicUrl });
-
-                // Save the Url
-                if (output.Name == "DEFAULT")
-                {
-                    PublicImageUrl = publicUrl;
-                }
-
-                // Delete temporary Image
-                File.Delete(imagePath);
             }
-
             if (string.IsNullOrEmpty(_publicImageUrl))
             {
                 // TODO No default thus choose one
             }
+
+            return _publicImageUrl;
         }
 
         private ImageCodecInfo GetEncoder(ImageFormat format)
@@ -337,8 +533,7 @@ namespace io.ebu.eis.contentmanager
             // Deserialize
             var clone = JsonSerializer.Deserialize<ManagerImageReference>(js);
             // Reset instance values
-            clone._config = _config;
-            clone._renderer = _renderer;
+            clone.Config = Config;
             // Return
             return clone;
         }

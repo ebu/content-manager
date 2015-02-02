@@ -34,6 +34,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Images\cm.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -62,6 +65,10 @@
     <Compile Include="ManagerContext.cs" />
     <Compile Include="ManagerImageReference.cs" />
     <Compile Include="ManagerTemplateField.cs" />
+    <Compile Include="NewCartWindow.xaml.cs">
+      <DependentUpon>NewCartWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="RegistryHelper.cs" />
     <Compile Include="Utils\HeightAspectRatioConverter.cs" />
     <Compile Include="Utils\AspectRatioConverter.cs" />
     <Page Include="MainWindow.xaml">
@@ -76,6 +83,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="NewCartWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\Metro\Dark\MetroDark.MSControls.Core.Implicit.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -167,6 +178,71 @@
       <Project>{36c58a7c-8fc5-4290-bcd5-8b56e2802497}</Project>
       <Name>io.ebu.eis.mq</Name>
     </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.notifications\io.ebu.eis.notifications.csproj">
+      <Project>{bd2c81d0-839c-491c-8a1b-9ffc82453ead}</Project>
+      <Name>io.ebu.eis.notifications</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ebu_back_loading.png" />
+    <Resource Include="Images\ebu_back_loading_small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\close-circled-white.png" />
+    <Resource Include="Images\Icons\close-circled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\close-white.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-timer-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-timer-outline.png" />
+    <Resource Include="Images\Icons\ios7-timer-white.png" />
+    <Resource Include="Images\Icons\ios7-timer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\edit-white.png" />
+    <Resource Include="Images\Icons\edit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\image-white.png" />
+    <Resource Include="Images\Icons\image.png" />
+    <Resource Include="Images\Icons\images-white.png" />
+    <Resource Include="Images\Icons\images.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-analytics-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-analytics-outline.png" />
+    <Resource Include="Images\Icons\ios7-analytics-white.png" />
+    <Resource Include="Images\Icons\ios7-analytics.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-thunderstorm-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-thunderstorm-outline.png" />
+    <Resource Include="Images\Icons\ios7-thunderstorm-white.png" />
+    <Resource Include="Images\Icons\ios7-thunderstorm.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-cart-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-cart-outline.png" />
+    <Resource Include="Images\Icons\ios7-cart-white.png" />
+    <Resource Include="Images\Icons\ios7-cart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\refresh-white.png" />
+    <Resource Include="Images\Icons\refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\image-blue.png" />
+    <Resource Include="Images\Icons\images-blue.png" />
+    <Resource Include="Images\Icons\ios7-cart-blue.png" />
+    <Resource Include="Images\Icons\refresh-blue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\cm.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

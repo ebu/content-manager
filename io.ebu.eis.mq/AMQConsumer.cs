@@ -1,4 +1,6 @@
-﻿using io.ebu.eis.datastructures;
+﻿using System.ComponentModel;
+using System.IO;
+using io.ebu.eis.datastructures;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
@@ -12,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace io.ebu.eis.mq
 {
-    public class AMQConsumer
+    public class AMQConsumer : INotifyPropertyChanged
     {
         private string _amqpUri;
         private string _amqpExchange;
@@ -27,6 +29,8 @@ namespace io.ebu.eis.mq
         private QueueingBasicConsumer _consumer;
 
         private bool _connected;
+        public bool Connected { get { return _connected; } set { _connected = value; OnPropertyChanged("Connected"); } }
+        private string _filter;
 
         public AMQConsumer(string uri, string exchange, IAMQDataMessageHandler handler)
         {
@@ -39,6 +43,7 @@ namespace io.ebu.eis.mq
         {
             try
             {
+                _filter = filter;
                 ConnectionFactory factory = new ConnectionFactory();
                 factory.Uri = _amqpUri;
 
@@ -74,9 +79,14 @@ namespace io.ebu.eis.mq
                 _t.Start();
 
                 Console.WriteLine("AMQConsumer started and connected to " + _amqpUri + ":" + _amqpExchange);
-                _connected = true;
+                Connected = true;
             }
-            catch (BrokerUnreachableException bu) { }
+            catch (BrokerUnreachableException bu)
+            {
+                // Retry in 1sec
+                Thread.Sleep(1000);
+                Connect(_filter);
+            }
         }
 
         public void Disconnect()
@@ -90,6 +100,7 @@ namespace io.ebu.eis.mq
                 _consumer.Queue.Close();
                 _amq.channel.Close();
                 _conn.Close();
+                Connected = false;
             }
             catch (Exception) { }
         }
@@ -98,25 +109,44 @@ namespace io.ebu.eis.mq
         {
             while (_running)
             {
-                var ea = (BasicDeliverEventArgs)_consumer.Queue.Dequeue();
-                var body = ea.Body;
-                var message = Encoding.UTF8.GetString(body);
-                var routingKey = ea.RoutingKey;
-
-                DataMessage text = new DataMessage();
                 try
                 {
-                    var data = DataMessage.Deserialize(message);
-                    _handler.OnReceive(data);
-                }
-                catch (Exception e)
-                {
-                    // TODO Handle exceptions
-                }
+                    var ea = (BasicDeliverEventArgs) _consumer.Queue.Dequeue();
+                    var body = ea.Body;
+                    var message = Encoding.UTF8.GetString(body);
+                    //var routingKey = ea.RoutingKey;
 
-                // TODO use notifications
-                //Console.WriteLine(" [x] Received '{0}': with key :'{1}'", routingKey, text.Key);
+                    try
+                    {
+                        var data = DataMessage.Deserialize(message);
+                        _handler.OnReceive(data);
+                    }
+                    catch (Exception e)
+                    {
+                        // TODO Handle exceptions
+                    }
+
+                    // TODO use notifications
+                    //Console.WriteLine(" [x] Received '{0}': with key :'{1}'", routingKey, text.Key);
+                }
+                catch (EndOfStreamException ex)
+                {
+                    // Try to reconnect
+                    Disconnect();
+                    Connect(_filter);
+                }
             }
         }
+
+        #region PropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged(string propertyname)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyname));
+            }
+        }
+        #endregion PropertyChanged
     }
 }

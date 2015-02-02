@@ -16,6 +16,7 @@ namespace io.ebu.eis.datastructures
         High = 1,
         Medium = 2,
         Low = 3,
+        Green = 4,
         Neglectable = 100,
         Unknown = 0
     }

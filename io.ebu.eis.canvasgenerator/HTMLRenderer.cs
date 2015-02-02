@@ -1,98 +1,71 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace io.ebu.eis.canvasgenerator
-{ 
-    public class HTMLRenderer
+{
+    public static class HTMLRenderer
     {
-        private string _pathToExe = "phantomjs.exe";
-        private string _pathToWorkingDir = "templates/";
-        private string _phantomPageGenerator = "sliderenderer.js";
-        private string _phantomHtmlGenerator = "htmlrenderer.js";
-        private string _phantomArgumentProperties = "320px*240px";
-        private int _timeToExit = 500;
+        private const string PathToExe = "phantomjs.exe";
+        //private string _pathToWorkingDir = "templates/";
+        private const string PhantomPageGenerator = "sliderenderer.js";
+        private const string PhantomArgumentProperties = "320px*240px"; //"640px*480px 2.0";//
+        private const int TimeToExit = 500;
 
-        public HTMLRenderer(string templateDirectory)
+        public static BitmapImage Render(string file, string pathToWorkingDir)
         {
-            _pathToWorkingDir = templateDirectory;
-        }
-
-        public BitmapImage Render(string file)
-        {
-            var args = String.Format("{0} {1} {2}", _phantomPageGenerator, file, _phantomArgumentProperties);
-            var startInfo = new ProcessStartInfo
+            try
             {
-                FileName = _pathToExe,
-                Arguments = args,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                WorkingDirectory = _pathToWorkingDir // PDF Tool Path
-            };
-            var p = new Process();
-            p.StartInfo = startInfo;
-            p.Start();
-            p.WaitForExit(_timeToExit);
-            //Read the Error:
-            //string error = p.StandardError.ReadToEnd();
-            //Read the Output:
-            var base64image = p.StandardOutput.ReadToEnd().Trim();
-            var error = p.StandardError.ReadToEnd().Trim();
-            var bytes = Convert.FromBase64CharArray(base64image.ToCharArray(), 0, base64image.Length);
-            if (bytes.Length > 0)
+                var args = String.Format("{0} {1} {2}", PhantomPageGenerator, file, PhantomArgumentProperties);
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = PathToExe,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    WorkingDirectory = pathToWorkingDir // PDF Tool Path
+                };
+                var p = new Process();
+                p.StartInfo = startInfo;
+                p.Start();
+                p.WaitForExit(TimeToExit);
+                //Read the Error:
+                //string error = p.StandardError.ReadToEnd();
+                //Read the Output:
+                var base64Image = p.StandardOutput.ReadToEnd().Trim();
+                var error = p.StandardError.ReadToEnd().Trim();
+                var bytes = Convert.FromBase64CharArray(base64Image.ToCharArray(), 0, base64Image.Length);
+                if (bytes.Length > 0)
+                {
+                    var image = GetBitmapImage(bytes);
+                    return image;
+                }
+            }
+            catch (Exception ex)
             {
-                var image = GetBitmapImage(bytes);
-                return image;
+                // TODO
             }
             return null;
         }
 
-        public BitmapImage RenderHtml(string html)
+        public static BitmapImage RenderHtml(string html, string pathToWorkingDir)
         {
             // TODO Pass as argument and decode
-            var tempFilename = Guid.NewGuid().ToString() + ".html";
-            var tempfile = Path.Combine(_pathToWorkingDir, tempFilename);
+            var tempFilename = Guid.NewGuid() + ".html";
+            var tempfile = Path.Combine(pathToWorkingDir, tempFilename);
             var file = File.Create(tempfile);
             var content = Encoding.UTF8.GetBytes(html);
             file.Write(content, 0, content.Length);
             file.Flush();
             file.Close();
-            //var htmlEncoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(html));
-            //var args = String.Format("{0} {1} {2}", _phantomHtmlGenerator, htmlEncoded, _phantomArgumentProperties);
-            //var startInfo = new ProcessStartInfo
-            //{
-            //    FileName = _pathToExe,
-            //    Arguments = args,
-            //    UseShellExecute = false,
-            //    CreateNoWindow = true,
-            //    RedirectStandardOutput = true,
-            //    RedirectStandardError = true,
-            //    RedirectStandardInput = true,
-            //    WorkingDirectory = _pathToWorkingDir // PDF Tool Path
-            //};
-            //var p = new Process();
-            //p.StartInfo = startInfo;
-            //p.Start();
-            //p.WaitForExit(_timeToExit);
-            ////Read the Error:
-            ////string error = p.StandardError.ReadToEnd();
-            ////Read the Output:
-            //var base64image = p.StandardOutput.ReadToEnd().Trim();
-            //var bytes = Convert.FromBase64CharArray(base64image.ToCharArray(), 0, base64image.Length);
-            //var image = GetBitmapImage(bytes);
 
             // TODO This is ugly but works : )
-            var image = Render(System.IO.Path.GetFileName(tempfile));
+            var image = Render(Path.GetFileName(tempfile), pathToWorkingDir);
 
             // TODO Remove
             // Delete Temp file

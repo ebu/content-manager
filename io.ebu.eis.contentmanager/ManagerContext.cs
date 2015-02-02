@@ -24,11 +24,10 @@ namespace io.ebu.eis.contentmanager
     public class ManagerContext : INotifyPropertyChanged, IAMQDataMessageHandler
     {
         private CMConfigurationSection _config;
+        public CMConfigurationSection Config { get { return _config; } }
+
         private AMQConsumer _dataInConnection;
         private AMQQueuePublisher _dataOutConnection;
-
-        private HTMLRenderer _renderer;
-        public HTMLRenderer Renderer { get { return _renderer; } }
 
         private bool _inAutomationMode;
         [DataMember(Name = "inautomationmode")]
@@ -58,6 +57,18 @@ namespace io.ebu.eis.contentmanager
         private double overrideProgress = 0.0;
         public double OverrideProgress { get { return overrideProgress; } set { overrideProgress = value; OnPropertyChanged("OverrideProgress"); } }
 
+        private bool _editModeEnabled = false;
+        [DataMember(Name = "editmodeenabled", IsRequired = false)]
+        public bool EditModeEnabled
+        {
+            get { return _editModeEnabled; }
+            set
+            {
+                _editModeEnabled = value;
+                OnPropertyChanged("EditModeEnabled");
+            }
+        }
+
 
         public bool IsPreviewCartOffAir { get { return ActiveCart != PreviewCart; } }
         public bool IsPreviewCartOnAir { get { return ActiveCart == PreviewCart; } }
@@ -78,7 +89,20 @@ namespace io.ebu.eis.contentmanager
         public ManagerCart PreviewCart { get { return _previewCart; } set { _previewCart = value; OnPropertyChanged("PreviewCart"); OnPropertyChanged("IsPreviewCartOffAir"); OnPropertyChanged("IsPreviewCartOnAir"); } }
 
         private ManagerCart _editorCart;
-        public ManagerCart EditorCart { get { return _editorCart; } set { _editorCart = value; OnPropertyChanged("EditorCart"); } }
+
+        public ManagerCart EditorCart
+        {
+            get
+            {
+                if (_editorCart == null)
+                {
+                    _editorCart = new ManagerCart("Editor Cart");
+                    OnPropertyChanged("EditorCart");
+                }
+                return _editorCart;
+            }
+            set { _editorCart = value; OnPropertyChanged("EditorCart"); }
+        }
 
 
         private DispatchedObservableCollection<ManagerCart> _carts;
@@ -108,9 +132,6 @@ namespace io.ebu.eis.contentmanager
         public ManagerContext()
         {
             _config = (CMConfigurationSection)ConfigurationManager.GetSection("CMConfiguration");
-
-            // Initialize HTML Renderer
-            _renderer = new HTMLRenderer(_config.SlidesConfiguration.TemplatePath);
 
             Carts = new DispatchedObservableCollection<ManagerCart>();
             CartItemsView = CollectionViewSource.GetDefaultView(Carts);
@@ -145,7 +166,7 @@ namespace io.ebu.eis.contentmanager
 
             if (!ResetFomrFile())
             {
-                LoadCarts(true);
+                LoadCarts(true, false);
                 LoadInitialImages();
                 LoadReceivedImages();
             }
@@ -171,7 +192,7 @@ namespace io.ebu.eis.contentmanager
                         Carts.Add(c);
                     }
 
-                    LoadCarts(false);
+                    LoadCarts(false, false);
 
                     foreach (var d in oldconf.DataBase)
                     {
@@ -183,7 +204,11 @@ namespace io.ebu.eis.contentmanager
                     }
                     foreach (var i in oldconf.ImageFlowItems)
                     {
-                        ImageFlowItems.Add(i);
+                        if (i.Url.StartsWith("http") || File.Exists(i.Url))
+                        {
+                            // Only reload web and local images that exist
+                            ImageFlowItems.Add(i);
+                        }
                     }
 
                     InAutomationMode = oldconf.InAutomationMode;
@@ -212,8 +237,7 @@ namespace io.ebu.eis.contentmanager
             {
                 foreach (var s in c.Slides)
                 {
-                    s._renderer = _renderer;
-                    s._config = _config;
+                    s.Config = _config;
                 }
             }
         }
@@ -224,8 +248,14 @@ namespace io.ebu.eis.contentmanager
             _dataOutConnection.Disconnect();
         }
 
-        private void LoadCarts(bool loadAll)
+        public void LoadCarts(bool loadAll, bool cleanReload)
         {
+            if (cleanReload)
+            {
+                // Cleanup existing
+                Carts.Clear();
+            }
+
             foreach (CartConfiguration cart in _config.SlidesConfiguration.CartConfigurations)
             {
                 if (loadAll || Carts.Count(x => x.Name == cart.Name) == 0)
@@ -238,11 +268,12 @@ namespace io.ebu.eis.contentmanager
 
                     foreach (SlideConfiguration s in cart.Slides)
                     {
-                        var sl = new ManagerImageReference(Renderer, _config)
+                        var sl = new ManagerImageReference(_config)
                         {
                             Template = s.Filename,
                             Link = s.DefaultLink,
-                            CanRepeate = s.CanRepeat
+                            CanRepeate = s.CanRepeat,
+                            ItemsPerSlide = s.ItemsPerSlide
                         };
                         c.Slides.Add(sl);
                     }
@@ -264,7 +295,7 @@ namespace io.ebu.eis.contentmanager
 
         public void AddEditorTemplate(string path)
         {
-            var newTemplate = new ManagerImageReference(Renderer, _config)
+            var newTemplate = new ManagerImageReference(_config)
             {
                 Template = path,
                 Link = _config.SlidesConfiguration.DefaultLink,
@@ -448,44 +479,41 @@ namespace io.ebu.eis.contentmanager
             {
                 _mainimage = value;
                 OnPropertyChanged("MainImage");
-                OnPropertyChanged("MainImageSource");
                 DispatchMainImage();
             }
         }
 
-        public ImageSource MainImageSource
-        {
-            get
-            {
-                if (MainImage != null) return MainImage.PreviewImageSource;
-                return null;
-            }
-        }
-
         private ManagerImageReference _previewimage;
-        public ManagerImageReference PreviewImage { get { return _previewimage; } set { _previewimage = value; OnPropertyChanged("PreviewImage"); OnPropertyChanged("PreviewImageSource"); } }
 
-        public ImageSource PreviewImageSource
+        public ManagerImageReference PreviewImage
         {
             get
             {
-                if (PreviewImage != null) return PreviewImage.PreviewImageSource;
-                return null;
+                return _previewimage;
+            }
+            set
+            {
+                _previewimage = value;
+                OnPropertyChanged("PreviewImage");
             }
         }
 
 
         private ManagerImageReference _editorimage;
-        public ManagerImageReference EditorImage { get { return _editorimage; } set { _editorimage = value; OnPropertyChanged("EditorImage"); OnPropertyChanged("EditorImageSource"); } }
 
-        public ImageSource EditorImageSource
+        public ManagerImageReference EditorImage
         {
             get
             {
-                if (EditorImage != null) return EditorImage.PreviewImageSource;
-                return null;
+                return _editorimage;
+            }
+            set
+            {
+                _editorimage = value;
+                OnPropertyChanged("EditorImage");
             }
         }
+
 
         #endregion ImagesAndPreviews
 
@@ -512,45 +540,86 @@ namespace io.ebu.eis.contentmanager
             _dataOutConnection.Dispatch(m);
         }
 
+        public void ResetAllPriorities()
+        {
+            foreach(var d in DataFlowItems)
+            {
+                SetFlowItemPriority(d);
+                d.Name = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).NamePath);
+                d.Category = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).CategoryPath);
+                d.Type = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).TypePath);
+                d.Short = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).ShortPath);
+            }
+            foreach (var d in ImageFlowItems)
+            {
+                SetFlowItemPriority(d);
+                d.Name = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).NamePath);
+                d.Category = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).CategoryPath);
+                d.Type = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).TypePath);
+                d.Short = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).ShortPath);
+            }
+        }
+
         private void SetFlowItemPriority(DataFlowItem item)
         {
             foreach (DataPriorityConfiguration prioconf in _config.DataConfiguration.DataPriorityConfigurations)
             {
                 var value = item.DataMessage.GetValue(prioconf.DataPath);
-                if (value.Equals(prioconf.ExpectedValue))
+                switch (prioconf.Operator.ToLower())
                 {
-                    // Match thus change the prio
-                    item.Priority = StringToDataFlowPriority(prioconf.Priority);
-                    return;
+                    case "equals":
+                        if (String.Compare(value, prioconf.ExpectedValue, StringComparison.Ordinal) == 0)
+                        {
+                            item.Priority = StringToDataFlowPriority(prioconf.Priority);
+                        }
+                        break;
+                    case "startswith":
+                        if (value.StartsWith(prioconf.ExpectedValue))
+                        {
+                            item.Priority = StringToDataFlowPriority(prioconf.Priority);
+                        }
+                        break;
+                    case "endswith":
+                        if (value.EndsWith(prioconf.ExpectedValue))
+                        {
+                            item.Priority = StringToDataFlowPriority(prioconf.Priority);
+                        }
+                        break;
+                    case "contains":
+                        if (value.Contains(prioconf.ExpectedValue))
+                        {
+                            item.Priority = StringToDataFlowPriority(prioconf.Priority);
+                        }
+                        break;
                 }
             }
         }
 
-        private bool DataDoesOverrideOnAirCart(DataFlowItem item)
+        private bool DataDoesAutoOnAirCart(DataFlowItem item)
         {
 
-            foreach (OnAirCartOverrideCondition cond in _config.DataConfiguration.OnAirCartOverrideConfiguration)
+            foreach (OnAirCartAutoCondition cond in _config.DataConfiguration.OnAirCartAutoConfiguration)
             {
                 var value = item.DataMessage.GetValue(cond.DataPath);
                 switch (cond.Operator.ToLower())
                 {
                     case "equals":
-                        if (String.Compare(value, cond.ExpectedValue, StringComparison.Ordinal) != 0) return false;
+                        if (String.Compare(value, cond.ExpectedValue, StringComparison.Ordinal) == 0) return true;
                         break;
                     case "startswith":
-                        if (!value.StartsWith(cond.ExpectedValue)) return false;
+                        if (value.StartsWith(cond.ExpectedValue)) return true;
                         break;
                     case "endswith":
-                        if (!value.EndsWith(cond.ExpectedValue)) return false;
+                        if (value.EndsWith(cond.ExpectedValue)) return true;
                         break;
                     case "contains":
-                        if (!value.Contains(cond.ExpectedValue)) return false;
+                        if (value.Contains(cond.ExpectedValue)) return true;
                         break;
                 }
             }
 
             // If we ended up here, item corresponds to all conditions
-            return true;
+            return false;
         }
 
         private DataFlowPriority StringToDataFlowPriority(string input)
@@ -560,163 +629,219 @@ namespace io.ebu.eis.contentmanager
                 case "high": return DataFlowPriority.High;
                 case "medium": return DataFlowPriority.Medium;
                 case "low": return DataFlowPriority.Low;
+                case "green": return DataFlowPriority.Green;    
                 case "neglectable": return DataFlowPriority.Neglectable;
             }
             return DataFlowPriority.Unknown;
         }
 
-        public void CreateCartForDataFlowItem(DataFlowItem m)
+        public void CreateCartForDataFlowItem(DataFlowItem m, ManagerCart appentToThisCart)
         {
-            var cartName = "";
-            switch (m.DataMessage.DataType)
-            {
-                case "WEATHER": cartName = "WEATHER"; break;
-                case "STARTLIST": cartName = "STARTLIST"; break;
-                case "RESULTLIST": cartName = "RESULTLIST"; break;
-                case "PHOTOFINISH": cartName = "PHOTOFINISH"; break;
-                case "NEWS": cartName = "NEWS"; break;
-                case "INSTAGRAM": cartName = "INSTAGRAM"; break;
-            }
-            
-            var existingCart = Carts.FirstOrDefault(x => x.Name.ToUpper() == cartName);
-            if (existingCart != null)
-            {
-                // TODO ASK IF Switch Cart or add to cart
 
-                var newCart = existingCart.Clone();
-                newCart.Name = newCart.Name + " - " + m.DataMessage.GetValue("EVENTNAME");
-                if (newCart.Slides.Count == 1 && newCart.Slides.First().CanRepeate)
+            DataItemConfiguration conf = null;
+            foreach (DataItemConfiguration c in Config.DataConfiguration.DataItemConfigurations)
+            {
+                if (c.DataType == m.DataMessage.DataType)
                 {
-                    if (cartName == "STARTLIST")
+                    conf = c;
+                    break;
+                }
+            }
+
+            // Configure which DataTypes generate Carts
+            //var cartName = "";
+            //var types = _config.DataConfiguration.AutoCartGenerationTypes.Split(';');
+            //if (types.Contains(m.DataMessage.DataType))
+            //    cartName = m.DataMessage.DataType;
+            if (conf != null)
+            {
+                var existingCart = Carts.FirstOrDefault(x => x.Name.ToUpper() == conf.DefaultCartName.ToUpper());
+                if (existingCart != null)
+                {
+                    // TODO ASK IF Switch Cart or add to cart
+
+                    var newCart = existingCart.Clone();
+                    newCart.Name = newCart.Name + " - " + m.DataMessage.GetValue("EVENTNAME");
+                    if (newCart.Slides.Count == 1 && newCart.Slides.First().CanRepeate)
                     {
-                        // We might need to repeate the slide due to data and slit the context
-                        // We assume 4 line per slide
-                        // TODO This needs to be generic !
-                        var context = m.DataMessage.Clone();
-
-                        var ath = context.Data.FirstOrDefault(x => x.Key == "STARTPOSITIONS");
-
-                        // Sort the list first try by int then by alpha num
-                        bool ordered = false;
-                        try
+                        if (conf.DefaultCartName.ToUpper() == "STARTLIST")
                         {
-                            ath.Data =
-                                ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                    .ThenBy(x => Convert.ToInt32("0" + x.Key))
-                                    .ToList();
-                            ordered = true;
-                        }
-                        catch (Exception) { }
-                        if (!ordered)
-                        {
-                            // Try alpha order
+                            // We might need to repeate the slide due to data and slit the context
+                            // We assume 4 line per slide
+                            // TODO This needs to be generic !
+                            var context = m.DataMessage.Clone();
+
+                            var ath = context.Data.FirstOrDefault(x => x.Key == "STARTPOSITIONS");
+
+                            // Sort the list first try by int then by alpha num
+                            bool ordered = false;
                             try
                             {
                                 ath.Data =
                                     ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                        .ThenBy(x => x.Key)
+                                        .ThenBy(x => Convert.ToInt32("0" + x.Key))
                                         .ToList();
+                                ordered = true;
                             }
                             catch (Exception)
                             {
                             }
+                            if (!ordered)
+                            {
+                                // Try alpha order
+                                try
+                                {
+                                    ath.Data =
+                                        ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                            .ThenBy(x => x.Key)
+                                            .ToList();
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            }
+
+
+                            newCart.Slides.First().Context = context;
+                            var itemsPerSlide = newCart.Slides.First().ItemsPerSlide;
+                            var offset = itemsPerSlide;
+                            while (ath.Data.Count > itemsPerSlide)
+                            {
+                                var clone = ath.Clone();
+                                clone.Data.RemoveRange(0, itemsPerSlide);
+                                ath.Data.RemoveRange(itemsPerSlide, ath.Data.Count - itemsPerSlide);
+                                var newSlide = newCart.Slides.First().Clone();
+                                newSlide.IndexOffset = offset;
+                                var contextClone = context.Clone();
+                                contextClone.Data.First(x => x.Key == "STARTPOSITIONS").Data = clone.Data;
+                                newSlide.Context = contextClone;
+                                newCart.Slides.Add(newSlide);
+                                ath = clone;
+                                offset = offset + itemsPerSlide;
+                            }
                         }
-
-
-                        newCart.Slides.First().Context = context;
-                        var offset = 4;
-                        while (ath.Data.Count > 4)
+                        else if (conf.DefaultCartName.ToUpper() == "RESULTLIST")
                         {
-                            var clone = ath.Clone();
-                            clone.Data.RemoveRange(0, 4);
-                            ath.Data.RemoveRange(4, ath.Data.Count - 4);
-                            var newSlide = newCart.Slides.First().Clone();
-                            newSlide.IndexOffset = offset;
-                            var contextClone = context.Clone();
-                            contextClone.Data.First(x => x.Key == "STARTPOSITIONS").Data = clone.Data;
-                            newSlide.Context = contextClone;
-                            newCart.Slides.Add(newSlide);
-                            ath = clone;
-                            offset = offset + 4;
-                        }
-                    }
-                    else if (cartName == "RESULTLIST")
-                    {
-                        // We might need to repeate the slide due to data and slit the context
-                        // We assume 4 line per slide
-                        // TODO This needs to be generic !
-                        var context = m.DataMessage.Clone();
+                            // We might need to repeate the slide due to data and slit the context
+                            // We assume 4 line per slide
+                            // TODO This needs to be generic !
+                            var context = m.DataMessage.Clone();
 
-                        var ath = context.Data.FirstOrDefault(x => x.Key == "RESULTS");
+                            var ath = context.Data.FirstOrDefault(x => x.Key == "RESULTS");
 
-                        // Sort the list first try by int then by alpha num
-                        bool ordered = false;
-                        try
-                        {
-                            ath.Data =
-                                ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                    .ThenBy(x => Convert.ToInt32("0" + x.Key))
-                                    .ToList();
-                            ordered = true;
-                        }
-                        catch (Exception) { }
-                        if (!ordered)
-                        {
-                            // Try alpha order
+                            // Sort the list first try by int then by alpha num
+                            bool ordered = false;
                             try
                             {
                                 ath.Data =
                                     ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                        .ThenBy(x => x.Key)
+                                        .ThenBy(x => Convert.ToInt32("0" + x.Key))
                                         .ToList();
+                                ordered = true;
                             }
                             catch (Exception)
                             {
                             }
-                        }
+                            if (!ordered)
+                            {
+                                // Try alpha order
+                                try
+                                {
+                                    ath.Data =
+                                        ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                            .ThenBy(x => x.Key)
+                                            .ToList();
+                                }
+                                catch (Exception)
+                                {
+                                }
+                            }
 
-                        newCart.Slides.First().Context = context;
-                        var offset = 4;
-                        while (ath.Data.Count > 4)
+                            newCart.Slides.First().Context = context;
+                            var itemsPerSlide = newCart.Slides.First().ItemsPerSlide;
+                            var offset = itemsPerSlide;
+                            while (ath.Data.Count > itemsPerSlide)
+                            {
+                                var clone = ath.Clone();
+                                clone.Data.RemoveRange(0, itemsPerSlide);
+                                ath.Data.RemoveRange(itemsPerSlide, ath.Data.Count - itemsPerSlide);
+                                var newSlide = newCart.Slides.First().Clone();
+                                newSlide.IndexOffset = offset;
+                                var contextCLone = context.Clone();
+                                contextCLone.Data.First(x => x.Key == "RESULTS").Data = clone.Data;
+                                newSlide.Context = contextCLone;
+                                newCart.Slides.Add(newSlide);
+                                ath = clone;
+                                offset = offset + itemsPerSlide;
+                            }
+                        }
+                        else
                         {
-                            var clone = ath.Clone();
-                            clone.Data.RemoveRange(0, 4);
-                            ath.Data.RemoveRange(4, ath.Data.Count - 4);
-                            var newSlide = newCart.Slides.First().Clone();
-                            newSlide.IndexOffset = offset;
-                            var contextCLone = context.Clone();
-                            contextCLone.Data.First(x => x.Key == "RESULTS").Data = clone.Data;
-                            newSlide.Context = contextCLone;
-                            newCart.Slides.Add(newSlide);
-                            ath = clone;
-                            offset = offset + 4;
+                            // Set Context for all slides
+                            var context = m.DataMessage.Clone();
+                            foreach (var s in newCart.Slides)
+                            {
+                                s.Context = context;
+                            }
                         }
                     }
                     else
                     {
-                        // Set Context for all slides
-                        var context = m.DataMessage.Clone();
                         foreach (var s in newCart.Slides)
                         {
-                            s.Context = context;
+                            // Set the context on all slides
+                            s.Context = m.DataMessage;
                         }
+                    }
+
+                    if (appentToThisCart != null)
+                    {
+                        // Append i.e. merge to current
+                        foreach (var s in newCart.Slides)
+                        {
+                            // Add to open cart (not the currently active one)
+                            appentToThisCart.Slides.Add(s);
+                        }
+                    }
+                    else
+                    {
+                        // Generate new cart otherwise
+                        Carts.Add(newCart);
+                        PreviewCart = newCart;
                     }
                 }
                 else
                 {
-                    foreach (var s in newCart.Slides)
+                    // No Cart, try with template only
+                    if (!string.IsNullOrEmpty(conf.DefaultTemplate))
                     {
-                        // Set the context on all slides
-                        s.Context = m.DataMessage;
+                        // Create new ImageRef
+                        var newImgRef = new ManagerImageReference(Config)
+                        {
+                            Template = conf.DefaultTemplate,
+                            Link = Config.SlidesConfiguration.DefaultLink,
+                            Context = m.DataMessage,
+                            CanRepeate = false
+                        };
+                        // Handle
+                        if (appentToThisCart != null)
+                        {
+                            // Add to open cart (not the currently active one)
+                            appentToThisCart.Slides.Add(newImgRef);
+                        }
+                        else
+                        {
+                            var newCart = new ManagerCart("TEMP " + conf.DataType);
+                            newCart.Slides.Add(newImgRef);
+                            Carts.Add(newCart);
+                            PreviewCart = newCart;
+                        }
                     }
                 }
-
-                Carts.Add(newCart);
-                PreviewCart = newCart;
             }
             else
             {
-                // TODO if no cart the apply to editor template as context
+                // No cart defined for that event type
             }
         }
 
@@ -750,18 +875,84 @@ namespace io.ebu.eis.contentmanager
                     DataFlowItems.RemoveAt(0);
                 }
 
-                // Handle auto override
-                if (DataDoesOverrideOnAirCart(d) && AllowOverride)
+                // Handle auto
+                if (DataDoesAutoOnAirCart(d) && AllowOverride)
                 {
                     // Create the cart
-                    CreateCartForDataFlowItem(d);
+                    // CreateCartForDataFlowItem(d, false);
                     // Put cart on air
-                    ActiveCart = PreviewCart;
-                    ReloadPreview();
+                    // ActiveCart = PreviewCart;
+                    // ReloadPreview();
 
-                    IsInOverrideCart = true;
-                    OverrideProgress = 1.0;
-                    OverrideSlideCountDown = ActiveCart.Slides.Count*OverrideRotationCount;
+                    // IsInOverrideCart = true;
+                    // OverrideProgress = 1.0;
+                    // OverrideSlideCountDown = ActiveCart.Slides.Count * OverrideRotationCount;
+
+                    var autoCart = Carts.FirstOrDefault(x => x.Name == "AUTO");
+                    if (autoCart == null)
+                    {
+                        autoCart = new ManagerCart("AUTO");
+                        Carts.Insert(0, autoCart);
+                    }
+
+                    // TODO NEW HANDLING
+                    if (Config.DataConfiguration.AutoCartClearTypes.Split(';').Contains(d.DataMessage.DataType))
+                    {
+                        // Need to clear the current active cart
+                        autoCart.Slides.Clear();
+                    }
+                    if (Config.DataConfiguration.AutoCartAppendTypes.Split(';').Contains(d.DataMessage.DataType))
+                    {
+                        // Need to append to current active cart
+                        CreateCartForDataFlowItem(d, autoCart);
+                    }
+                    if (Config.DataConfiguration.AutoCartGenerationTypes.Split(';').Contains(d.DataMessage.DataType))
+                    {
+                        // Need to create a new cart
+                        CreateCartForDataFlowItem(d, autoCart);
+                    }
+                    if (Config.DataConfiguration.AutoEditorTypes.Split(';').Contains(d.DataMessage.DataType))
+                    {
+                        // Need to update the editor's template
+                        if (Config.DataConfiguration.DataFlowLeftActions.Split(';').Contains("Template"))
+                        {
+                            // Load template to editor
+                            // Find appropriate template
+                            DataItemConfiguration conf = null;
+                            foreach (DataItemConfiguration c in Config.DataConfiguration.DataItemConfigurations)
+                            {
+                                if (c.DataType == d.DataMessage.DataType)
+                                {
+                                    conf = c;
+                                    break;
+                                }
+                            }
+                            // Load corresponding template
+                            if (conf != null)
+                            {
+                                var newTemplate = new ManagerImageReference(Config)
+                                {
+                                    Template = conf.DefaultTemplate,
+                                    Link = Config.SlidesConfiguration.DefaultLink,
+                                    CanRepeate = false
+                                };
+
+                                EditorImage = newTemplate;
+                            }
+                        }
+                        if (Config.DataConfiguration.DataFlowLeftActions.Split(';').Contains("BackgroundUrl"))
+                        {
+                            // Set the background Uri
+                            EditorImage.Background = d.Url;
+                        }
+                        if (Config.DataConfiguration.DataFlowLeftActions.Split(';').Contains("Context"))
+                        {
+                            // Set the context
+                            EditorImage.Context = d.DataMessage;
+                        }
+                        EditorImage.ReRender();
+                        EditorImage = EditorImage;
+                    }
                 }
             }
             if (_config.DataConfiguration.ImageFlowTypes.Split(';').Contains(message.DataType))
@@ -778,10 +969,21 @@ namespace io.ebu.eis.contentmanager
                     Priority = DataFlowPriority.Neglectable,
                     Timestamp = DateTime.Now
                 };
+                // Handle dupplicates in http
+                if (ImageFlowItems.Any(x => x.Timestamp > DateTime.Now.AddMinutes(-1) && x.Url == d.Url))
+                {
+                    // We already have it since less than a minute thus return and ignore it
+                    return;
+                }
+                // Handle empty names
                 if (string.IsNullOrEmpty(d.Name))
                 {
                     //Generate random name
                     d.Name = Guid.NewGuid().ToString() + ".jpg";
+                }
+                if (d.Name.StartsWith("INSTAGRAM"))
+                {
+                    d.Name = Guid.NewGuid().ToString() + "_instagram.jpg";
                 }
                 // Save the image to local folder
                 if (d.Url.StartsWith("http"))
@@ -794,7 +996,7 @@ namespace io.ebu.eis.contentmanager
                 ImageFlowItems.Add(d);
 
                 // Cleanup
-                while(ImageFlowItems.Count > 200)
+                while (ImageFlowItems.Count > 200)
                 {
                     ImageFlowItems.RemoveAt(0);
                 }

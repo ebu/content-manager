@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.Model;
 
@@ -50,6 +51,11 @@ namespace io.ebu.eis.data.s3
                         Console.WriteLine("An error occurred with the message '{0}' when writing an object",
                             amazonS3Exception.Message);
                     }
+                }
+                catch (AmazonServiceException ase)
+                {
+                    Console.WriteLine("An Service exception error occurred with the message '{0}' when writing an object",
+                            ase.Message);
                 }
                 return null;
             }

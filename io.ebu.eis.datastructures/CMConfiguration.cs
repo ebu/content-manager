@@ -63,11 +63,59 @@ namespace io.ebu.eis.datastructures
             get { return (String)this["DataFlowTypes"]; }
             set { this["DataFlowTypes"] = value; }
         }
+        [ConfigurationProperty("DataFlowLeftActions", DefaultValue = "Cart;Context", IsRequired = false)]
+        public String DataFlowLeftActions
+        {
+            get { return (String)this["DataFlowLeftActions"]; }
+            set { this["DataFlowLeftActions"] = value; }
+        }
+        [ConfigurationProperty("DataFlowRightActions", DefaultValue = "Cart;Context", IsRequired = false)]
+        public String DataFlowRightActions
+        {
+            get { return (String)this["DataFlowRightActions"]; }
+            set { this["DataFlowRightActions"] = value; }
+        }
+        [ConfigurationProperty("AutoCartClearTypes", DefaultValue = "", IsRequired = false)]
+        public String AutoCartClearTypes
+        {
+            get { return (String)this["AutoCartClearTypes"]; }
+            set { this["AutoCartClearTypes"] = value; }
+        }
+        [ConfigurationProperty("AutoCartAppendTypes", DefaultValue = "", IsRequired = false)]
+        public String AutoCartAppendTypes
+        {
+            get { return (String)this["AutoCartAppendTypes"]; }
+            set { this["AutoCartAppendTypes"] = value; }
+        }
+        [ConfigurationProperty("AutoCartGenerationTypes", DefaultValue = "", IsRequired = false)]
+        public String AutoCartGenerationTypes
+        {
+            get { return (String)this["AutoCartGenerationTypes"]; }
+            set { this["AutoCartGenerationTypes"] = value; }
+        }
+        [ConfigurationProperty("AutoEditorTypes", DefaultValue = "", IsRequired = false)]
+        public String AutoEditorTypes
+        {
+            get { return (String)this["AutoEditorTypes"]; }
+            set { this["AutoEditorTypes"] = value; }
+        }
         [ConfigurationProperty("ImageFlowTypes", DefaultValue = "", IsRequired = false)]
         public String ImageFlowTypes
         {
             get { return (String)this["ImageFlowTypes"]; }
             set { this["ImageFlowTypes"] = value; }
+        }
+        [ConfigurationProperty("ImageFlowLeftActions", DefaultValue = "Background", IsRequired = false)]
+        public String ImageFlowLeftActions
+        {
+            get { return (String)this["ImageFlowLeftActions"]; }
+            set { this["ImageFlowLeftActions"] = value; }
+        }
+        [ConfigurationProperty("ImageFlowRightActions", DefaultValue = "Background", IsRequired = false)]
+        public String ImageFlowRightActions
+        {
+            get { return (String)this["ImageFlowRightActions"]; }
+            set { this["ImageFlowRightActions"] = value; }
         }
         [ConfigurationProperty("DataBaseTypes", DefaultValue = "", IsRequired = false)]
         public String DataBaseTypes
@@ -103,10 +151,10 @@ namespace io.ebu.eis.datastructures
             set { this["StateConfigurationFile"] = value; }
         }
 
-        [ConfigurationProperty("DataItemDisplayConfigurations")]
-        public DataItemDisplayCollection DataItemDisplayConfigurations
+        [ConfigurationProperty("DataItemConfigurations")]
+        public DataItemCollection DataItemConfigurations
         {
-            get { return ((DataItemDisplayCollection)(base["DataItemDisplayConfigurations"])); }
+            get { return ((DataItemCollection)(base["DataItemConfigurations"])); }
         }
 
         [ConfigurationProperty("DataPriorityConfigurations")]
@@ -115,19 +163,19 @@ namespace io.ebu.eis.datastructures
             get { return ((DataPriorityCollection)(base["DataPriorityConfigurations"])); }
         }
 
-        [ConfigurationProperty("OnAirCartOverrideConfiguration")]
-        public OnAirCartOverrideCollection OnAirCartOverrideConfiguration
+        [ConfigurationProperty("OnAirCartAutoConfiguration")]
+        public OnAirCartAutoCollection OnAirCartAutoConfiguration
         {
-            get { return ((OnAirCartOverrideCollection)(base["OnAirCartOverrideConfiguration"])); }
+            get { return ((OnAirCartAutoCollection)(base["OnAirCartAutoConfiguration"])); }
         }
 
-        public DataItemDisplayConfiguration GetPathByDataType(string dataType)
+        public DataItemConfiguration GetPathByDataType(string dataType)
         {
-            if (DataItemDisplayConfigurations.Cast<DataItemDisplayConfiguration>().Count(e => e.DataType == dataType) > 0)
+            if (DataItemConfigurations.Cast<DataItemConfiguration>().Count(e => e.DataType == dataType) > 0)
             {
-                return DataItemDisplayConfigurations.Cast<DataItemDisplayConfiguration>().FirstOrDefault(e => e.DataType == dataType);
+                return DataItemConfigurations.Cast<DataItemConfiguration>().FirstOrDefault(e => e.DataType == dataType);
             }
-            return new DataItemDisplayConfiguration();
+            return new DataItemConfiguration();
         }
     }
 
@@ -290,27 +338,27 @@ namespace io.ebu.eis.datastructures
 
     }
 
-    [ConfigurationCollection(typeof(OnAirCartOverrideCondition), AddItemName = "OnAirCartOverrideCondition")]
-    public class OnAirCartOverrideCollection : ConfigurationElementCollection
+    [ConfigurationCollection(typeof(OnAirCartAutoCondition), AddItemName = "OnAirCartAutoCondition")]
+    public class OnAirCartAutoCollection : ConfigurationElementCollection
     {
         protected override ConfigurationElement CreateNewElement()
         {
-            return new OnAirCartOverrideCondition();
+            return new OnAirCartAutoCondition();
         }
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((OnAirCartOverrideCondition)(element)).DataPath + element.ToString();
+            return ((OnAirCartAutoCondition)(element)).DataPath + element.ToString();
         }
 
-        public OnAirCartOverrideCondition this[int idx]
+        public OnAirCartAutoCondition this[int idx]
         {
-            get { return (OnAirCartOverrideCondition)BaseGet(idx); }
+            get { return (OnAirCartAutoCondition)BaseGet(idx); }
         }
     }
 
 
-    public class OnAirCartOverrideCondition : ConfigurationElement
+    public class OnAirCartAutoCondition : ConfigurationElement
     {
         public override string ToString()
         {
@@ -381,6 +429,13 @@ namespace io.ebu.eis.datastructures
             set { this["ExpectedValue"] = value; }
         }
 
+        [ConfigurationProperty("Operator", DefaultValue = "EQUALS", IsRequired = false)]
+        public string Operator
+        {
+            get { return (string)this["Operator"]; }
+            set { this["Operator"] = value; }
+        }
+
         [ConfigurationProperty("Priority", DefaultValue = "Neglectable", IsRequired = false)]
         public string Priority
         {
@@ -390,26 +445,26 @@ namespace io.ebu.eis.datastructures
     }
 
 
-    [ConfigurationCollection(typeof(DataItemDisplayConfiguration), AddItemName = "DataItemDisplayConfiguration")]
-    public class DataItemDisplayCollection : ConfigurationElementCollection
+    [ConfigurationCollection(typeof(DataItemConfiguration), AddItemName = "DataItemConfiguration")]
+    public class DataItemCollection : ConfigurationElementCollection
     {
         protected override ConfigurationElement CreateNewElement()
         {
-            return new DataItemDisplayConfiguration();
+            return new DataItemConfiguration();
         }
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DataItemDisplayConfiguration)(element)).DataType + element.ToString();
+            return ((DataItemConfiguration)(element)).DataType + element.ToString();
         }
 
-        public DataItemDisplayConfiguration this[int idx]
+        public DataItemConfiguration this[int idx]
         {
-            get { return (DataItemDisplayConfiguration)BaseGet(idx); }
+            get { return (DataItemConfiguration)BaseGet(idx); }
         }
     }
 
-    public class DataItemDisplayConfiguration : ConfigurationElement
+    public class DataItemConfiguration : ConfigurationElement
     {
         public override string ToString()
         {
@@ -466,7 +521,19 @@ namespace io.ebu.eis.datastructures
             set { this["PriorityPath"] = value; }
         }
 
+        [ConfigurationProperty("DefaultCartName", DefaultValue = "", IsRequired = false)]
+        public string DefaultCartName
+        {
+            get { return (string)this["DefaultCartName"]; }
+            set { this["DefaultCartName"] = value; }
+        }
 
+        [ConfigurationProperty("DefaultTemplate", DefaultValue = "", IsRequired = false)]
+        public string DefaultTemplate
+        {
+            get { return (string)this["DefaultTemplate"]; }
+            set { this["DefaultTemplate"] = value; }
+        }
     }
 
 
@@ -575,6 +642,14 @@ namespace io.ebu.eis.datastructures
             get { return (bool)this["CanRepeat"]; }
             set { this["CanRepeat"] = value; }
         }
+
+        [ConfigurationProperty("ItemsPerSlide", DefaultValue = 4, IsRequired = false)]
+        public int ItemsPerSlide
+        {
+            get { return (int)this["ItemsPerSlide"]; }
+            set { this["ItemsPerSlide"] = value; }
+        }
+
 
         [ConfigurationProperty("DefaultLink", DefaultValue = "", IsRequired = false)]
         public string DefaultLink
