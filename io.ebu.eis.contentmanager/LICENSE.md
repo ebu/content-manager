@@ -18,3 +18,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 Multiple external libraries are used and referenced using NuGet Package Manager.
 According licenses are available on the repository sites. Other libraries not included using NuGet are listed explicitely below.
 
+#### AMQP.Client
+.NET/C# AMQP client library and WCF binding
+The library is open-source, and is dual-licensed under the Apache License v2 and the Mozilla Public License v1.1.
+http://www.rabbitmq.com/dotnet.html
+
+#### PhantomJS
+PhantomJS Nuget Packaget https://www.nuget.org/packages/PhantomJS/, 
+Licensed under BSD
+http://phantomjs.org, https://github.com/ariya/phantomjs/blob/master/LICENSE.BSD
+
+#### AWS SDK for .NET
+Licensed under Apache 2.0
+https://github.com/aws/aws-sdk-net/blob/master/License.txt
