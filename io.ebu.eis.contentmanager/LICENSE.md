@@ -18,7 +18,3 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 Multiple external libraries are used and referenced using NuGet Package Manager.
 According licenses are available on the repository sites. Other libraries not included using NuGet are listed explicitely below.
 
-##### WPF Theme
-The WPF Theme used in this project is based on @brianlagunas blog entry available at:
-http://brianlagunas.com/free-metro-light-and-dark-themes-for-wpf-and-silverlight-microsoft-controls/
-

@@ -1,6 +1,5 @@
 ﻿using System.Windows.Media;
 using io.ebu.eis.datastructures;
-using io.ebu.eis.notifications;
 using System;
 using System.Linq;
 using System.Threading;
@@ -9,19 +8,18 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
+using io.ebu.eis.contentmanager.Utils;
 
 namespace io.ebu.eis.contentmanager
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, IReporter
+    public partial class MainWindow : Window
     {
         private ManagerContext _context;
         private bool _running;
         private readonly object _synLock = new object();
-
-        private readonly IReporter _notifications;
 
         private DateTime _lastAutomationChange = DateTime.MinValue;
         private ManagerImageReference _lastSelectedManagerImageRef;
@@ -40,13 +38,6 @@ namespace io.ebu.eis.contentmanager
             var CurrentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
             string VersionNumber = CurrentAssembly.GetName().Version.ToString();
             Title = Title + " (" + VersionNumber + ")";
-
-
-            // Start Logging
-            _notifications = new MultiReporter();
-            var continuous = new ContinuousFileReporter("EBUio CM", true, true);
-            (_notifications as MultiReporter).Add(continuous);
-            (_notifications as MultiReporter).Add(this);
 
             _context = (ManagerContext)DataContext;
 
@@ -90,9 +81,6 @@ namespace io.ebu.eis.contentmanager
             }
             _context.Stop();
             _context.SerializeToFile();
-
-            // Close Notifications
-            _notifications.Dispose();
         }
 
 
@@ -308,7 +296,7 @@ namespace io.ebu.eis.contentmanager
                           }
                           catch (Exception ex)
                           {
-                              _notifications.NotifyException(ex, "Error importing cart from file.", NotificationLevel.Warning);
+                              // TODO LOG
                           }
                       }
                   }
@@ -774,7 +762,7 @@ namespace io.ebu.eis.contentmanager
             }
             catch (Exception ex)
             {
-                _notifications.NotifyException(ex, "Unable to move slide in preview Cart.", NotificationLevel.Error);
+                // TODO LOG
             }
         }
 
@@ -1102,31 +1090,6 @@ namespace io.ebu.eis.contentmanager
         }
 
         #endregion LayoutEdition
-
-
-        #region LoggingNotifications
-
-        public void NotifyException(Exception e, NotificationLevel level)
-        {
-
-        }
-
-        public void NotifyException(Exception e, string m, NotificationLevel level)
-        {
-
-        }
-
-        public void NotifyMessage(string m, NotificationLevel level)
-        {
-
-        }
-
-        public void Dispose()
-        {
-
-        }
-
-        #endregion LoggingNotifications
 
 
 

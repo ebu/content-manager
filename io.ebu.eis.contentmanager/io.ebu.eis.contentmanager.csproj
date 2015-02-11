@@ -68,7 +68,7 @@
     <Compile Include="NewCartWindow.xaml.cs">
       <DependentUpon>NewCartWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="RegistryHelper.cs" />
+    <Compile Include="Utils\RegistryHelper.cs" />
     <Compile Include="Utils\HeightAspectRatioConverter.cs" />
     <Compile Include="Utils\AspectRatioConverter.cs" />
     <Page Include="MainWindow.xaml">
@@ -177,10 +177,6 @@
     <ProjectReference Include="..\io.ebu.eis.mq\io.ebu.eis.mq.csproj">
       <Project>{36c58a7c-8fc5-4290-bcd5-8b56e2802497}</Project>
       <Name>io.ebu.eis.mq</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\io.ebu.eis.notifications\io.ebu.eis.notifications.csproj">
-      <Project>{bd2c81d0-839c-491c-8a1b-9ffc82453ead}</Project>
-      <Name>io.ebu.eis.notifications</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

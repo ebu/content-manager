@@ -4,7 +4,12 @@
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                     mc:Ignorable="d">
 
-	<!-- *********************************  RESOURCES  ********************************* -->
+    <!--##### WPF Theme
+    The WPF Theme used in this project is based on @brianlagunas blog entry available at:
+    http://brianlagunas.com/free-metro-light-and-dark-themes-for-wpf-and-silverlight-microsoft-controls/
+    It is stated as free as of 28 July 2014. -->
+    
+    <!-- *********************************  RESOURCES  ********************************* -->
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="Styles.WPF.xaml" />
 	</ResourceDictionary.MergedDictionaries>

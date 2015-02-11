@@ -5,7 +5,12 @@
                     xmlns:System="clr-namespace:System;assembly=mscorlib" 
                     mc:Ignorable="d">
 
-	<!-- *********************************  COLORS  ********************************* -->
+    <!--##### WPF Theme
+    The WPF Theme used in this project is based on @brianlagunas blog entry available at:
+    http://brianlagunas.com/free-metro-light-and-dark-themes-for-wpf-and-silverlight-microsoft-controls/
+    It is stated as free as of 28 July 2014. -->
+    
+    <!-- *********************************  COLORS  ********************************* -->
 	<ResourceDictionary.MergedDictionaries>
 		<ResourceDictionary Source="Theme.Colors.xaml" />
 	</ResourceDictionary.MergedDictionaries>

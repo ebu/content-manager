@@ -21,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "io.ebu.eis.canvasgenerator"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "io.ebu.eis.data.s3", "io.ebu.eis.data.s3\io.ebu.eis.data.s3.csproj", "{AFBC1F4D-B0AD-4AC8-8D0D-AC2B7298C4BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "io.ebu.eis.notifications", "io.ebu.eis.notifications\io.ebu.eis.notifications.csproj", "{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,16 +121,6 @@ Global
 		{AFBC1F4D-B0AD-4AC8-8D0D-AC2B7298C4BD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AFBC1F4D-B0AD-4AC8-8D0D-AC2B7298C4BD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{AFBC1F4D-B0AD-4AC8-8D0D-AC2B7298C4BD}.Release|x86.ActiveCfg = Release|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{BD2C81D0-839C-491C-8A1B-9FFC82453EAD}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
