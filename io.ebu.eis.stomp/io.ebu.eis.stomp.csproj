@@ -53,6 +53,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)Apache.NMS.Stomp.dll" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.dll"
+copy /Y "$(TargetDir)Apache.NMS.Stomp.pdb" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.pdb"
+copy /Y "$(TargetDir)Apache.NMS.Stomp.xml" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.xml"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
