@@ -24,26 +24,19 @@ namespace io.ebu.eis.datastructures
             set { this["DataConfiguration"] = value; }
         }
 
-        [ConfigurationProperty("MQConfiguration")]
-        public MQConfiguration MQConfiguration
+        [ConfigurationProperty("InputConfiguration")]
+        public InputConfiguration InputConfiguration
         {
-            get { return (MQConfiguration)this["MQConfiguration"]; }
-            set { this["MQConfiguration"] = value; }
+            get { return (InputConfiguration)this["InputConfiguration"]; }
+            set { this["InputConfiguration"] = value; }
         }
 
-        [ConfigurationProperty("S3Configuration")]
-        public S3Configuration S3Configuration
+        [ConfigurationProperty("OutputConfiguration")]
+        public OutputConfiguration OutputConfiguration
         {
-            get { return (S3Configuration)this["S3Configuration"]; }
-            set { this["S3Configuration"] = value; }
+            get { return (OutputConfiguration)this["OutputConfiguration"]; }
+            set { this["OutputConfiguration"] = value; }
         }
-
-        [ConfigurationProperty("OutputConfigurations")]
-        public OutputConfigurationCollection OutputConfigurations
-        {
-            get { return ((OutputConfigurationCollection)(base["OutputConfigurations"])); }
-        }
-
 
         [ConfigurationProperty("SlidesConfiguration")]
         public SlidesConfiguration SlidesConfiguration
@@ -179,6 +172,22 @@ namespace io.ebu.eis.datastructures
         }
     }
 
+    public class HTTPServerConfiguration : ConfigurationElement
+    {
+        [ConfigurationProperty("BindIp", DefaultValue = "0.0.0.0", IsRequired = true)]
+        public String BindIp
+        {
+            get { return (String)this["BindIp"]; }
+            set { this["BindIp"] = value; }
+        }
+        [ConfigurationProperty("BindPort", DefaultValue = "80", IsRequired = true)]
+        public int BindPort
+        {
+            get { return (int)this["BindPort"]; }
+            set { this["BindPort"] = value; }
+        }
+    }
+
     public class MQConfiguration : ConfigurationElement
     {
         [ConfigurationProperty("Uri", DefaultValue = "", IsRequired = true)]
@@ -188,57 +197,228 @@ namespace io.ebu.eis.datastructures
             set { this["Uri"] = value; }
         }
 
-        [ConfigurationProperty("DPExchange", DefaultValue = "", IsRequired = true)]
-        public String DPExchange
+        [ConfigurationProperty("Exchange", DefaultValue = "", IsRequired = true)]
+        public String Exchange
         {
-            get { return (String)this["DPExchange"]; }
-            set { this["DPExchange"] = value; }
-        }
-
-        [ConfigurationProperty("DDExchange", DefaultValue = "", IsRequired = true)]
-        public String DDExchange
-        {
-            get { return (String)this["DDExchange"]; }
-            set { this["DDExchange"] = value; }
+            get { return (String)this["Exchange"]; }
+            set { this["Exchange"] = value; }
         }
 
     }
 
-    public class S3Configuration : ConfigurationElement
+    public class InputConfiguration : ConfigurationElement
     {
-        [ConfigurationProperty("AWSAccessKey", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("InputType", DefaultValue = "HTTP", IsRequired = true)]
+        public String InputType
+        {
+            get { return (String)this["InputType"]; }
+            set { this["InputType"] = value; }
+        }
+
+        [ConfigurationProperty("HTTPServerConfiguration")]
+        public HTTPServerConfiguration HTTPServerConfiguration
+        {
+            get { return (HTTPServerConfiguration)this["HTTPServerConfiguration"]; }
+            set { this["HTTPServerConfiguration"] = value; }
+        }
+
+        [ConfigurationProperty("MQConfiguration")]
+        public MQConfiguration MQConfiguration
+        {
+            get { return (MQConfiguration)this["MQConfiguration"]; }
+            set { this["MQConfiguration"] = value; }
+        }
+
+    }
+
+    public class OutputConfiguration : ConfigurationElement
+    {
+        [ConfigurationProperty("EnableDataDispatchMQ", DefaultValue = false, IsRequired = true)]
+        public bool EnableDataDispatchMQ
+        {
+            get { return (bool)this["EnableDataDispatchMQ"]; }
+            set { this["EnableDataDispatchMQ"] = value; }
+        }
+
+        [ConfigurationProperty("MQConfiguration")]
+        public MQConfiguration MQConfiguration
+        {
+            get { return (MQConfiguration)this["MQConfiguration"]; }
+            set { this["MQConfiguration"] = value; }
+        }
+
+        [ConfigurationProperty("UploadConfigurations")]
+        public UploadConfigurationCollection UploadConfigurations
+        {
+            get { return ((UploadConfigurationCollection)(base["UploadConfigurations"])); }
+        }
+        
+        [ConfigurationProperty("ImageOutputConfigurations")]
+        public ImageOutputConfigurationCollection ImageOutputConfigurations
+        {
+            get { return ((ImageOutputConfigurationCollection)(base["ImageOutputConfigurations"])); }
+        }
+    }
+
+    [ConfigurationCollection(typeof(UploadConfiguration), AddItemName = "UploadConfiguration")]
+    public class UploadConfigurationCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new UploadConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((UploadConfiguration)(element)).Type + ((UploadConfiguration)(element)).PublicUriBase + element.ToString();
+        }
+
+        public UploadConfiguration this[int idx]
+        {
+            get { return (UploadConfiguration)BaseGet(idx); }
+        }
+    }
+
+    public class UploadConfiguration : ConfigurationElement
+    {
+
+        [ConfigurationProperty("Type", DefaultValue = "FILE", IsRequired = true)]
+        public String Type
+        {
+            get { return (String)this["Type"]; }
+            set { this["Type"] = value; }
+        }
+
+        [ConfigurationProperty("AWSAccessKey", DefaultValue = "", IsRequired = false)]
         public String AWSAccessKey
         {
             get { return (String)this["AWSAccessKey"]; }
             set { this["AWSAccessKey"] = value; }
         }
 
-        [ConfigurationProperty("AWSSecretKey", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("AWSSecretKey", DefaultValue = "", IsRequired = false)]
         public String AWSSecretKey
         {
             get { return (String)this["AWSSecretKey"]; }
             set { this["AWSSecretKey"] = value; }
         }
 
-        [ConfigurationProperty("S3BucketName", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("S3BucketName", DefaultValue = "", IsRequired = false)]
         public String S3BucketName
         {
             get { return (String)this["S3BucketName"]; }
             set { this["S3BucketName"] = value; }
         }
 
-        [ConfigurationProperty("S3Subfolder", DefaultValue = "", IsRequired = true)]
-        public String S3Subfolder
+        [ConfigurationProperty("Subfolder", DefaultValue = "", IsRequired = false)]
+        public String Subfolder
         {
-            get { return (String)this["S3Subfolder"]; }
-            set { this["S3Subfolder"] = value; }
+            get { return (String)this["Subfolder"]; }
+            set { this["Subfolder"] = value; }
         }
 
-        [ConfigurationProperty("S3PublicUriBase", DefaultValue = "", IsRequired = true)]
-        public String S3PublicUriBase
+        [ConfigurationProperty("DestinationPath", DefaultValue = "", IsRequired = false)]
+        public String DestinationPath
         {
-            get { return (String)this["S3PublicUriBase"]; }
-            set { this["S3PublicUriBase"] = value; }
+            get { return (String)this["DestinationPath"]; }
+            set { this["DestinationPath"] = value; }
+        }
+
+        [ConfigurationProperty("UniqueFilename", DefaultValue = "", IsRequired = false)]
+        public String UniqueFilename
+        {
+            get { return (String)this["UniqueFilename"]; }
+            set { this["UniqueFilename"] = value; }
+        }
+
+
+        [ConfigurationProperty("FtpServer", DefaultValue = "", IsRequired = false)]
+        public String FtpServer
+        {
+            get { return (String)this["FtpServer"]; }
+            set { this["FtpServer"] = value; }
+        }
+        [ConfigurationProperty("FtpUsername", DefaultValue = "", IsRequired = false)]
+        public String FtpUsername
+        {
+            get { return (String)this["FtpUsername"]; }
+            set { this["FtpUsername"] = value; }
+        }
+        [ConfigurationProperty("FtpPassword", DefaultValue = "", IsRequired = false)]
+        public String FtpPassword
+        {
+            get { return (String)this["FtpPassword"]; }
+            set { this["FtpPassword"] = value; }
+        }
+
+        [ConfigurationProperty("PublicUriBase", DefaultValue = "", IsRequired = true)]
+        public String PublicUriBase
+        {
+            get { return (String)this["PublicUriBase"]; }
+            set { this["PublicUriBase"] = value; }
+        }
+
+        [ConfigurationProperty("DispatchConfigurations", IsRequired = false)]
+        public DispatchConfigurationCollection DispatchConfigurations
+        {
+            get { return ((DispatchConfigurationCollection)(base["DispatchConfigurations"])); }
+        }
+    }
+
+    [ConfigurationCollection(typeof(DispatchConfiguration), AddItemName = "DispatchConfiguration")]
+    public class DispatchConfigurationCollection : ConfigurationElementCollection
+    {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new DispatchConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((DispatchConfiguration)(element)).Type + element.ToString();
+        }
+
+        public DispatchConfiguration this[int idx]
+        {
+            get { return (DispatchConfiguration)BaseGet(idx); }
+        }
+    }
+
+
+    public class DispatchConfiguration : ConfigurationElement
+    {
+
+        [ConfigurationProperty("Type", DefaultValue = "FILE", IsRequired = true)]
+        public String Type
+        {
+            get { return (String)this["Type"]; }
+            set { this["Type"] = value; }
+        }
+
+        [ConfigurationProperty("StompUri", DefaultValue = "", IsRequired = false)]
+        public String StompUri
+        {
+            get { return (String)this["StompUri"]; }
+            set { this["StompUri"] = value; }
+        }
+        [ConfigurationProperty("StompUsername", DefaultValue = "", IsRequired = false)]
+        public String StompUsername
+        {
+            get { return (String)this["StompUsername"]; }
+            set { this["StompUsername"] = value; }
+        }
+        [ConfigurationProperty("StompPassword", DefaultValue = "", IsRequired = false)]
+        public String StompPassword
+        {
+            get { return (String)this["StompPassword"]; }
+            set { this["StompPassword"] = value; }
+        }
+
+        [ConfigurationProperty("StompTopic", DefaultValue = "", IsRequired = true)]
+        public String StompTopic
+        {
+            get { return (String)this["StompTopic"]; }
+            set { this["StompTopic"] = value; }
         }
 
     }
@@ -267,26 +447,26 @@ namespace io.ebu.eis.datastructures
 
     }
 
-    [ConfigurationCollection(typeof(OutputConfiguration), AddItemName = "OutputConfiguration")]
-    public class OutputConfigurationCollection : ConfigurationElementCollection
+    [ConfigurationCollection(typeof(ImageOutputConfiguration), AddItemName = "ImageOutputConfiguration")]
+    public class ImageOutputConfigurationCollection : ConfigurationElementCollection
     {
         protected override ConfigurationElement CreateNewElement()
         {
-            return new OutputConfiguration();
+            return new ImageOutputConfiguration();
         }
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((OutputConfiguration)(element)).Name + element.ToString();
+            return ((ImageOutputConfiguration)(element)).Name + element.ToString();
         }
 
-        public OutputConfiguration this[int idx]
+        public ImageOutputConfiguration this[int idx]
         {
-            get { return (OutputConfiguration)BaseGet(idx); }
+            get { return (ImageOutputConfiguration)BaseGet(idx); }
         }
     }
 
-    public class OutputConfiguration : ConfigurationElement
+    public class ImageOutputConfiguration : ConfigurationElement
     {
         public override string ToString()
         {

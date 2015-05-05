@@ -9,4 +9,11 @@
 
 ### Configuration
 
+#### Input Configuration
+The Input Configuration defines from where data is ingested or brought into the Content Manager.
+The following two options are availble
 
+* MQ
+* HTTP
+
+	InputType="MQ"

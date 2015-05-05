@@ -19,7 +19,7 @@ namespace io.ebu.eis.mq
         private string _amqpUri;
         private string _amqpExchange;
 
-        private IAMQDataMessageHandler _handler;
+        private IDataMessageHandler _handler;
 
         private Thread _t;
         private bool _running = false;
@@ -32,7 +32,7 @@ namespace io.ebu.eis.mq
         public bool Connected { get { return _connected; } set { _connected = value; OnPropertyChanged("Connected"); } }
         private string _filter;
 
-        public AMQConsumer(string uri, string exchange, IAMQDataMessageHandler handler)
+        public AMQConsumer(string uri, string exchange, IDataMessageHandler handler)
         {
             _amqpUri = uri;
             _amqpExchange = exchange;

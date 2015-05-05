@@ -1,4 +1,5 @@
 ﻿using io.ebu.eis.canvasgenerator;
+using io.ebu.eis.data.file;
 using io.ebu.eis.data.s3;
 using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
@@ -16,6 +17,8 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using io.ebu.eis.data.ftp;
+using io.ebu.eis.stomp;
 
 namespace io.ebu.eis.contentmanager
 {
@@ -291,7 +294,7 @@ namespace io.ebu.eis.contentmanager
             {
                 return null;
             }
-            
+
             var templateHtml = File.ReadAllText(Template);
 
             // Replace @@values@@ with context Values
@@ -428,7 +431,7 @@ namespace io.ebu.eis.contentmanager
             if (PreviewImage != null)
             {
                 // Save image to temporary location
-                foreach (OutputConfiguration output in Config.OutputConfigurations)
+                foreach (ImageOutputConfiguration output in Config.OutputConfiguration.ImageOutputConfigurations)
                 {
                     var imagePath = "";
 
@@ -483,11 +486,65 @@ namespace io.ebu.eis.contentmanager
 
                     }
 
-                    // Upload Image to Amazon S3
-                    var publicUrl = AWSS3Uploader.Upload(imagePath, Config.S3Configuration.AWSAccessKey,
-                            Config.S3Configuration.AWSSecretKey, Config.S3Configuration.S3BucketName,
-                            Config.S3Configuration.S3Subfolder, Config.S3Configuration.S3PublicUriBase);
+                    // Upload Image to Amazon S3 and other Destination Uploads
+                    var publicUrl = "";
+                    foreach (UploadConfiguration outConf in Config.OutputConfiguration.UploadConfigurations)
+                    {
+                        try
+                        {
+                            switch (outConf.Type.ToUpper())
+                            {
+                                case "S3":
+                                    {
+                                        publicUrl = AWSS3Uploader.Upload(imagePath, outConf.AWSAccessKey,
+                                            outConf.AWSSecretKey, outConf.S3BucketName, outConf.Subfolder,
+                                            outConf.PublicUriBase);
+                                    }
+                                    break;
+                                case "FILE":
+                                    {
+                                        publicUrl = SystemFileUploader.Upload(imagePath, outConf.DestinationPath,
+                                            outConf.PublicUriBase);
+                                    }
+                                    break;
+                                case "FTP":
+                                    {
+                                        publicUrl = FtpFileUploader.Upload(imagePath, outConf.FtpServer,
+                                            outConf.FtpUsername, outConf.FtpPassword, outConf.Subfolder,
+                                            outConf.UniqueFilename, outConf.PublicUriBase);
+                                    }
+                                    break;
+                                default:
+                                    // TODO Log error
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Catch all exception to avoid crash and continue operations
+                            // TODO Log and handle
+                        }
 
+                        // Dispatch Message
+                        foreach (DispatchConfiguration dispatch in outConf.DispatchConfigurations)
+                        {
+                            switch (dispatch.Type.ToUpper())
+                            {
+                                case "STOMP":
+                                    {
+                                        var stompConnection = new StompTopicSender();
+                                        stompConnection.SendStompImage(dispatch.StompUri, dispatch.StompUsername,
+                                            dispatch.StompPassword, dispatch.StompTopic, publicUrl, Link, "");
+                                    }
+                                    break;
+                                default:
+                                    // TODO Log unknown
+                                    break;
+                            }
+                        }
+                    }
+
+                    // TODO Handle multiple Output PublicUrls, last one wins
                     // Add to variants
                     ImageVariants.Add(new ImageVariant() { Name = output.Name, Url = publicUrl });
 

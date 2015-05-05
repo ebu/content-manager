@@ -166,6 +166,14 @@
       <Project>{490ca7a2-b578-490f-9561-4892d96969d4}</Project>
       <Name>io.ebu.eis.canvasgenerator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.data.file\io.ebu.eis.data.file.csproj">
+      <Project>{06e8f7af-da76-4f90-bcc6-b43aabd4414c}</Project>
+      <Name>io.ebu.eis.data.file</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.data.ftp\io.ebu.eis.data.ftp.csproj">
+      <Project>{4d97fb11-b83b-47df-8fe2-70a94a10385d}</Project>
+      <Name>io.ebu.eis.data.ftp</Name>
+    </ProjectReference>
     <ProjectReference Include="..\io.ebu.eis.data.s3\io.ebu.eis.data.s3.csproj">
       <Project>{afbc1f4d-b0ad-4ac8-8d0d-ac2b7298c4bd}</Project>
       <Name>io.ebu.eis.data.s3</Name>
@@ -174,9 +182,17 @@
       <Project>{7ce61fc1-d140-4eb3-b2a0-efd395f8d1db}</Project>
       <Name>io.ebu.eis.datastructures</Name>
     </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.http\io.ebu.eis.http.csproj">
+      <Project>{3e251eb6-130a-49e1-80b7-ba98879162d1}</Project>
+      <Name>io.ebu.eis.http</Name>
+    </ProjectReference>
     <ProjectReference Include="..\io.ebu.eis.mq\io.ebu.eis.mq.csproj">
       <Project>{36c58a7c-8fc5-4290-bcd5-8b56e2802497}</Project>
       <Name>io.ebu.eis.mq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.stomp\io.ebu.eis.stomp.csproj">
+      <Project>{02a3fd2c-6dc9-434f-a28a-cb8aff8d50ea}</Project>
+      <Name>io.ebu.eis.stomp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

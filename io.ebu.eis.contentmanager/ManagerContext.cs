@@ -16,18 +16,21 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using io.ebu.eis.http;
 using io.ebu.eis.mq;
 
 namespace io.ebu.eis.contentmanager
 {
     [DataContract]
-    public class ManagerContext : INotifyPropertyChanged, IAMQDataMessageHandler
+    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler
     {
         private CMConfigurationSection _config;
         public CMConfigurationSection Config { get { return _config; } }
 
         private AMQConsumer _dataInConnection;
         private AMQQueuePublisher _dataOutConnection;
+
+        private CMHttpServer _dataInHttpServer;
 
         private bool _inAutomationMode;
         [DataMember(Name = "inautomationmode")]
@@ -153,16 +156,39 @@ namespace io.ebu.eis.contentmanager
             var sortImage = new SortDescription { Direction = ListSortDirection.Descending, PropertyName = "Timestamp" };
             ImageFlowItemsView.SortDescriptions.Add(sortImage);
 
-            // Open Connection to INBOUND and OUTBOUND MQ
-            var amquri = _config.MQConfiguration.Uri;
-            var amqinexchange = _config.MQConfiguration.DPExchange;
-            _dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
-            _dataInConnection.Connect();
+            #region INPUTS
+            // Open Connection to INBOUND MQ
+            if (_config.InputConfiguration.InputType.ToUpper().Contains("MQ"))
+            {
+                var amquri = _config.InputConfiguration.MQConfiguration.Uri;
+                var amqinexchange = _config.InputConfiguration.MQConfiguration.Exchange;
+                _dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
 
-            var amqoutexchange = _config.MQConfiguration.DDExchange;
-            _dataOutConnection = new AMQQueuePublisher(amquri, amqoutexchange);
-            _dataOutConnection.Connect();
-            // TODO Catch hand handle connection exceptions and reconnect
+                // TODO Catch hand handle connection exceptions and reconnect
+                _dataInConnection.Connect();
+            }
+            // Open Connection to INBOUND HTTP
+            if (_config.InputConfiguration.InputType.ToUpper().Contains("HTTP"))
+            {
+                var httpBindIp = _config.InputConfiguration.HTTPServerConfiguration.BindIp;
+                var httpBindPort = _config.InputConfiguration.HTTPServerConfiguration.BindPort;
+                var _dataInHttpServer = new CMHttpServer(httpBindIp, httpBindPort, this);
+                _dataInHttpServer.Start();
+            }
+            #endregion INPUTS
+
+            #region OUTPUTS
+            // Open Connection to OUTBOUND MQ
+            if(_config.OutputConfiguration.EnableDataDispatchMQ)
+            {
+                var amquri = _config.OutputConfiguration.MQConfiguration.Uri;
+                var amqoutexchange = _config.OutputConfiguration.MQConfiguration.Exchange;
+                _dataOutConnection = new AMQQueuePublisher(amquri, amqoutexchange);
+
+                // TODO Catch hand handle connection exceptions and reconnect
+                _dataOutConnection.Connect();
+            }
+            #endregion OUTPUTS
 
             if (!ResetFomrFile())
             {
@@ -244,8 +270,13 @@ namespace io.ebu.eis.contentmanager
 
         public void Stop()
         {
-            _dataInConnection.Disconnect();
-            _dataOutConnection.Disconnect();
+            // Close MQs if they exist
+            if (_dataInConnection != null)
+                _dataInConnection.Disconnect();
+            if (_dataOutConnection != null)
+                _dataOutConnection.Disconnect();
+            if (_dataInHttpServer != null)
+                _dataInHttpServer.Stop();
         }
 
         public void LoadCarts(bool loadAll, bool cleanReload)
@@ -537,12 +568,15 @@ namespace io.ebu.eis.contentmanager
                 ImageVariants = MainImage.ImageVariants
             };
 
-            _dataOutConnection.Dispatch(m);
+            if (_dataOutConnection != null)
+            {
+                _dataOutConnection.Dispatch(m);
+            }
         }
 
         public void ResetAllPriorities()
         {
-            foreach(var d in DataFlowItems)
+            foreach (var d in DataFlowItems)
             {
                 SetFlowItemPriority(d);
                 d.Name = d.DataMessage.GetValue(_config.DataConfiguration.GetPathByDataType(d.DataMessage.DataType).NamePath);
@@ -629,7 +663,7 @@ namespace io.ebu.eis.contentmanager
                 case "high": return DataFlowPriority.High;
                 case "medium": return DataFlowPriority.Medium;
                 case "low": return DataFlowPriority.Low;
-                case "green": return DataFlowPriority.Green;    
+                case "green": return DataFlowPriority.Green;
                 case "neglectable": return DataFlowPriority.Neglectable;
             }
             return DataFlowPriority.Unknown;
