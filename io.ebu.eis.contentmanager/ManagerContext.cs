@@ -1,21 +1,15 @@
-﻿using System.Configuration;
-using System.Data.Odbc;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
-using io.ebu.eis.canvasgenerator;
+using System.Windows.Data;
 using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Data;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using io.ebu.eis.http;
 using io.ebu.eis.mq;
 
@@ -24,11 +18,11 @@ namespace io.ebu.eis.contentmanager
     [DataContract]
     public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler, IDisposable
     {
-        private CMConfigurationSection _config;
+        private readonly CMConfigurationSection _config;
         public CMConfigurationSection Config { get { return _config; } }
 
-        private List<AMQQueuePublisher> _publishers = new List<AMQQueuePublisher>();
-        private List<IDisposable> _disposables = new List<IDisposable>();
+        private readonly List<AMQQueuePublisher> _publishers = new List<AMQQueuePublisher>();
+        private readonly List<IDisposable> _disposables = new List<IDisposable>();
 
         private bool _inAutomationMode;
         [DataMember(Name = "inautomationmode")]
@@ -38,27 +32,27 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "automationinterval")]
         public int AutomationInterval { get { return _automationInterval; } set { _automationInterval = value; OnPropertyChanged("AutomationInterval"); } }
 
-        private double automationProgress = 0.0;
-        public double AutomationProgress { get { return automationProgress; } set { automationProgress = value; OnPropertyChanged("AutomationProgress"); } }
+        private double _automationProgress;
+        public double AutomationProgress { get { return _automationProgress; } set { _automationProgress = value; OnPropertyChanged("AutomationProgress"); } }
 
-        private bool _isInOverrideCart = false;
+        private bool _isInOverrideCart;
         public bool IsInOverrideCart { get { return _isInOverrideCart; } set { _isInOverrideCart = value; OnPropertyChanged("IsInOverrideCart"); } }
 
         private bool _allowOverride = true;
         [DataMember(Name = "allowoverride")]
         public bool AllowOverride { get { return _allowOverride; } set { _allowOverride = value; OnPropertyChanged("AllowOverride"); } }
 
-        private int _overrideSlideCountDown = 0;
+        private int _overrideSlideCountDown;
         public int OverrideSlideCountDown { get { return _overrideSlideCountDown; } set { _overrideSlideCountDown = value; OnPropertyChanged("OverrideSlideCountDown"); } }
 
         private int _overrideRotationCount = 3;
         [DataMember(Name = "overriderotationcount")]
         public int OverrideRotationCount { get { return _overrideRotationCount; } set { _overrideRotationCount = value; OnPropertyChanged("OverrideRotationCount"); } }
 
-        private double overrideProgress = 0.0;
-        public double OverrideProgress { get { return overrideProgress; } set { overrideProgress = value; OnPropertyChanged("OverrideProgress"); } }
+        private double _overrideProgress;
+        public double OverrideProgress { get { return _overrideProgress; } set { _overrideProgress = value; OnPropertyChanged("OverrideProgress"); } }
 
-        private bool _editModeEnabled = false;
+        private bool _editModeEnabled;
         [DataMember(Name = "editmodeenabled", IsRequired = false)]
         public bool EditModeEnabled
         {
@@ -181,9 +175,7 @@ namespace io.ebu.eis.contentmanager
                             _disposables.Add(dataInHttpServer);
                         }
                         break;
-                    default:
-                        // TODO Handle and log
-                        break;
+                    // TODO Handle and log default
                 }
             }
 
@@ -274,6 +266,7 @@ namespace io.ebu.eis.contentmanager
                 }
                 catch (Exception)
                 {
+                    // TODO Log
                 }
             }
             return false;
@@ -303,9 +296,11 @@ namespace io.ebu.eis.contentmanager
             {
                 if (loadAll || Carts.Count(x => x.Name == cart.Name) == 0)
                 {
-                    var c = new ManagerCart(cart.Name);
-                    c.CanBeDeleted = false;
-                    c.ShowInCartList = cart.ShowInCartList;
+                    var c = new ManagerCart(cart.Name)
+                    {
+                        CanBeDeleted = false,
+                        ShowInCartList = cart.ShowInCartList
+                    };
 
                     Carts.Add(c);
 
@@ -395,9 +390,9 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                var title = new DataMessage() { Key = "TITLE", Value = Path.GetFileName(file) };
-                var url = new DataMessage() { Key = "URL", Value = file };
-                var type = new DataMessage() { Key = "TYPE", Value = Path.GetExtension(file) };
+                var title = new DataMessage() {Key = "TITLE", Value = Path.GetFileName(file)};
+                var url = new DataMessage() {Key = "URL", Value = file};
+                var type = new DataMessage() {Key = "TYPE", Value = Path.GetExtension(file)};
                 var im = new DataMessage()
                 {
                     DataType = "IMAGE",
@@ -410,7 +405,10 @@ namespace io.ebu.eis.contentmanager
 
                 OnReceive(im);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // TODO Log
+            }
         }
 
         public void SwitchToNextSlide()
@@ -444,16 +442,16 @@ namespace io.ebu.eis.contentmanager
         private bool CartDislpayFilter(object item)
         {
             ManagerCart data = item as ManagerCart;
-            return data.ShowInCartList;
+            return data != null && data.ShowInCartList;
         }
 
         /** DATAFLOW Filter **/
         private bool DataFlowNameFilter(object item)
         {
             DataFlowItem data = item as DataFlowItem;
-            return data.Name.ToLower().Contains(_dataFlowFilterString.ToLower())
-                || data.Category.ToLower().Contains(_dataFlowFilterString.ToLower())
-                || data.Type.ToLower().Contains(_dataFlowFilterString.ToLower());
+            return data != null && (data.Name.ToLower().Contains(_dataFlowFilterString.ToLower())
+                                    || data.Category.ToLower().Contains(_dataFlowFilterString.ToLower())
+                                    || data.Type.ToLower().Contains(_dataFlowFilterString.ToLower()));
         }
         private string _dataFlowFilterString = "";
         public string DataFlowFilterString
@@ -471,9 +469,9 @@ namespace io.ebu.eis.contentmanager
         private bool ImageFlowNameFilter(object item)
         {
             DataFlowItem data = item as DataFlowItem;
-            return data.Name.ToLower().Contains(_imageFlowFilterString.ToLower())
-                || data.Category.ToLower().Contains(_imageFlowFilterString.ToLower())
-                || data.Type.ToLower().Contains(_imageFlowFilterString.ToLower());
+            return data != null && (data.Name.ToLower().Contains(_imageFlowFilterString.ToLower())
+                                    || data.Category.ToLower().Contains(_imageFlowFilterString.ToLower())
+                                    || data.Type.ToLower().Contains(_imageFlowFilterString.ToLower()));
         }
         private string _imageFlowFilterString = "";
         public string ImageFlowFilterString
@@ -684,15 +682,7 @@ namespace io.ebu.eis.contentmanager
         public void CreateCartForDataFlowItem(DataFlowItem m, ManagerCart appentToThisCart)
         {
 
-            DataItemConfiguration conf = null;
-            foreach (DataItemConfiguration c in Config.DataConfiguration.DataItemConfigurations)
-            {
-                if (c.DataType == m.DataMessage.DataType)
-                {
-                    conf = c;
-                    break;
-                }
-            }
+            var conf = Config.DataConfiguration.DataItemConfigurations.Cast<DataItemConfiguration>().FirstOrDefault(c => c.DataType == m.DataMessage.DataType);
 
             // Configure which DataTypes generate Carts
             //var cartName = "";
@@ -723,27 +713,35 @@ namespace io.ebu.eis.contentmanager
                             bool ordered = false;
                             try
                             {
-                                ath.Data =
-                                    ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                        .ThenBy(x => Convert.ToInt32("0" + x.Key))
-                                        .ToList();
-                                ordered = true;
+                                if (ath != null)
+                                {
+                                    ath.Data =
+                                        ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                            .ThenBy(x => Convert.ToInt32("0" + x.Key))
+                                            .ToList();
+                                    ordered = true;
+                                }
                             }
                             catch (Exception)
                             {
+                                // TODO Log
                             }
                             if (!ordered)
                             {
                                 // Try alpha order
                                 try
                                 {
-                                    ath.Data =
-                                        ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                            .ThenBy(x => x.Key)
-                                            .ToList();
+                                    if (ath != null)
+                                    {
+                                        ath.Data =
+                                            ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                                .ThenBy(x => x.Key)
+                                                .ToList();
+                                    }
                                 }
                                 catch (Exception)
                                 {
+                                    // TODO Log
                                 }
                             }
 
@@ -751,7 +749,7 @@ namespace io.ebu.eis.contentmanager
                             newCart.Slides.First().Context = context;
                             var itemsPerSlide = newCart.Slides.First().ItemsPerSlide;
                             var offset = itemsPerSlide;
-                            while (ath.Data.Count > itemsPerSlide)
+                            while (ath != null && ath.Data.Count > itemsPerSlide)
                             {
                                 var clone = ath.Clone();
                                 clone.Data.RemoveRange(0, itemsPerSlide);
@@ -779,34 +777,43 @@ namespace io.ebu.eis.contentmanager
                             bool ordered = false;
                             try
                             {
-                                ath.Data =
-                                    ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                        .ThenBy(x => Convert.ToInt32("0" + x.Key))
-                                        .ToList();
-                                ordered = true;
+                                if (ath != null)
+                                {
+                                    ath.Data =
+                                        ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                            .ThenBy(x => Convert.ToInt32("0" + x.Key))
+                                            .ToList();
+
+                                    ordered = true;
+                                }
                             }
                             catch (Exception)
                             {
+                                // TODO Log
                             }
                             if (!ordered)
                             {
                                 // Try alpha order
                                 try
                                 {
-                                    ath.Data =
-                                        ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
-                                            .ThenBy(x => x.Key)
-                                            .ToList();
+                                    if (ath != null)
+                                    {
+                                        ath.Data =
+                                            ath.Data.OrderBy(s => string.IsNullOrWhiteSpace(s.Key))
+                                                .ThenBy(x => x.Key)
+                                                .ToList();
+                                    }
                                 }
                                 catch (Exception)
                                 {
+                                    // TODO Log
                                 }
                             }
 
                             newCart.Slides.First().Context = context;
                             var itemsPerSlide = newCart.Slides.First().ItemsPerSlide;
                             var offset = itemsPerSlide;
-                            while (ath.Data.Count > itemsPerSlide)
+                            while (ath != null && ath.Data.Count > itemsPerSlide)
                             {
                                 var clone = ath.Clone();
                                 clone.Data.RemoveRange(0, itemsPerSlide);
@@ -964,15 +971,7 @@ namespace io.ebu.eis.contentmanager
                         {
                             // Load template to editor
                             // Find appropriate template
-                            DataItemConfiguration conf = null;
-                            foreach (DataItemConfiguration c in Config.DataConfiguration.DataItemConfigurations)
-                            {
-                                if (c.DataType == d.DataMessage.DataType)
-                                {
-                                    conf = c;
-                                    break;
-                                }
-                            }
+                            var conf = Config.DataConfiguration.DataItemConfigurations.Cast<DataItemConfiguration>().FirstOrDefault(c => c.DataType == d.DataMessage.DataType);
                             // Load corresponding template
                             if (conf != null)
                             {
@@ -1065,7 +1064,10 @@ namespace io.ebu.eis.contentmanager
                     myWebClient.DownloadFile(url, localpath);
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // TODO Log
+            }
         }
 
         #region DummyData
