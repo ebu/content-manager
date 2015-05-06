@@ -31,10 +31,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Apache.NMS">
-      <HintPath>..\packages\Apache.NMS.1.7.0\lib\net40\Apache.NMS.dll</HintPath>
+      <HintPath>..\packages\Apache.NMS.1.5.1\lib\net40\Apache.NMS.dll</HintPath>
     </Reference>
     <Reference Include="Apache.NMS.Stomp">
-      <HintPath>..\packages\Apache.NMS.Stomp.1.5.4\lib\net40\Apache.NMS.Stomp.dll</HintPath>
+      <HintPath>..\packages\Apache.NMS.Stomp.1.5.3\lib\net40\Apache.NMS.Stomp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,7 +56,7 @@
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetDir)Apache.NMS.Stomp.dll" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.dll"
 copy /Y "$(TargetDir)Apache.NMS.Stomp.pdb" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.pdb"
-copy /Y "$(TargetDir)Apache.NMS.Stomp.xml" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.xml"</PostBuildEvent>
+REM copy /Y "$(TargetDir)Apache.NMS.Stomp.xml" "$(SolutionDir)io.ebu.eis.contentmanager/$(OutDir)Apache.NMS.Stomp.xml"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -59,11 +59,13 @@ namespace io.ebu.eis.stomp
                 using (IConnection connection = factory.CreateConnection(username, password))
                 using (ISession session = connection.CreateSession())
                 {
-                    var destination = SessionUtil.GetDestination(session, topic.Replace("/topic/", ""), DestinationType.Topic);
+                    var destination = SessionUtil.GetDestination(session, topic.Replace("/topic/", ""),
+                        DestinationType.Topic);
                     var topicListener = topic.ToString();
-                   
-                    var destinationListener = SessionUtil.GetDestination(session, topicListener.Replace("/topic/", ""), DestinationType.Topic);
-                    
+
+                    var destinationListener = SessionUtil.GetDestination(session, topicListener.Replace("/topic/", ""),
+                        DestinationType.Topic);
+
                     // Create a consumer and producer 
                     using (IMessageConsumer consumer = session.CreateConsumer(destinationListener))
                     using (IMessageProducer producer = session.CreateProducer(destination))
@@ -93,7 +95,7 @@ namespace io.ebu.eis.stomp
 
 
                         // Wait for the message
-                        _semaphore.WaitOne((int)_receiveTimeout.TotalMilliseconds, true);
+                        _semaphore.WaitOne((int) _receiveTimeout.TotalMilliseconds, true);
                         if (_message == null)
                         {
                             // TODO Log no message received
@@ -109,9 +111,14 @@ namespace io.ebu.eis.stomp
                     connection.Close();
                 }
             }
+            catch (TypeLoadException te)
+            {
+                // TODO could mean password is wrong and dll did not load
+            }
             catch (Exception e)
             {
                 // TODO Log Exceptions
+                
             }
         }
 
