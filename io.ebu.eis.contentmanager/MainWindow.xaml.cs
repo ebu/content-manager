@@ -15,7 +15,7 @@ namespace io.ebu.eis.contentmanager
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         private ManagerContext _context;
         private bool _running;
@@ -35,9 +35,9 @@ namespace io.ebu.eis.contentmanager
             InitializeComponent();
 
             // Window Title
-            var CurrentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-            string VersionNumber = CurrentAssembly.GetName().Version.ToString();
-            Title = Title + " (" + VersionNumber + ")";
+            var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+            string versionNumber = currentAssembly.GetName().Version.ToString();
+            Title = Title + " (" + versionNumber + ")";
 
             _context = (ManagerContext)DataContext;
 
@@ -79,7 +79,7 @@ namespace io.ebu.eis.contentmanager
             {
                 Monitor.PulseAll(_synLock);
             }
-            _context.Stop();
+            _context.Dispose();
             _context.SerializeToFile();
         }
 
@@ -114,10 +114,6 @@ namespace io.ebu.eis.contentmanager
 
                             if (_context.IsInOverrideCart)
                             {
-                                var millisToOverride = Math.Max(0,
-                                    _lastAutomationChange.AddSeconds(_context.AutomationInterval)
-                                        .Subtract(DateTime.Now)
-                                        .TotalMilliseconds);
                                 _context.OverrideProgress = (0.0 + millisToNextChange +
                                                              1000 * _context.OverrideSlideCountDown * _context.AutomationInterval) /
                                                             (_context.OverrideRotationCount *
@@ -173,7 +169,9 @@ namespace io.ebu.eis.contentmanager
                             Clipboard.SetText(_context.MainImage.PublicImageUrl);
                     }
                     catch (Exception)
-                    { }
+                    {
+                        // TODO Log 
+                    }
                 }, null);
             }
         }
@@ -200,15 +198,14 @@ namespace io.ebu.eis.contentmanager
 
         private void ClearTextField_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button)
+            var button = sender as Button;
+            if (button != null)
             {
-                var btn = sender as Button;
+                var btn = button;
                 var context = btn.DataContext;
-                if (context is ManagerTemplateField)
-                {
-                    var field = context as ManagerTemplateField;
-                    field.Value = "";
-                }
+                if (!(context is ManagerTemplateField)) return;
+                var field = context as ManagerTemplateField;
+                field.Value = "";
             }
         }
 
@@ -275,33 +272,32 @@ namespace io.ebu.eis.contentmanager
           (SendOrPostCallback)delegate
           {
               _context = (ManagerContext)DataContext;
-              var data = e.Data;
               if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
               {
                   string[] droppedFilePaths = e.Data.GetData(DataFormats.FileDrop, true) as string[];
-                  foreach (var path in droppedFilePaths)
-                  {
-                      if (path.EndsWith(".cartjson"))
+                  if (droppedFilePaths != null)
+                      foreach (var path in droppedFilePaths)
                       {
-                          var json = System.IO.File.ReadAllText(path);
-                          try
+                          if (path.EndsWith(".cartjson"))
                           {
-                              var newCart = JsonSerializer.Deserialize<ManagerCart>(json);
-                              newCart.CanBeDeleted = true;
-                              newCart.ShowInCartList = true;
-                              newCart.IsActive = false;
-                              foreach (var s in newCart.Slides)
-                                  s.Config = _context.Config;
-                              _context.Carts.Add(newCart);
-                          }
-                          catch (Exception ex)
-                          {
-                              // TODO LOG
+                              var json = System.IO.File.ReadAllText(path);
+                              try
+                              {
+                                  var newCart = JsonSerializer.Deserialize<ManagerCart>(json);
+                                  newCart.CanBeDeleted = true;
+                                  newCart.ShowInCartList = true;
+                                  newCart.IsActive = false;
+                                  foreach (var s in newCart.Slides)
+                                      s.Config = _context.Config;
+                                  _context.Carts.Add(newCart);
+                              }
+                              catch (Exception)
+                              {
+                                  // TODO LOG
+                              }
                           }
                       }
-                  }
               }
-
           }, null);
         }
 
@@ -310,18 +306,22 @@ namespace io.ebu.eis.contentmanager
         {
             _context = (ManagerContext)DataContext;
 
-            if (e.OriginalSource is ListBoxItem)
+            var item = e.OriginalSource as ListBoxItem;
+            if (item != null)
             {
-                var lbi = e.OriginalSource as ListBoxItem;
+                var lbi = item;
 
-                if (lbi.Content is ManagerCart)
+                var managerCart = lbi.Content as ManagerCart;
+                if (managerCart != null)
                 {
-                    var cart = lbi.Content as ManagerCart;
+                    var cart = managerCart;
 
-                    Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-                    dlg.FileName = cart.Name;
-                    dlg.DefaultExt = ".cartjson";
-                    dlg.Filter = "Cart JSON File (.cartjson)|*.cartjson";
+                    Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog
+                    {
+                        FileName = cart.Name,
+                        DefaultExt = ".cartjson",
+                        Filter = "Cart JSON File (.cartjson)|*.cartjson"
+                    };
                     bool? result = dlg.ShowDialog();
                     if (result == true)
                     {
@@ -361,12 +361,14 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                if (sender is Grid)
+                var grid1 = sender as Grid;
+                if (grid1 != null)
                 {
-                    var grid = sender as Grid;
-                    if (grid.DataContext is DataFlowItem)
+                    var grid = grid1;
+                    var item = grid.DataContext as DataFlowItem;
+                    if (item != null)
                     {
-                        var m = grid.DataContext as DataFlowItem;
+                        var m = item;
 
                         //if (_context.Config.DataConfiguration.AutoCartClearTypes.Split(';').Contains(m.DataMessage.DataType))
                         //{
@@ -390,15 +392,7 @@ namespace io.ebu.eis.contentmanager
                             {
                                 // Load template to editor
                                 // Find appropriate template
-                                DataItemConfiguration conf = null;
-                                foreach (DataItemConfiguration c in _context.Config.DataConfiguration.DataItemConfigurations)
-                                {
-                                    if (c.DataType == m.DataMessage.DataType)
-                                    {
-                                        conf = c;
-                                        break;
-                                    }
-                                }
+                                var conf = _context.Config.DataConfiguration.DataItemConfigurations.Cast<DataItemConfiguration>().FirstOrDefault(c => c.DataType == m.DataMessage.DataType);
                                 // Load corresponding template
                                 if (conf != null)
                                 {
@@ -428,7 +422,7 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO HAndle and not generic Exceltion
             }
@@ -466,12 +460,13 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                if (sender is Grid)
+                var grid = sender as Grid;
+                if (grid != null)
                 {
-                    var grid = sender as Grid;
-                    if (grid.DataContext is DataFlowItem)
+                    var item = grid.DataContext as DataFlowItem;
+                    if (item != null)
                     {
-                        var m = grid.DataContext as DataFlowItem;
+                        var m = item;
 
                         //if (_context.Config.DataConfiguration.AutoCartClearTypes.Split(';').Contains(m.DataMessage.DataType))
                         //{
@@ -495,15 +490,7 @@ namespace io.ebu.eis.contentmanager
                             {
                                 // Load template to editor
                                 // Find appropriate template
-                                DataItemConfiguration conf = null;
-                                foreach (DataItemConfiguration c in _context.Config.DataConfiguration.DataItemConfigurations)
-                                {
-                                    if (c.DataType == m.DataMessage.DataType)
-                                    {
-                                        conf = c;
-                                        break;
-                                    }
-                                }
+                                var conf = _context.Config.DataConfiguration.DataItemConfigurations.Cast<DataItemConfiguration>().FirstOrDefault(c => c.DataType == m.DataMessage.DataType);
                                 // Load corresponding template
                                 if (conf != null)
                                 {
@@ -533,7 +520,7 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO HAndle and not generic Exceltion
             }
@@ -543,12 +530,13 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                if (sender is Grid)
+                var grid = sender as Grid;
+                if (grid != null)
                 {
-                    var grid = sender as Grid;
-                    if (grid.DataContext is DataFlowItem)
+                    var item = grid.DataContext as DataFlowItem;
+                    if (item != null)
                     {
-                        var m = grid.DataContext as DataFlowItem;
+                        var m = item;
 
                         //if (_context.Config.DataConfiguration.AutoCartClearTypes.Split(';').Contains(m.DataMessage.DataType))
                         //{
@@ -572,15 +560,7 @@ namespace io.ebu.eis.contentmanager
                             {
                                 // Load template to editor
                                 // Find appropriate template
-                                DataItemConfiguration conf = null;
-                                foreach (DataItemConfiguration c in _context.Config.DataConfiguration.DataItemConfigurations)
-                                {
-                                    if (c.DataType == m.DataMessage.DataType)
-                                    {
-                                        conf = c;
-                                        break;
-                                    }
-                                }
+                                var conf = _context.Config.DataConfiguration.DataItemConfigurations.Cast<DataItemConfiguration>().FirstOrDefault(c => c.DataType == m.DataMessage.DataType);
                                 // Load corresponding template
                                 if (conf != null)
                                 {
@@ -610,7 +590,7 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO HAndle and not generic Exceltion
             }
@@ -623,16 +603,15 @@ namespace io.ebu.eis.contentmanager
           (SendOrPostCallback)delegate
           {
               _context = (ManagerContext)DataContext;
-              var data = e.Data;
               if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
               {
                   string[] droppedFilePaths = e.Data.GetData(DataFormats.FileDrop, true) as string[];
-                  foreach (var path in droppedFilePaths)
-                  {
-                      _context.IngestImage(path);
-                  }
+                  if (droppedFilePaths != null)
+                      foreach (var path in droppedFilePaths)
+                      {
+                          _context.IngestImage(path);
+                      }
               }
-
           }, null);
 
         }
@@ -657,9 +636,10 @@ namespace io.ebu.eis.contentmanager
 
             while (element != null)
             {
-                if (element is ListBoxItem)
+                var item = element as ListBoxItem;
+                if (item != null)
                 {
-                    _dragged = (ListBoxItem)element;
+                    _dragged = item;
                     break;
                 }
                 element = VisualTreeHelper.GetParent(element) as UIElement;
@@ -674,9 +654,10 @@ namespace io.ebu.eis.contentmanager
                 _dragged = null;
                 return;
             }
-
+            // ReSharper disable once AssignNullToNotNullAttribute
             DataObject obj = new DataObject(DataFormats.Text, _dragged.ToString());
             DragDrop.DoDragDrop(_dragged, obj, DragDropEffects.All);
+
         }
 
 
@@ -696,10 +677,12 @@ namespace io.ebu.eis.contentmanager
         private void CartListElement_Drop(object sender, DragEventArgs e)
         {
             // Add to cart
-            if (sender is Grid && _dragged != null)
+            var grid1 = sender as Grid;
+            if (grid1 != null && _dragged != null)
             {
-                var grid = sender as Grid;
-                if (grid.DataContext is ManagerCart)
+                var grid = grid1;
+                var context = grid.DataContext as ManagerCart;
+                if (context != null)
                 {
                     // Remove from Preview Cart
                     var slide = (ManagerImageReference)(_dragged).DataContext;
@@ -707,7 +690,7 @@ namespace io.ebu.eis.contentmanager
                     {
                         // CTRL is hold thus copy
                         // Clone and add
-                        var cart = grid.DataContext as ManagerCart;
+                        var cart = context;
                         cart.Slides.Add(slide.Clone());
                     }
                     else
@@ -716,7 +699,7 @@ namespace io.ebu.eis.contentmanager
                         // Remove
                         _context.PreviewCart.Slides.Remove(slide);
                         // Add to cart
-                        var cart = grid.DataContext as ManagerCart;
+                        var cart = context;
                         cart.Slides.Add(slide);
                     }
 
@@ -742,25 +725,29 @@ namespace io.ebu.eis.contentmanager
                     UIElement element = PreviewCartListBox.InputHitTest(e.GetPosition(PreviewCartListBox)) as UIElement;
                     while (element != null)
                     {
-                        if (element is ListBoxItem)
+                        var to = element as ListBoxItem;
+                        if (to != null)
                         {
-                            dropTo = (ListBoxItem)element;
+                            dropTo = to;
                             break;
                         }
                         element = VisualTreeHelper.GetParent(element) as UIElement;
                     }
 
-                    var dropToSlide = (ManagerImageReference)(dropTo).DataContext;
-                    var dropIndex = _context.PreviewCart.Slides.IndexOf(dropToSlide);
-                    var slideIndex = _context.PreviewCart.Slides.IndexOf(slide);
-                    if (slideIndex < dropIndex)
-                        dropIndex--;
+                    if (dropTo != null)
+                    {
+                        var dropToSlide = (ManagerImageReference)(dropTo).DataContext;
+                        var dropIndex = _context.PreviewCart.Slides.IndexOf(dropToSlide);
+                        var slideIndex = _context.PreviewCart.Slides.IndexOf(slide);
+                        if (slideIndex < dropIndex)
+                            dropIndex--;
 
-                    _context.PreviewCart.Slides.Remove(slide);
-                    _context.PreviewCart.Slides.Insert(dropIndex, slide);
+                        _context.PreviewCart.Slides.Remove(slide);
+                        _context.PreviewCart.Slides.Insert(dropIndex, slide);
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO LOG
             }
@@ -774,17 +761,17 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                if (sender is ListBox)
+                var listBox = sender as ListBox;
+                if (listBox != null)
                 {
-                    var box = sender as ListBox;
-                    if (box.SelectedItem is ManagerCart)
+                    var cart = listBox.SelectedItem as ManagerCart;
+                    if (cart != null)
                     {
-                        var selectedCart = box.SelectedItem as ManagerCart;
-                        _lastSelectedCart = selectedCart;
+                        _lastSelectedCart = cart;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO HAndle and not generic Exceltion
             }
@@ -886,9 +873,11 @@ namespace io.ebu.eis.contentmanager
             var name = NewCartWindow.Show(this);
             if (!string.IsNullOrEmpty(name))
             {
-                var c = new ManagerCart(name);
-                c.CanBeDeleted = true;
-                c.ShowInCartList = true;
+                var c = new ManagerCart(name)
+                {
+                    CanBeDeleted = true,
+                    ShowInCartList = true
+                };
 
                 _context.Carts.Add(c);
                 _context.PreviewCart = c;
@@ -905,20 +894,19 @@ namespace io.ebu.eis.contentmanager
           (SendOrPostCallback)delegate
           {
               _context = (ManagerContext)DataContext;
-              var data = e.Data;
               if (e.Data.GetDataPresent(DataFormats.FileDrop, true))
               {
                   string[] droppedFilePaths = e.Data.GetData(DataFormats.FileDrop, true) as string[];
-                  foreach (var path in droppedFilePaths)
-                  {
-                      if (path.EndsWith(".html"))
+                  if (droppedFilePaths != null)
+                      foreach (var path in droppedFilePaths)
                       {
-                          // Add the template as slide to the Templates list
-                          _context.AddEditorTemplate(path);
+                          if (path.EndsWith(".html"))
+                          {
+                              // Add the template as slide to the Templates list
+                              _context.AddEditorTemplate(path);
+                          }
                       }
-                  }
               }
-
           }, null);
         }
 
@@ -931,7 +919,7 @@ namespace io.ebu.eis.contentmanager
                 _context = (ManagerContext)DataContext;
                 if (e.AddedItems.Count > 0 && e.AddedItems[0] is ManagerImageReference)
                 {
-                    _lastSelectedEditorImageRef = e.AddedItems[0] as ManagerImageReference;
+                    _lastSelectedEditorImageRef = (ManagerImageReference) e.AddedItems[0];
                     //_context.EditorImage = _lastSelectedEditorImageRef.Clone();
                 }
 
@@ -942,12 +930,12 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                if (sender is Grid)
+                var grid = sender as Grid;
+                if (grid != null)
                 {
-                    var grid = sender as Grid;
-                    if (grid.DataContext is ManagerImageReference)
+                    var template = grid.DataContext as ManagerImageReference;
+                    if (template != null)
                     {
-                        var template = grid.DataContext as ManagerImageReference;
                         var newTemplate = template.Clone();
                         if (_context.EditorImage != null)
                         {
@@ -960,10 +948,9 @@ namespace io.ebu.eis.contentmanager
                         }
                         _context.EditorImage = newTemplate;
                     }
-
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // TODO
             }
@@ -1021,7 +1008,7 @@ namespace io.ebu.eis.contentmanager
         {
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is ManagerImageReference)
             {
-                _lastSelectedManagerImageRef = e.AddedItems[0] as ManagerImageReference;
+                _lastSelectedManagerImageRef = (ManagerImageReference) e.AddedItems[0];
             }
         }
 
