@@ -22,15 +22,13 @@ using io.ebu.eis.mq;
 namespace io.ebu.eis.contentmanager
 {
     [DataContract]
-    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler
+    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler, IDisposable
     {
         private CMConfigurationSection _config;
         public CMConfigurationSection Config { get { return _config; } }
 
-        private AMQConsumer _dataInConnection;
-        private AMQQueuePublisher _dataOutConnection;
-
-        private CMHttpServer _dataInHttpServer;
+        private List<AMQQueuePublisher> _publishers = new List<AMQQueuePublisher>();
+        private List<IDisposable> _disposables = new List<IDisposable>();
 
         private bool _inAutomationMode;
         [DataMember(Name = "inautomationmode")]
@@ -158,35 +156,51 @@ namespace io.ebu.eis.contentmanager
 
             #region INPUTS
             // Open Connection to INBOUND MQ
-            if (_config.InputConfiguration.InputType.ToUpper().Contains("MQ"))
+            foreach (InputConfiguration input in _config.InputConfigurations)
             {
-                var amquri = _config.InputConfiguration.MQConfiguration.Uri;
-                var amqinexchange = _config.InputConfiguration.MQConfiguration.Exchange;
-                _dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
+                switch (input.Type.ToUpper())
+                {
+                    case "MQ":
+                        {
+                            var amquri = input.MQUri;
+                            var amqinexchange = input.MQExchange;
+                            var dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
+                            dataInConnection.Connect();
+                            // TODO Catch hand handle connection exceptions and reconnect
 
-                // TODO Catch hand handle connection exceptions and reconnect
-                _dataInConnection.Connect();
+                            _disposables.Add(dataInConnection);
+                        }
+                        break;
+                    case "HTTP":
+                        {
+                            var httpBindIp = input.BindIp;
+                            var httpBindPort = input.BindPort;
+                            var dataInHttpServer = new CMHttpServer(httpBindIp, httpBindPort, this);
+                            dataInHttpServer.Start();
+
+                            _disposables.Add(dataInHttpServer);
+                        }
+                        break;
+                    default:
+                        // TODO Handle and log
+                        break;
+                }
             }
-            // Open Connection to INBOUND HTTP
-            if (_config.InputConfiguration.InputType.ToUpper().Contains("HTTP"))
-            {
-                var httpBindIp = _config.InputConfiguration.HTTPServerConfiguration.BindIp;
-                var httpBindPort = _config.InputConfiguration.HTTPServerConfiguration.BindPort;
-                var _dataInHttpServer = new CMHttpServer(httpBindIp, httpBindPort, this);
-                _dataInHttpServer.Start();
-            }
+
             #endregion INPUTS
 
             #region OUTPUTS
             // Open Connection to OUTBOUND MQ
-            if(_config.OutputConfiguration.EnableDataDispatchMQ)
+            if (_config.OutputConfiguration.EnableDataDispatchMQ)
             {
-                var amquri = _config.OutputConfiguration.MQConfiguration.Uri;
-                var amqoutexchange = _config.OutputConfiguration.MQConfiguration.Exchange;
-                _dataOutConnection = new AMQQueuePublisher(amquri, amqoutexchange);
-
+                var amquri = _config.OutputConfiguration.DispatchMQConfiguration.MQUri;
+                var amqoutexchange = _config.OutputConfiguration.DispatchMQConfiguration.MQExchange;
+                var dataOutConnection = new AMQQueuePublisher(amquri, amqoutexchange);
+                dataOutConnection.Connect();
+                _publishers.Add(dataOutConnection);
                 // TODO Catch hand handle connection exceptions and reconnect
-                _dataOutConnection.Connect();
+
+                _disposables.Add(dataOutConnection);
             }
             #endregion OUTPUTS
 
@@ -195,6 +209,14 @@ namespace io.ebu.eis.contentmanager
                 LoadCarts(true, false);
                 LoadInitialImages();
                 LoadReceivedImages();
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var disposable in _disposables)
+            {
+                disposable.Dispose();
             }
         }
 
@@ -268,16 +290,6 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
-        public void Stop()
-        {
-            // Close MQs if they exist
-            if (_dataInConnection != null)
-                _dataInConnection.Disconnect();
-            if (_dataOutConnection != null)
-                _dataOutConnection.Disconnect();
-            if (_dataInHttpServer != null)
-                _dataInHttpServer.Stop();
-        }
 
         public void LoadCarts(bool loadAll, bool cleanReload)
         {
@@ -568,9 +580,9 @@ namespace io.ebu.eis.contentmanager
                 ImageVariants = MainImage.ImageVariants
             };
 
-            if (_dataOutConnection != null)
+            foreach (var pub in _publishers)
             {
-                _dataOutConnection.Dispatch(m);
+                pub.Dispatch(m);
             }
         }
 
@@ -1134,5 +1146,6 @@ namespace io.ebu.eis.contentmanager
             }
         }
         #endregion PropertyChanged
+
     }
 }

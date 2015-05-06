@@ -9,7 +9,7 @@ using io.ebu.eis.datastructures;
 
 namespace io.ebu.eis.http
 {
-    public class CMHttpServer
+    public class CMHttpServer: IDisposable
     {
         private string _bindIp;
         private int _bindPort;
@@ -76,6 +76,11 @@ namespace io.ebu.eis.http
                     // TODO LOG
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Stop();
         }
     }
 

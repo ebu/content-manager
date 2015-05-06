@@ -24,11 +24,10 @@ namespace io.ebu.eis.datastructures
             set { this["DataConfiguration"] = value; }
         }
 
-        [ConfigurationProperty("InputConfiguration")]
-        public InputConfiguration InputConfiguration
+        [ConfigurationProperty("InputConfigurations")]
+        public InputConfigurationCollection InputConfigurations
         {
-            get { return (InputConfiguration)this["InputConfiguration"]; }
-            set { this["InputConfiguration"] = value; }
+            get { return ((InputConfigurationCollection)(base["InputConfigurations"])); }
         }
 
         [ConfigurationProperty("OutputConfiguration")]
@@ -172,8 +171,35 @@ namespace io.ebu.eis.datastructures
         }
     }
 
-    public class HTTPServerConfiguration : ConfigurationElement
+    [ConfigurationCollection(typeof(InputConfiguration), AddItemName = "InputConfiguration")]
+    public class InputConfigurationCollection : ConfigurationElementCollection
     {
+        protected override ConfigurationElement CreateNewElement()
+        {
+            return new InputConfiguration();
+        }
+
+        protected override object GetElementKey(ConfigurationElement element)
+        {
+            return ((InputConfiguration)(element)).Type + element.ToString();
+        }
+
+        public InputConfiguration this[int idx]
+        {
+            get { return (InputConfiguration)BaseGet(idx); }
+        }
+    }
+
+    public class InputConfiguration : ConfigurationElement
+    {
+        [ConfigurationProperty("Type", DefaultValue = "HTTP", IsRequired = true)]
+        public String Type
+        {
+            get { return (String)this["Type"]; }
+            set { this["Type"] = value; }
+        }
+
+        // HTTP Settings
         [ConfigurationProperty("BindIp", DefaultValue = "0.0.0.0", IsRequired = true)]
         public String BindIp
         {
@@ -186,47 +212,20 @@ namespace io.ebu.eis.datastructures
             get { return (int)this["BindPort"]; }
             set { this["BindPort"] = value; }
         }
-    }
 
-    public class MQConfiguration : ConfigurationElement
-    {
-        [ConfigurationProperty("Uri", DefaultValue = "", IsRequired = true)]
-        public String Uri
+        // MQ Settings
+        [ConfigurationProperty("MQUri", DefaultValue = "", IsRequired = true)]
+        public String MQUri
         {
-            get { return (String)this["Uri"]; }
-            set { this["Uri"] = value; }
+            get { return (String)this["MQUri"]; }
+            set { this["MQUri"] = value; }
         }
 
-        [ConfigurationProperty("Exchange", DefaultValue = "", IsRequired = true)]
-        public String Exchange
+        [ConfigurationProperty("MQExchange", DefaultValue = "", IsRequired = true)]
+        public String MQExchange
         {
-            get { return (String)this["Exchange"]; }
-            set { this["Exchange"] = value; }
-        }
-
-    }
-
-    public class InputConfiguration : ConfigurationElement
-    {
-        [ConfigurationProperty("InputType", DefaultValue = "HTTP", IsRequired = true)]
-        public String InputType
-        {
-            get { return (String)this["InputType"]; }
-            set { this["InputType"] = value; }
-        }
-
-        [ConfigurationProperty("HTTPServerConfiguration")]
-        public HTTPServerConfiguration HTTPServerConfiguration
-        {
-            get { return (HTTPServerConfiguration)this["HTTPServerConfiguration"]; }
-            set { this["HTTPServerConfiguration"] = value; }
-        }
-
-        [ConfigurationProperty("MQConfiguration")]
-        public MQConfiguration MQConfiguration
-        {
-            get { return (MQConfiguration)this["MQConfiguration"]; }
-            set { this["MQConfiguration"] = value; }
+            get { return (String)this["MQExchange"]; }
+            set { this["MQExchange"] = value; }
         }
 
     }
@@ -240,11 +239,11 @@ namespace io.ebu.eis.datastructures
             set { this["EnableDataDispatchMQ"] = value; }
         }
 
-        [ConfigurationProperty("MQConfiguration")]
-        public MQConfiguration MQConfiguration
+        [ConfigurationProperty("DispatchMQConfiguration")]
+        public DispatchMQConfiguration DispatchMQConfiguration
         {
-            get { return (MQConfiguration)this["MQConfiguration"]; }
-            set { this["MQConfiguration"] = value; }
+            get { return (DispatchMQConfiguration)this["DispatchMQConfiguration"]; }
+            set { this["DispatchMQConfiguration"] = value; }
         }
 
         [ConfigurationProperty("UploadConfigurations")]
@@ -258,6 +257,24 @@ namespace io.ebu.eis.datastructures
         {
             get { return ((ImageOutputConfigurationCollection)(base["ImageOutputConfigurations"])); }
         }
+    }
+
+    public class DispatchMQConfiguration : ConfigurationElement
+    {
+        [ConfigurationProperty("MQUri", DefaultValue = "", IsRequired = true)]
+        public String MQUri
+        {
+            get { return (String)this["MQUri"]; }
+            set { this["MQUri"] = value; }
+        }
+
+        [ConfigurationProperty("MQExchange", DefaultValue = "", IsRequired = true)]
+        public String MQExchange
+        {
+            get { return (String)this["MQExchange"]; }
+            set { this["MQExchange"] = value; }
+        }
+
     }
 
     [ConfigurationCollection(typeof(UploadConfiguration), AddItemName = "UploadConfiguration")]

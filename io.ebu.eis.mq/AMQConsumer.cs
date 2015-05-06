@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace io.ebu.eis.mq
 {
-    public class AMQConsumer : INotifyPropertyChanged
+    public class AMQConsumer : INotifyPropertyChanged, IDisposable
     {
         private string _amqpUri;
         private string _amqpExchange;
@@ -148,5 +148,10 @@ namespace io.ebu.eis.mq
             }
         }
         #endregion PropertyChanged
+
+        public void Dispose()
+        {
+            Disconnect();
+        }
     }
 }

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace io.ebu.eis.mq
 {
-    public class AMQQueuePublisher
+    public class AMQQueuePublisher: IDisposable
     {
         private string _amqpUri;
         private string _amqpExchange;
@@ -71,5 +71,10 @@ namespace io.ebu.eis.mq
             }
         }
 
+
+        public void Dispose()
+        {
+            Disconnect();
+        }
     }
 }
