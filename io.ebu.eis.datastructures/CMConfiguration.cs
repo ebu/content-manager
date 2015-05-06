@@ -197,13 +197,13 @@ namespace io.ebu.eis.datastructures
         }
 
         // HTTP Settings
-        [ConfigurationProperty("BindIp", DefaultValue = "0.0.0.0", IsRequired = true)]
+        [ConfigurationProperty("BindIp", DefaultValue = "0.0.0.0", IsRequired = false)]
         public String BindIp
         {
             get { return (String)this["BindIp"]; }
             set { this["BindIp"] = value; }
         }
-        [ConfigurationProperty("BindPort", DefaultValue = "80", IsRequired = true)]
+        [ConfigurationProperty("BindPort", DefaultValue = "80", IsRequired = false)]
         public int BindPort
         {
             get { return (int)this["BindPort"]; }
@@ -211,14 +211,14 @@ namespace io.ebu.eis.datastructures
         }
 
         // MQ Settings
-        [ConfigurationProperty("MQUri", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("MQUri", DefaultValue = "", IsRequired = false)]
         public String MQUri
         {
             get { return (String)this["MQUri"]; }
             set { this["MQUri"] = value; }
         }
 
-        [ConfigurationProperty("MQExchange", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("MQExchange", DefaultValue = "", IsRequired = false)]
         public String MQExchange
         {
             get { return (String)this["MQExchange"]; }
@@ -236,7 +236,7 @@ namespace io.ebu.eis.datastructures
             set { this["EnableDataDispatchMQ"] = value; }
         }
 
-        [ConfigurationProperty("DispatchMQConfiguration")]
+        [ConfigurationProperty("DispatchMQConfiguration", IsRequired = false)]
         public DispatchMQConfiguration DispatchMQConfiguration
         {
             get { return (DispatchMQConfiguration)this["DispatchMQConfiguration"]; }

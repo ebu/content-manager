@@ -78,9 +78,6 @@
     <Content Include="templates\empty.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="templates\zurichsample001.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="templates\index.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
