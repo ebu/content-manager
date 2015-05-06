@@ -1,28 +1,24 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
+using System.Text;
+using System.Threading;
 using io.ebu.eis.datastructures;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using RabbitMQ.Client.Exceptions;
-using SMPAG.MM.MMConnector;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace io.ebu.eis.mq
 {
     public class AMQConsumer : INotifyPropertyChanged, IDisposable
     {
-        private string _amqpUri;
-        private string _amqpExchange;
+        private readonly string _amqpUri;
+        private readonly string _amqpExchange;
 
-        private IDataMessageHandler _handler;
+        private readonly IDataMessageHandler _handler;
 
         private Thread _t;
-        private bool _running = false;
+        private bool _running;
 
         private AMQClient _amq;
         private IConnection _conn;
@@ -44,15 +40,13 @@ namespace io.ebu.eis.mq
             try
             {
                 _filter = filter;
-                ConnectionFactory factory = new ConnectionFactory();
-                factory.Uri = _amqpUri;
+                var factory = new ConnectionFactory {Uri = _amqpUri};
 
                 _conn = factory.CreateConnection();
-                _amq = new AMQClient();
-                _amq.channel = _conn.CreateModel();
+                _amq = new AMQClient {Channel = _conn.CreateModel()};
 
-                _amq.channel.ExchangeDeclare(_amqpExchange, "topic");
-                var queueName = _amq.channel.QueueDeclare();
+                _amq.Channel.ExchangeDeclare(_amqpExchange, "topic");
+                var queueName = _amq.Channel.QueueDeclare();
 
                 // TODO Handle filtering of message
                 //if (args.Length < 1)
@@ -65,13 +59,13 @@ namespace io.ebu.eis.mq
 
                 //foreach (var bindingKey in args)
                 //{
-                _amq.channel.QueueBind(queueName, _amqpExchange, filter);
+                _amq.Channel.QueueBind(queueName, _amqpExchange, filter);
                 //}
 
                 //Console.WriteLine(" [*] Waiting for messages. " + "To exit press CTRL+C");
 
-                _consumer = new QueueingBasicConsumer(_amq.channel);
-                _amq.channel.BasicConsume(queueName, true, _consumer);
+                _consumer = new QueueingBasicConsumer(_amq.Channel);
+                _amq.Channel.BasicConsume(queueName, true, _consumer);
 
                 // Start Processing in other Thread
                 _running = true;
@@ -81,7 +75,7 @@ namespace io.ebu.eis.mq
                 Console.WriteLine("AMQConsumer started and connected to " + _amqpUri + ":" + _amqpExchange);
                 Connected = true;
             }
-            catch (BrokerUnreachableException bu)
+            catch (BrokerUnreachableException)
             {
                 // Retry in 1sec
                 Thread.Sleep(1000);
@@ -98,11 +92,14 @@ namespace io.ebu.eis.mq
             {
                 _consumer.Queue.Enqueue(new BasicDeliverEventArgs());
                 _consumer.Queue.Close();
-                _amq.channel.Close();
+                _amq.Channel.Close();
                 _conn.Close();
                 Connected = false;
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // TODO Log
+            }
         }
 
         private void Process()
@@ -111,7 +108,7 @@ namespace io.ebu.eis.mq
             {
                 try
                 {
-                    var ea = (BasicDeliverEventArgs) _consumer.Queue.Dequeue();
+                    var ea = _consumer.Queue.Dequeue();
                     var body = ea.Body;
                     var message = Encoding.UTF8.GetString(body);
                     //var routingKey = ea.RoutingKey;
@@ -121,7 +118,7 @@ namespace io.ebu.eis.mq
                         var data = DataMessage.Deserialize(message);
                         _handler.OnReceive(data);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // TODO Handle exceptions
                     }
@@ -129,7 +126,7 @@ namespace io.ebu.eis.mq
                     // TODO use notifications
                     //Console.WriteLine(" [x] Received '{0}': with key :'{1}'", routingKey, text.Key);
                 }
-                catch (EndOfStreamException ex)
+                catch (EndOfStreamException)
                 {
                     // Try to reconnect
                     Disconnect();

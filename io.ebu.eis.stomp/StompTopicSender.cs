@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Apache.NMS;
 using Apache.NMS.Util;
 
@@ -27,7 +23,7 @@ namespace io.ebu.eis.stomp
                 topic = topic + "/";
             Console.WriteLine("SEND STOMP : " + topic);
 
-            Thread newThread = new Thread(new ParameterizedThreadStart(this.sendToStompThread));
+            var newThread = new Thread(SendToStompThread);
             var param = new StompParameters()
             {
                 Uri = uri,
@@ -40,7 +36,7 @@ namespace io.ebu.eis.stomp
             newThread.Start(param);
         }
 
-        private void sendToStompThread(object s)
+        private void SendToStompThread(object s)
         {
             StompParameters stomp = (StompParameters)s;
             sendToStomp(stomp.Uri, stomp.Topic, stomp.Link, stomp.Showparam, stomp.Username, stomp.Password);
@@ -61,7 +57,7 @@ namespace io.ebu.eis.stomp
                 {
                     var destination = SessionUtil.GetDestination(session, topic.Replace("/topic/", ""),
                         DestinationType.Topic);
-                    var topicListener = topic.ToString();
+                    var topicListener = topic;
 
                     var destinationListener = SessionUtil.GetDestination(session, topicListener.Replace("/topic/", ""),
                         DestinationType.Topic);
@@ -74,7 +70,7 @@ namespace io.ebu.eis.stomp
                         connection.Start();
 
                         producer.RequestTimeout = _receiveTimeout;
-                        consumer.Listener += new MessageListener(OnMessage);
+                        consumer.Listener += OnMessage;
 
                         // Send a message
                         ITextMessage request = session.CreateTextMessage(showparam);
@@ -95,7 +91,7 @@ namespace io.ebu.eis.stomp
 
 
                         // Wait for the message
-                        _semaphore.WaitOne((int) _receiveTimeout.TotalMilliseconds, true);
+                        Semaphore.WaitOne((int) _receiveTimeout.TotalMilliseconds, true);
                         if (_message == null)
                         {
                             // TODO Log no message received
@@ -111,24 +107,24 @@ namespace io.ebu.eis.stomp
                     connection.Close();
                 }
             }
-            catch (TypeLoadException te)
+            catch (TypeLoadException)
             {
                 // TODO could mean password is wrong and dll did not load
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // TODO Log Exceptions
                 
             }
         }
 
-        private static AutoResetEvent _semaphore = new AutoResetEvent(false);
-        private static ITextMessage _message = null;
+        private static readonly AutoResetEvent Semaphore = new AutoResetEvent(false);
+        private static ITextMessage _message;
         private static TimeSpan _receiveTimeout = TimeSpan.FromSeconds(5);
         protected static void OnMessage(IMessage receivedMsg)
         {
             _message = receivedMsg as ITextMessage;
-            _semaphore.Set();
+            Semaphore.Set();
         }
     }
 }

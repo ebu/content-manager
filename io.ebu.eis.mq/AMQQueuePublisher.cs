@@ -1,27 +1,21 @@
-﻿using io.ebu.eis.datastructures;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Exceptions;
-using SMPAG.MM.MMConnector;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using io.ebu.eis.datastructures;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 
 namespace io.ebu.eis.mq
 {
-    public class AMQQueuePublisher: IDisposable
+    public class AMQQueuePublisher : IDisposable
     {
-        private string _amqpUri;
-        private string _amqpExchange;
+        private readonly string _amqpUri;
+        private readonly string _amqpExchange;
 
         private ConnectionFactory _factory;
         private IConnection _conn;
         private AMQClient _amq;
 
-        private bool _connected;
+        public bool Connected { get; private set; }
 
         public AMQQueuePublisher(string uri, string exchange)
         {
@@ -33,24 +27,25 @@ namespace io.ebu.eis.mq
         {
             try
             {
-                _factory = new ConnectionFactory();
-                _factory.Uri = _amqpUri;
+                _factory = new ConnectionFactory { Uri = _amqpUri };
 
                 _conn = _factory.CreateConnection();
-                _amq = new AMQClient();
-                _amq.channel = _conn.CreateModel();
-                _amq.channel.QueueDeclare(_amqpExchange, true, false, false, null);
+                _amq = new AMQClient { Channel = _conn.CreateModel() };
+                _amq.Channel.QueueDeclare(_amqpExchange, true, false, false, null);
 
                 Console.WriteLine("AMQPublisher started and connected to queue " + _amqpUri + ":" + _amqpExchange);
-                _connected = true;
+                Connected = true;
             }
-            catch (BrokerUnreachableException bu) { }
+            catch (BrokerUnreachableException)
+            {
+                // TODO Log
+            }
         }
 
         public void Disconnect()
         {
             if (_amq != null)
-                _amq.channel.Close();
+                _amq.Channel.Close();
             if (_conn != null && _conn.IsOpen)
                 _conn.Close();
         }
@@ -60,10 +55,10 @@ namespace io.ebu.eis.mq
             // Create Persistence
             if (_amq != null)
             {
-                var properties = _amq.channel.CreateBasicProperties();
+                var properties = _amq.Channel.CreateBasicProperties();
                 properties.SetPersistent(true);
 
-                _amq.channel.BasicPublish("", _amqpExchange, properties, Encoding.UTF8.GetBytes(message.Serialize()));
+                _amq.Channel.BasicPublish("", _amqpExchange, properties, Encoding.UTF8.GetBytes(message.Serialize()));
             }
             else
             {
@@ -74,7 +69,8 @@ namespace io.ebu.eis.mq
 
         public void Dispose()
         {
-            Disconnect();
+            if (Connected)
+                Disconnect();
         }
     }
 }

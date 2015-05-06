@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using io.ebu.eis.datastructures;
 
 namespace io.ebu.eis.http
 {
     public class CMHttpServer: IDisposable
     {
-        private string _bindIp;
-        private int _bindPort;
+        private readonly string _bindIp;
+        private readonly int _bindPort;
 
-        private IDataMessageHandler _handler;
+        private readonly IDataMessageHandler _handler;
 
         private HttpListener _httpListener;
 
@@ -32,7 +28,7 @@ namespace io.ebu.eis.http
                 _httpListener = new HttpListener();
 
                 // Add Prefixes
-                string slisten = "http://" + _bindIp + ":" + _bindPort + "/";
+                var slisten = "http://" + _bindIp + ":" + _bindPort + "/";
                 _httpListener.Prefixes.Add(slisten); //"http://localhost:8080/"
 
                 // Start Listener
@@ -42,7 +38,7 @@ namespace io.ebu.eis.http
                 var t = new Thread(Process);
                 t.Start();
             }
-            catch (HttpListenerException e)
+            catch (HttpListenerException)
             {
                 // TODO Report
             }
@@ -67,11 +63,11 @@ namespace io.ebu.eis.http
                     t.Start();
 
                 }
-                catch (HttpListenerException e)
+                catch (HttpListenerException)
                 {
                     // TODO LOG
                 }
-                catch (InvalidOperationException e)
+                catch (InvalidOperationException)
                 {
                     // TODO LOG
                 }

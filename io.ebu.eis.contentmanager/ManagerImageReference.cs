@@ -1,9 +1,4 @@
-﻿using io.ebu.eis.canvasgenerator;
-using io.ebu.eis.data.file;
-using io.ebu.eis.data.s3;
-using io.ebu.eis.datastructures;
-using io.ebu.eis.datastructures.Plain.Collections;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -17,7 +12,12 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using io.ebu.eis.canvasgenerator;
+using io.ebu.eis.data.file;
 using io.ebu.eis.data.ftp;
+using io.ebu.eis.data.s3;
+using io.ebu.eis.datastructures;
+using io.ebu.eis.datastructures.Plain.Collections;
 using io.ebu.eis.stomp;
 
 namespace io.ebu.eis.contentmanager
@@ -100,7 +100,7 @@ namespace io.ebu.eis.contentmanager
         public DispatchedObservableCollection<ManagerTemplateField> TemplateFields { get { return _tpFields; } set { _tpFields = value; OnPropertyChanged("TemplateFields"); } }
 
 
-        private long _lastUsed = 0;
+        private long _lastUsed;
         public DateTime LastUsed { get { return DateTime.FromBinary(_lastUsed); } set { _lastUsed = value.ToBinary(); OnPropertyChanged("LastUsed"); OnPropertyChanged("LastUsedBinary"); } }
         [DataMember(Name = "lastused")]
         public long LastUsedBinary { get { return _lastUsed; } set { _lastUsed = value; OnPropertyChanged("LastUsed"); OnPropertyChanged("LastUsedBinary"); } }
@@ -159,7 +159,7 @@ namespace io.ebu.eis.contentmanager
             (SendOrPostCallback)delegate
             {
                 PublicImageUrl = null;
-                PreviewImage = renderImageWithTemplateContext();
+                PreviewImage = RenderImageWithTemplateContext();
                 _rendering = false;
 
             }, null);
@@ -203,7 +203,6 @@ namespace io.ebu.eis.contentmanager
             foreach (Match m in Regex.Matches(templateHtml, pattern))
             {
                 var variable = m.Groups[1].Value;
-                var matchedValue = m.Value;
                 var replaceValue = "";
                 if (Context != null)
                 {
@@ -275,7 +274,7 @@ namespace io.ebu.eis.contentmanager
         //    return rendered;
         //}
 
-        private BitmapImage renderImageWithTemplateContext()
+        private BitmapImage RenderImageWithTemplateContext()
         {
             //var filename = System.IO.Path.Combine(_config.SlidesConfiguration.TemplatePath, template);
             if (Template == null || TemplateFields == null)
@@ -457,8 +456,8 @@ namespace io.ebu.eis.contentmanager
 
                         // Create an Encoder object based on the GUID
                         // for the Quality parameter category.
-                        System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Compression;
-                        System.Drawing.Imaging.Encoder myEncoder2 = System.Drawing.Imaging.Encoder.Quality;
+                        Encoder myEncoder = Encoder.Compression;
+                        Encoder myEncoder2 = Encoder.Quality;
 
 
                         // Create an EncoderParameters object.
@@ -514,12 +513,10 @@ namespace io.ebu.eis.contentmanager
                                             outConf.UniqueFilename, outConf.PublicUriBase);
                                     }
                                     break;
-                                default:
-                                    // TODO Log error
-                                    break;
+                                // TODO Log error on default
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             // Catch all exception to avoid crash and continue operations
                             // TODO Log and handle
@@ -537,9 +534,7 @@ namespace io.ebu.eis.contentmanager
                                             dispatch.StompPassword, dispatch.StompTopic, publicUrl, Link, "");
                                     }
                                     break;
-                                default:
-                                    // TODO Log unknown
-                                    break;
+                                // TODO Log unknown error on default
                             }
                         }
                     }
@@ -568,17 +563,8 @@ namespace io.ebu.eis.contentmanager
 
         private ImageCodecInfo GetEncoder(ImageFormat format)
         {
-
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
-
-            foreach (ImageCodecInfo codec in codecs)
-            {
-                if (codec.FormatID == format.Guid)
-                {
-                    return codec;
-                }
-            }
-            return null;
+            return codecs.FirstOrDefault(codec => codec.FormatID == format.Guid);
         }
 
         #endregion Rendering

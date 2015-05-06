@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
 
 namespace io.ebu.eis.contentmanager
@@ -43,7 +39,7 @@ namespace io.ebu.eis.contentmanager
 
         public ManagerImageReference GetNextSlide()
         {
-            var currentIndex = 0;
+            int currentIndex;
             var currentSlide = Slides.FirstOrDefault(x => x.IsActive);
             if (currentSlide != null)
                 currentIndex = Slides.IndexOf(currentSlide);
@@ -68,12 +64,8 @@ namespace io.ebu.eis.contentmanager
 
         public ManagerImageReference PreviewNextSlide()
         {
-            var currentIndex = 0;
             var currentSlide = Slides.FirstOrDefault(x => x.IsActive);
-            if (currentSlide != null)
-                currentIndex = Slides.IndexOf(currentSlide);
-            else
-                currentIndex = 0;
+            var currentIndex = currentSlide != null ? Slides.IndexOf(currentSlide) : 0;
             var nextIndex = (currentIndex + 1) % Slides.Count;
 
             return Slides[nextIndex];
@@ -81,8 +73,8 @@ namespace io.ebu.eis.contentmanager
 
         public ManagerCart Clone()
         {
-            var newCart = new ManagerCart(this.Name);
-            foreach (var s in this.Slides)
+            var newCart = new ManagerCart(Name);
+            foreach (var s in Slides)
             {
                 newCart.Slides.Add(s.Clone());
             }

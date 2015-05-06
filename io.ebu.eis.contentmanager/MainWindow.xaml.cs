@@ -1,14 +1,18 @@
-﻿using System.Windows.Media;
-using io.ebu.eis.datastructures;
-using System;
+﻿using System;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using io.ebu.eis.contentmanager.Utils;
+using io.ebu.eis.datastructures;
+using Microsoft.Win32;
 
 namespace io.ebu.eis.contentmanager
 {
@@ -35,7 +39,7 @@ namespace io.ebu.eis.contentmanager
             InitializeComponent();
 
             // Window Title
-            var currentAssembly = System.Reflection.Assembly.GetExecutingAssembly();
+            var currentAssembly = Assembly.GetExecutingAssembly();
             string versionNumber = currentAssembly.GetName().Version.ToString();
             Title = Title + " (" + versionNumber + ")";
 
@@ -70,7 +74,7 @@ namespace io.ebu.eis.contentmanager
         #endregion GlobalExceptions
 
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void Window_Closing(object sender, CancelEventArgs e)
         {
             _context = (ManagerContext)DataContext;
 
@@ -280,7 +284,7 @@ namespace io.ebu.eis.contentmanager
                       {
                           if (path.EndsWith(".cartjson"))
                           {
-                              var json = System.IO.File.ReadAllText(path);
+                              var json = File.ReadAllText(path);
                               try
                               {
                                   var newCart = JsonSerializer.Deserialize<ManagerCart>(json);
@@ -316,7 +320,7 @@ namespace io.ebu.eis.contentmanager
                 {
                     var cart = managerCart;
 
-                    Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog
+                    SaveFileDialog dlg = new SaveFileDialog
                     {
                         FileName = cart.Name,
                         DefaultExt = ".cartjson",
@@ -327,7 +331,7 @@ namespace io.ebu.eis.contentmanager
                     {
                         string filename = dlg.FileName;
                         var json = JsonSerializer.Serialize(cart);
-                        System.IO.File.WriteAllText(filename, json);
+                        File.WriteAllText(filename, json);
                     }
                 }
             }

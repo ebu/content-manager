@@ -1,18 +1,14 @@
-﻿using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace io.ebu.eis.mq
 {
     internal class AMQClient
     {
-        internal IModel channel { get; set; }
+        internal IModel Channel { get; set; }
 
-
-        internal event RabbitMQ.Client.Events.ConsumerCancelledEventHandler ConsumerCancelled;
+        internal event ConsumerCancelledEventHandler ConsumerCancelled;
 
         internal void HandleBasicCancel(string consumerTag)
         {
@@ -42,7 +38,13 @@ namespace io.ebu.eis.mq
 
         internal IModel Model
         {
-            get { return channel; }
+            get { return Channel; }
+        }
+
+        protected virtual void OnConsumerCancelled(ConsumerEventArgs args)
+        {
+            var handler = ConsumerCancelled;
+            if (handler != null) handler(this, args);
         }
     }
 }

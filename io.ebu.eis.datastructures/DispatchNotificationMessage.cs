@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace io.ebu.eis.datastructures
 {
@@ -22,7 +20,7 @@ namespace io.ebu.eis.datastructures
         }
 
         [DataMember(Name = "receiveTime")]
-        public long receiveTime
+        public long ReceiveTimeLong
         {
             get { return Convert.ToInt64(ReceiveTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalMilliseconds); }
             set { ReceiveTime = new DateTime(1970, 1, 1).AddMilliseconds(value); }

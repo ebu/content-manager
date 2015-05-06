@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace io.ebu.eis.datastructures
 {
@@ -58,7 +58,7 @@ namespace io.ebu.eis.datastructures
                 if (splitPath[0] == "ToDateTime")
                 {
                     DateTime t = new DateTime(Convert.ToInt32(Value)*1000);
-                    return t.ToString();
+                    return t.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (Data == null)
@@ -74,7 +74,7 @@ namespace io.ebu.eis.datastructures
                 else
                 {
                     var searchFor = splitPath.FirstOrDefault();
-                    if (searchFor.StartsWith("[") && searchFor.EndsWith("]"))
+                    if (searchFor != null && (searchFor.StartsWith("[") && searchFor.EndsWith("]")))
                     {
                         // We need to extract by index
                         var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
@@ -85,11 +85,12 @@ namespace io.ebu.eis.datastructures
                         var r2 = Data[index];
                         return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
                     }
-                    else if (searchFor.StartsWith("(") && searchFor.EndsWith(")"))
+                    else if (searchFor != null && (searchFor.StartsWith("(") && searchFor.EndsWith(")")))
                     {
                         // We need to extract by DataType
                         var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
-                        return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                        if (r2 != null)
+                            return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
                     }
                     var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
                     if (r == null)
@@ -107,7 +108,7 @@ namespace io.ebu.eis.datastructures
 
         public DataMessage Clone()
         {
-            var js = this.Serialize();
+            var js = Serialize();
             return Deserialize(js);
         }
 

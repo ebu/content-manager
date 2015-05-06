@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Amazon;
 using Amazon.Runtime;
 using Amazon.S3;
@@ -13,25 +9,26 @@ namespace io.ebu.eis.data.s3
 {
     public static class AWSS3Uploader
     {
-        static IAmazonS3 client;
+        static IAmazonS3 _client;
 
-        public static string Upload(string pathToLocalFile, string awsAccessKey, string awsSecretKey, string bucketName, string s3subfolder, string publicUriBase)
+        public static string Upload(string pathToLocalFile, string awsAccessKey, string awsSecretKey, string bucketName, string s3Subfolder, string publicUriBase)
         {
-            using (client = Amazon.AWSClientFactory.CreateAmazonS3Client(awsAccessKey, awsSecretKey, RegionEndpoint.EUWest1))
+            using (_client = AWSClientFactory.CreateAmazonS3Client(awsAccessKey, awsSecretKey, RegionEndpoint.EUWest1))
             {
-                var name = Guid.NewGuid().ToString() + Path.GetExtension(pathToLocalFile);
+                var name = Guid.NewGuid() + Path.GetExtension(pathToLocalFile);
                 try
                 {
-                    var request = new PutObjectRequest()
+                    var request = new PutObjectRequest
                     {
                         FilePath = pathToLocalFile,
                         BucketName = bucketName,
-                        Key = s3subfolder + "/" + name
+                        Key = s3Subfolder + "/" + name,
+                        CannedACL = S3CannedACL.PublicRead
                     };
-                    request.CannedACL = S3CannedACL.PublicRead;
 
                     // TODO Handle response codes
-                    var response = client.PutObject(request);
+                    // var response = 
+                    _client.PutObject(request);
 
                     // Return the Full URL for the uploaded image
                     return publicUriBase + "/" + name;

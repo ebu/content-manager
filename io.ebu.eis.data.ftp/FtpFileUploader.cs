@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace io.ebu.eis.data.ftp
 {
@@ -78,8 +74,11 @@ namespace io.ebu.eis.data.ftp
                 // TODO Log
             }
 
-            Console.WriteLine("Upload File Complete, status {0}", response.StatusDescription);
-            response.Close();
+            if (response != null)
+            {
+                Console.WriteLine("Upload File Complete, status {0}", response.StatusDescription);
+                response.Close();
+            }
 
             return publicUriBase + "/" + fileName;
         }

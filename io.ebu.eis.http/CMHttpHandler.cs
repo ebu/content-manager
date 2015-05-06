@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using io.ebu.eis.datastructures;
 
 namespace io.ebu.eis.http
@@ -25,7 +20,7 @@ namespace io.ebu.eis.http
 
             try
             {
-                string responseString = "";
+                string responseString;
 
                 // Manage Encoding
                 _context.Response.ContentEncoding = _context.Request.ContentEncoding;
@@ -99,10 +94,6 @@ namespace io.ebu.eis.http
                             _context.Response.Close(buffer, false);
                             _context.Response.Close();
                         }
-                        finally
-                        {
-                            //
-                        }
                     }
                     else
                     {
@@ -120,13 +111,9 @@ namespace io.ebu.eis.http
                     _context.Response.Close(buffer, false);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // TODO Log this
-            }
-            finally
-            {
-                //
             }
         }
     }

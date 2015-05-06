@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace io.ebu.eis.datastructures
 {
@@ -181,7 +178,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((InputConfiguration)(element)).Type + element.ToString();
+            return ((InputConfiguration)(element)).Type + element;
         }
 
         public InputConfiguration this[int idx]
@@ -287,7 +284,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((UploadConfiguration)(element)).Type + ((UploadConfiguration)(element)).PublicUriBase + element.ToString();
+            return ((UploadConfiguration)(element)).Type + ((UploadConfiguration)(element)).PublicUriBase + element;
         }
 
         public UploadConfiguration this[int idx]
@@ -392,7 +389,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DispatchConfiguration)(element)).Type + element.ToString();
+            return ((DispatchConfiguration)(element)).Type + element;
         }
 
         public DispatchConfiguration this[int idx]
@@ -474,7 +471,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((ImageOutputConfiguration)(element)).Name + element.ToString();
+            return ((ImageOutputConfiguration)(element)).Name + element;
         }
 
         public ImageOutputConfiguration this[int idx]
@@ -545,7 +542,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((OnAirCartAutoCondition)(element)).DataPath + element.ToString();
+            return ((OnAirCartAutoCondition)(element)).DataPath + element;
         }
 
         public OnAirCartAutoCondition this[int idx]
@@ -595,7 +592,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DataPriorityConfiguration)(element)).DataPath + element.ToString();
+            return ((DataPriorityConfiguration)(element)).DataPath + element;
         }
 
         public DataPriorityConfiguration this[int idx]
@@ -652,7 +649,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DataItemConfiguration)(element)).DataType + element.ToString();
+            return ((DataItemConfiguration)(element)).DataType + element;
         }
 
         public DataItemConfiguration this[int idx]
