@@ -159,9 +159,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="LICENSE.md" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\io.ebu.eis.canvasgenerator\io.ebu.eis.canvasgenerator.csproj">
       <Project>{490ca7a2-b578-490f-9561-4892d96969d4}</Project>
       <Name>io.ebu.eis.canvasgenerator</Name>
