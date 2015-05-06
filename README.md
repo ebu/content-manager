@@ -37,20 +37,22 @@ Other libraries not included using NuGet are listed explicitely below.
 
 ### Licenses of third party components
 
+#### Apache.NMS
+License under Apache 2.0  
+http://activemq.apache.org/nms/
+
 #### AMQP.Client
-.NET/C# AMQP client library and WCF binding
-The library is open-source, and is dual-licensed under the Apache License v2 and the Mozilla Public License v1.1.
+.NET/C# AMQP client library and WCF binding  
+The library is open-source, and is dual-licensed under the Apache License v2 and the Mozilla Public License v1.1.  
 http://www.rabbitmq.com/dotnet.html
 
-#### PhantomJS
-PhantomJS Nuget Packaget https://www.nuget.org/packages/PhantomJS/, 
-Licensed under BSD
-http://phantomjs.org, https://github.com/ariya/phantomjs/blob/master/LICENSE.BSD
-
 #### AWS SDK for .NET
-Licensed under Apache 2.0
+Licensed under Apache 2.0  
 https://github.com/aws/aws-sdk-net/blob/master/License.txt
 
-#### Apache.NMS
-License under Apache 2.0
-http://activemq.apache.org/nms/
+#### PhantomJS
+PhantomJS Nuget Packaget https://www.nuget.org/packages/PhantomJS/,   
+Licensed under BSD  
+http://phantomjs.org, https://github.com/ariya/phantomjs/blob/master/LICENSE.BSD
+
+
