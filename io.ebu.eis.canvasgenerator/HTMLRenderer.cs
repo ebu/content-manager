@@ -30,15 +30,13 @@ namespace io.ebu.eis.canvasgenerator
                     RedirectStandardInput = true,
                     WorkingDirectory = pathToWorkingDir // PDF Tool Path
                 };
-                var p = new Process();
-                p.StartInfo = startInfo;
+                var p = new Process { StartInfo = startInfo };
                 p.Start();
                 p.WaitForExit(TimeToExit);
-                //Read the Error:
-                //string error = p.StandardError.ReadToEnd();
-                //Read the Output:
+                // Read the Error:
+                // var error = p.StandardError.ReadToEnd().Trim();
+                // Read the Output:
                 var base64Image = p.StandardOutput.ReadToEnd().Trim();
-                var error = p.StandardError.ReadToEnd().Trim();
                 var bytes = Convert.FromBase64CharArray(base64Image.ToCharArray(), 0, base64Image.Length);
                 if (bytes.Length > 0)
                 {
@@ -46,9 +44,9 @@ namespace io.ebu.eis.canvasgenerator
                     return image;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // TODO
+                // TODO Log
             }
             return null;
         }
@@ -73,7 +71,10 @@ namespace io.ebu.eis.canvasgenerator
             {
                 File.Delete(tempfile);
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // TODO Log
+            }
 
             return image;
         }
