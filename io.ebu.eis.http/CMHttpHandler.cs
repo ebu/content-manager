@@ -1,12 +1,23 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text.RegularExpressions;
 using io.ebu.eis.datastructures;
 
 namespace io.ebu.eis.http
 {
     internal class CMHttpHandler
     {
+        private static readonly Regex UpdateRex = new Regex(@"\/update(\/)?\?(?<values>.*)$");
+        private static readonly Regex BroadcastRex = new Regex(@"\/broadcast(\/)?\?(?<values>.*)$");
+        private static readonly Regex UpdateAndBroadcastRex = new Regex(@"\/updateandbroadcast(\/)?\?(?<values>.*)$");
+        private static readonly Regex LoadRex = new Regex(@"\/loadslidecart(\/)?\?(?<values>.*)$");
+        private static readonly Regex PreviewRex = new Regex(@"\/preview(\/)?\?(?<values>.*)$");
+        private static readonly Regex SystemRex = new Regex(@"\/system(\/)?\?(?<values>.*)$");
+        private static readonly Regex ChangeRex = new Regex(@"\/change(\/)?\?(?<values>.*)$");
+
+        private enum CMCommand { Update, Broadcast, UpdateAndBroadcast, Load, Preview, System, Change }
+
         private readonly HttpListenerContext _context;
         private readonly IDataMessageHandler _handler;
         internal CMHttpHandler(HttpListenerContext context, IDataMessageHandler handler)
@@ -20,42 +31,52 @@ namespace io.ebu.eis.http
 
             try
             {
-                string responseString;
+                string responseString = "";
 
                 // Manage Encoding
                 _context.Response.ContentEncoding = _context.Request.ContentEncoding;
                 // Set CM Server Headers
                 _context.Response.Headers.Add("Server", "EBU.io Content Manager");
 
-
                 if (_context.Request.HttpMethod == "GET")
                 {
                     // GET Request
-
-                    if (_context.Request.HttpMethod == "GET")
+                    switch (RawUrlToCMCommand(_context.Request.RawUrl))
                     {
-                        if (_context.Request.RawUrl == "/")
-                        {
+                        case CMCommand.Update:
+                            var kvStore = _context.Request.QueryString;
+                            var dm = new DataMessage
+                            {
+                                Key = "GLOBAL",
+                                DataType = "GLOBAL"
+                            };
+                            foreach (var k in kvStore.AllKeys)
+                            {
+                                var d = new DataMessage
+                                {
+                                    Key = k,
+                                    Value = kvStore[k],
+                                    DataType = "STRING"
+                                };
+                                dm.Data.Add(d);
+                            }
+                            _handler.UpdateGlobalData(dm);
+                            break;
+                        default:
                             _context.Response.StatusCode = 404;
                             responseString = "GET Requests generally are not supported.";
-                        }
-                        else if (_context.Request.RawUrl == "/json/stats")
-                        {
-                            _context.Response.ContentType = "application/json";
-                            _context.Response.StatusCode = 200;
-                            responseString = ""; //GetJSONStats();
-                        }
-                        else
-                        {
-                            _context.Response.StatusCode = 404;
-                            responseString = "GET Requests generally are not supported.";
-                        }
-
-
-                        // Write Response
-                        var buffer = _context.Request.ContentEncoding.GetBytes(responseString);
-                        _context.Response.Close(buffer, false);
+                            break;
                     }
+
+                    // TODO For Future Use
+                    //_context.Response.ContentType = "application/json";
+                    //_context.Response.StatusCode = 200;
+                    //responseString = ""; //GetJSONStats();
+
+                    // Write Response
+                    var buffer = _context.Request.ContentEncoding.GetBytes(responseString);
+                    _context.Response.Close(buffer, false);
+
                 }
                 else if (_context.Request.HttpMethod == "POST")
                 {
@@ -115,6 +136,25 @@ namespace io.ebu.eis.http
             {
                 // TODO Log this
             }
+        }
+
+        private static CMCommand RawUrlToCMCommand(string rawUrl)
+        {
+            if (UpdateRex.Match(rawUrl).Success)
+                return CMCommand.Update;
+            if (BroadcastRex.Match(rawUrl).Success)
+                return CMCommand.Broadcast;
+            if (UpdateAndBroadcastRex.Match(rawUrl).Success)
+                return CMCommand.UpdateAndBroadcast;
+            if (LoadRex.Match(rawUrl).Success)
+                return CMCommand.Load;
+            if (PreviewRex.Match(rawUrl).Success)
+                return CMCommand.Preview;
+            if (SystemRex.Match(rawUrl).Success)
+                return CMCommand.System;
+            if (ChangeRex.Match(rawUrl).Success)
+                return CMCommand.Change;
+            return CMCommand.System;
         }
     }
 }

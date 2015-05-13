@@ -112,6 +112,21 @@ namespace io.ebu.eis.datastructures
             return Deserialize(js);
         }
 
+        public void MergeGlobal(DataMessage message)
+        {
+            foreach (var dm in message.Data)
+            {
+                // Remove existing Data Key
+                while (Data.Any(x => x.Key == dm.Key))
+                {
+                    var d = Data.FirstOrDefault(x => x.Key == dm.Key);
+                    Data.Remove(d);
+                }
+                // Add the data
+                Data.Add(dm);
+            }
+        }
+
         public string JSONMessage
         {
             get { return Serialize(); }

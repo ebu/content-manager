@@ -153,6 +153,12 @@ namespace io.ebu.eis.contentmanager
             //}
         }
 
+        public void ReRender(DataMessage global)
+        {
+            Context.MergeGlobal(global);
+            ReRender();
+        }
+
         private void Render()
         {
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render,

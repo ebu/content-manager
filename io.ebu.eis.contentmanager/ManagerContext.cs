@@ -110,6 +110,10 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "database")]
         public DispatchedObservableCollection<DataMessage> DataBase { get { return _dataBase; } set { _dataBase = value; OnPropertyChanged("DataBase"); } }
 
+        private DataMessage _globalData;
+        [DataMember(Name = "GlobalData", IsRequired = false)]
+        public DataMessage GlobalData { get { return _globalData; } set { _globalData = value; OnPropertyChanged("GlobalData"); } }
+
         //private DispatchedObservableCollection<EventFlow> _runningEvents;
         //public DispatchedObservableCollection<EventFlow> RunningEvents { get { return _runningEvents; } set { _runningEvents = value; OnPropertyChanged("RunningEvents"); } }
 
@@ -283,7 +287,6 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
-
         public void LoadCarts(bool loadAll, bool cleanReload)
         {
             if (cleanReload)
@@ -390,9 +393,9 @@ namespace io.ebu.eis.contentmanager
         {
             try
             {
-                var title = new DataMessage() {Key = "TITLE", Value = Path.GetFileName(file)};
-                var url = new DataMessage() {Key = "URL", Value = file};
-                var type = new DataMessage() {Key = "TYPE", Value = Path.GetExtension(file)};
+                var title = new DataMessage() { Key = "TITLE", Value = Path.GetFileName(file) };
+                var url = new DataMessage() { Key = "URL", Value = file };
+                var type = new DataMessage() { Key = "TYPE", Value = Path.GetExtension(file) };
                 var im = new DataMessage()
                 {
                     DataType = "IMAGE",
@@ -747,6 +750,8 @@ namespace io.ebu.eis.contentmanager
 
 
                             newCart.Slides.First().Context = context;
+                            newCart.Slides.First().ReRender(GlobalData);
+
                             var itemsPerSlide = newCart.Slides.First().ItemsPerSlide;
                             var offset = itemsPerSlide;
                             while (ath != null && ath.Data.Count > itemsPerSlide)
@@ -759,6 +764,7 @@ namespace io.ebu.eis.contentmanager
                                 var contextClone = context.Clone();
                                 contextClone.Data.First(x => x.Key == "STARTPOSITIONS").Data = clone.Data;
                                 newSlide.Context = contextClone;
+                                newSlide.ReRender(GlobalData);
                                 newCart.Slides.Add(newSlide);
                                 ath = clone;
                                 offset = offset + itemsPerSlide;
@@ -811,6 +817,7 @@ namespace io.ebu.eis.contentmanager
                             }
 
                             newCart.Slides.First().Context = context;
+                            newCart.Slides.First().ReRender(GlobalData);
                             var itemsPerSlide = newCart.Slides.First().ItemsPerSlide;
                             var offset = itemsPerSlide;
                             while (ath != null && ath.Data.Count > itemsPerSlide)
@@ -823,6 +830,7 @@ namespace io.ebu.eis.contentmanager
                                 var contextCLone = context.Clone();
                                 contextCLone.Data.First(x => x.Key == "RESULTS").Data = clone.Data;
                                 newSlide.Context = contextCLone;
+                                newSlide.ReRender(GlobalData);
                                 newCart.Slides.Add(newSlide);
                                 ath = clone;
                                 offset = offset + itemsPerSlide;
@@ -835,6 +843,7 @@ namespace io.ebu.eis.contentmanager
                             foreach (var s in newCart.Slides)
                             {
                                 s.Context = context;
+                                s.ReRender(GlobalData);
                             }
                         }
                     }
@@ -844,6 +853,7 @@ namespace io.ebu.eis.contentmanager
                         {
                             // Set the context on all slides
                             s.Context = m.DataMessage;
+                            s.ReRender(GlobalData);
                         }
                     }
 
@@ -994,6 +1004,7 @@ namespace io.ebu.eis.contentmanager
                         {
                             // Set the context
                             EditorImage.Context = d.DataMessage;
+                            EditorImage.ReRender(GlobalData);
                         }
                         EditorImage.ReRender();
                         EditorImage = EditorImage;
@@ -1051,6 +1062,43 @@ namespace io.ebu.eis.contentmanager
             {
                 // Add the message to the database
                 UpdateDataBase(message);
+            }
+        }
+
+        public void UpdateGlobalData(DataMessage message)
+        {
+            if (GlobalData == null)
+            {
+                GlobalData = message;
+            }
+            else
+            {
+                GlobalData.MergeGlobal(message);
+            }
+
+            // Reset all Slides for new Data
+            InvalidateSlidesWithGlobalData();
+        }
+
+        public void InvalidateSlidesWithGlobalData()
+        {
+            // Cart List
+            foreach (var c in Carts)
+            {
+                foreach (var s in c.Slides)
+                {
+                    s.ReRender(GlobalData);
+                }
+            }
+            // Preview Cart
+            foreach (var s in PreviewCart.Slides)
+            {
+                s.ReRender(GlobalData);
+            }
+            // Editor Cart
+            foreach (var s in EditorCart.Slides)
+            {
+                s.ReRender(GlobalData);
             }
         }
 
