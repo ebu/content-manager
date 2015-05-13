@@ -62,16 +62,17 @@ namespace io.ebu.eis.http
                             }
                             _handler.UpdateGlobalData(dm);
                             break;
+                        // TODO Add additional commands
                         default:
                             _context.Response.StatusCode = 404;
                             responseString = "GET Requests generally are not supported.";
                             break;
                     }
 
-                    // TODO For Future Use
+                    // TODO For Future use of status return
                     //_context.Response.ContentType = "application/json";
                     //_context.Response.StatusCode = 200;
-                    //responseString = ""; //GetJSONStats();
+                    //responseString = ""; //GetJSONStatus();
 
                     // Write Response
                     var buffer = _context.Request.ContentEncoding.GetBytes(responseString);
