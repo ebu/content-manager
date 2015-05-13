@@ -8,7 +8,7 @@
 
 ### Configuration
 
-The software comes with a default configuration `io.ebu.eis.contentmanager.exe.config.sample`. Copy this
+The software comes with a default configuration `io.ebu.eis.contentmanager.exe.sample.config`. Copy this
 file and remove the `.sample`.
 
 #### Input Configuration
