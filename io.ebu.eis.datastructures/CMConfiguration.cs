@@ -133,7 +133,7 @@ namespace io.ebu.eis.datastructures
             set { this["IncomingPictureFolder"] = value; }
         }
 
-        [ConfigurationProperty("StateConfigurationFile", DefaultValue = "state.txt", IsRequired = false)]
+        [ConfigurationProperty("StateConfigurationFile", DefaultValue = "", IsRequired = false)]
         public String StateConfigurationFile
         {
             get { return (String)this["StateConfigurationFile"]; }
@@ -843,13 +843,33 @@ namespace io.ebu.eis.datastructures
             get { return (int)this["ItemsPerSlide"]; }
             set { this["ItemsPerSlide"] = value; }
         }
-
-
+        
         [ConfigurationProperty("DefaultLink", DefaultValue = "", IsRequired = false)]
         public string DefaultLink
         {
             get { return (string)this["DefaultLink"]; }
             set { this["DefaultLink"] = value; }
+        }
+
+        [ConfigurationProperty("DefaultText", DefaultValue = "", IsRequired = false)]
+        public string DefaultText
+        {
+            get { return (string)this["DefaultText"]; }
+            set { this["DefaultText"] = value; }
+        }
+
+        [ConfigurationProperty("RegenerateOnPublish", DefaultValue = false, IsRequired = false)]
+        public bool RegenerateOnPublish
+        {
+            get { return (bool)this["RegenerateOnPublish"]; }
+            set { this["RegenerateOnPublish"] = value; }
+        }
+
+        [ConfigurationProperty("ValidityPeriodSeconds", DefaultValue = 300, IsRequired = false)]
+        public int ValidityPeriodSeconds
+        {
+            get { return (int)this["ValidityPeriodSeconds"]; }
+            set { this["ValidityPeriodSeconds"] = value; }
         }
     }
 

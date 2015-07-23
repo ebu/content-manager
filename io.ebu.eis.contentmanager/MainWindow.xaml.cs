@@ -192,7 +192,7 @@ namespace io.ebu.eis.contentmanager
                 _context = (ManagerContext)DataContext;
                 if (_context.EditorImage != null)
                 {
-                    _context.EditorImage.ReRender();
+                    _context.EditorImage.ReRender(true);
                     _context.EditorImage = _context.EditorImage;
                 }
 
@@ -420,7 +420,7 @@ namespace io.ebu.eis.contentmanager
                                 // Set the context
                                 _context.EditorImage.Context = m.DataMessage;
                             }
-                            _context.EditorImage.ReRender();
+                            _context.EditorImage.ReRender(true);
                             _context.EditorImage = _context.EditorImage;
                         }
                     }
@@ -518,7 +518,7 @@ namespace io.ebu.eis.contentmanager
                                 // Set the context
                                 _context.EditorImage.Context = m.DataMessage;
                             }
-                            _context.EditorImage.ReRender();
+                            _context.EditorImage.ReRender(true);
                             _context.EditorImage = _context.EditorImage;
                         }
                     }
@@ -588,7 +588,7 @@ namespace io.ebu.eis.contentmanager
                                 // Set the context
                                 _context.EditorImage.Context = m.DataMessage;
                             }
-                            _context.EditorImage.ReRender();
+                            _context.EditorImage.ReRender(true);
                             _context.EditorImage = _context.EditorImage;
                         }
                     }

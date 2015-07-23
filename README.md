@@ -34,6 +34,7 @@ The following third-party libraries use in the solutions:
 ## Getting started
 
 Use git to clone the repository or add this repository as team source in your Visual Studio Environment.
+
     $ git clone https://github.com/ebu/content-manager.git
 
 Set the `io.ebu.eis.contentmanager` as startup project and build the solutions.

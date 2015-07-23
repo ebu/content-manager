@@ -46,8 +46,12 @@ namespace io.ebu.eis.http
 
         public void Stop()
         {
-            if(_httpListener != null)
-                _httpListener.Stop();
+            try
+            {
+                if (_httpListener != null)
+                    _httpListener.Stop();
+            }
+            catch (Exception) { }
         }
 
         private void Process()

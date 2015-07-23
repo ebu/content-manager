@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Security.Permissions;
 using System.Text;
 
 namespace io.ebu.eis.datastructures
@@ -16,7 +17,9 @@ namespace io.ebu.eis.datastructures
     [DataContract]
     public class DataMessage
     {
+        private object _lockSync;
 
+        
         [DataMember(Name = "key")]
         public string Key { get; set; }
 
@@ -57,45 +60,56 @@ namespace io.ebu.eis.datastructures
                 // Evaluate Special Functions
                 if (splitPath[0] == "ToDateTime")
                 {
-                    DateTime t = new DateTime(Convert.ToInt32(Value)*1000);
+                    DateTime t = new DateTime(Convert.ToInt32(Value) * 1000);
                     return t.ToString(CultureInfo.InvariantCulture);
                 }
 
                 if (Data == null)
                     return "";
 
-                if (splitPath.Length == 1)
+                // TODO is is weird and should not be necessary
+                if (_lockSync == null)
+                    _lockSync = new object();
+
+                lock (_lockSync)
                 {
-                    // Current Element return KeyValue
-                    var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
-                    if (r != null)
-                        return r.Value;
-                }
-                else
-                {
-                    var searchFor = splitPath.FirstOrDefault();
-                    if (searchFor != null && (searchFor.StartsWith("[") && searchFor.EndsWith("]")))
+                    if (splitPath.Length == 1)
                     {
-                        // We need to extract by index
-                        var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
-                        if (index < 0)
-                            index = Data.Count + index;
-                        if (index >= Data.Count)
+                        // Current Element return KeyValue
+                        var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
+                        if (r != null)
+                            return r.Value;
+
+                    }
+                    else
+                    {
+                        var searchFor = splitPath.FirstOrDefault();
+                        if (searchFor != null && (searchFor.StartsWith("[") && searchFor.EndsWith("]")))
+                        {
+                            // We need to extract by index
+                            var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
+                            if (index < 0)
+                                index = Data.Count + index;
+                            if (index >= Data.Count)
+                                return "";
+                            var r2 = Data[index];
+                            return
+                                r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                        }
+                        else if (searchFor != null && (searchFor.StartsWith("(") && searchFor.EndsWith(")")))
+                        {
+                            // We need to extract by DataType
+                            var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
+                            if (r2 != null)
+                                return
+                                    r2.GetValue(String.Join(".",
+                                        splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                        }
+                        var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
+                        if (r == null)
                             return "";
-                        var r2 = Data[index];
-                        return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                        return r.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
                     }
-                    else if (searchFor != null && (searchFor.StartsWith("(") && searchFor.EndsWith(")")))
-                    {
-                        // We need to extract by DataType
-                        var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
-                        if (r2 != null)
-                            return r2.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
-                    }
-                    var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
-                    if (r == null)
-                        return "";
-                    return r.GetValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
                 }
                 return "";
             }
@@ -103,7 +117,11 @@ namespace io.ebu.eis.datastructures
 
         public DataMessage()
         {
-            Data = new List<DataMessage>();
+            _lockSync = new object();
+            lock (_lockSync)
+            {
+                Data = new List<DataMessage>();
+            }
         }
 
         public DataMessage Clone()
@@ -112,19 +130,39 @@ namespace io.ebu.eis.datastructures
             return Deserialize(js);
         }
 
-        public void MergeGlobal(DataMessage message)
+        /// <summary>
+        /// Merges a global Data to the COntext
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns>Returns true if changes happened</returns>
+        public bool MergeGlobal(DataMessage message)
         {
-            foreach (var dm in message.Data)
+            var changes = false;
+            lock (_lockSync)
             {
-                // Remove existing Data Key
-                while (Data.Any(x => x.Key == dm.Key))
+                foreach (var dm in message.Data)
                 {
-                    var d = Data.FirstOrDefault(x => x.Key == dm.Key);
-                    Data.Remove(d);
+                    // Remove existing Data Key
+                    if (Data.Any(x => x.Key == dm.Key))
+                    {
+                        var d = Data.FirstOrDefault(x => x.Key == dm.Key);
+                        // If content is different the change it
+                        if (String.Compare(d.JSONMessage, dm.JSONMessage, StringComparison.Ordinal) != 0)
+                        {
+                            d.Data = dm.Clone().Data;
+                            d.Value = dm.Value;
+                            changes = true;
+                        }
+                    }
+                    else
+                    {
+                        // Add the data if not existing
+                        Data.Add(dm.Clone());
+                        changes = true;
+                    }
                 }
-                // Add the data
-                Data.Add(dm);
             }
+            return changes;
         }
 
         public string JSONMessage
@@ -149,7 +187,7 @@ namespace io.ebu.eis.datastructures
             MemoryStream ms = new MemoryStream(byteArray);
             var entry = serializer.ReadObject(ms) as DataMessage;
             ms.Close();
-
+            entry._lockSync = new object();
             return entry;
         }
 

@@ -10,6 +10,7 @@ namespace io.ebu.eis.stomp
         public string Uri { get; set; }
         public string Topic { get; set; }
         public string Showparam { get; set; }
+        public string Text { get; set; }
         public string Link { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
@@ -17,32 +18,49 @@ namespace io.ebu.eis.stomp
     public class StompTopicSender
     {
 
-        public void SendStompImage(string uri, string username, string password, string topic, string url, string link, string text)
+        public void SendStompImage(string uri, string username, string password, string topic, string url, string text, string link)
         {
             if (!topic.EndsWith("/"))
                 topic = topic + "/";
-            Console.WriteLine("SEND STOMP : " + topic);
-
+            
             var newThread = new Thread(SendToStompThread);
             var param = new StompParameters()
             {
                 Uri = uri,
                 Topic = topic + "image",
+                Text = text,
                 Link = link,
                 Showparam = "SHOW " + url,
                 Username = username,
                 Password = password
             };
             newThread.Start(param);
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                // Send Text Message as well if any text
+                var newThread2 = new Thread(SendToStompThread);
+                var param2 = new StompParameters()
+                {
+                    Uri = uri,
+                    Topic = topic + "text",
+                    Text = text,
+                    Link = link,
+                    Showparam = "TEXT " + text,
+                    Username = username,
+                    Password = password
+                };
+                newThread2.Start(param2);
+            }
         }
 
         private void SendToStompThread(object s)
         {
             StompParameters stomp = (StompParameters)s;
-            sendToStomp(stomp.Uri, stomp.Topic, stomp.Link, stomp.Showparam, stomp.Username, stomp.Password);
+            sendToStomp(stomp.Uri, stomp.Topic, stomp.Text, stomp.Link, stomp.Showparam, stomp.Username, stomp.Password);
         }
 
-        private void sendToStomp(string uri, string topic, string link, string showparam, string username, string password)
+        private void sendToStomp(string uri, string topic, string text, string link, string showparam, string username, string password)
         {
             try
             {

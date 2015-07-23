@@ -218,13 +218,17 @@ namespace io.ebu.eis.contentmanager
 
         public void SerializeToFile()
         {
-            var json = JsonSerializer.Serialize(this);
-            File.WriteAllText(_config.DataConfiguration.StateConfigurationFile, json);
+            if (!string.IsNullOrEmpty(_config.DataConfiguration.StateConfigurationFile))
+            {
+                var json = JsonSerializer.Serialize(this);
+                File.WriteAllText(_config.DataConfiguration.StateConfigurationFile, json);
+            }
         }
 
         public bool ResetFomrFile()
         {
-            if (File.Exists(_config.DataConfiguration.StateConfigurationFile))
+            if (!string.IsNullOrEmpty(_config.DataConfiguration.StateConfigurationFile) &&
+                File.Exists(_config.DataConfiguration.StateConfigurationFile))
             {
                 var json = File.ReadAllText(_config.DataConfiguration.StateConfigurationFile);
                 try
@@ -313,8 +317,12 @@ namespace io.ebu.eis.contentmanager
                         {
                             Template = s.Filename,
                             Link = s.DefaultLink,
+                            Text = s.DefaultText,
+                            RegenerateOnPublish = s.RegenerateOnPublish,
+                            ValidityPeriod = TimeSpan.FromSeconds(s.ValidityPeriodSeconds),
                             CanRepeate = s.CanRepeat,
-                            ItemsPerSlide = s.ItemsPerSlide
+                            ItemsPerSlide = s.ItemsPerSlide,
+                            Context = new DataMessage()
                         };
                         c.Slides.Add(sl);
                     }
@@ -429,7 +437,14 @@ namespace io.ebu.eis.contentmanager
 
         public void ReloadPreview()
         {
-            PreviewImage = ActiveCart.PreviewNextSlide();
+            if (ActiveCart != null)
+            {
+                PreviewImage = ActiveCart.PreviewNextSlide();
+
+                // Pregenerate Preview
+                if (PreviewImage.RegenerateOnPublish && !PreviewImage.IsValid)
+                    PreviewImage.ReRender(true);
+            }
         }
         public void SwitchToSlide(ManagerImageReference newImage)
         {
@@ -565,6 +580,15 @@ namespace io.ebu.eis.contentmanager
         {
             // Main Image changed, i.e. Push to MQ !
 
+            // Regenerate Forced Image Rerendering on Publish Images
+            if (MainImage.RegenerateOnPublish && !MainImage.IsValid)
+            {
+                MainImage.ReRender(true);
+            }
+
+            // Direct Dispatch
+            MainImage.DispatchLastUpload();
+
             // Dispatch to Dispatcher for publication
             // DispatchNotificationMessage
             var m = new DispatchNotificationMessage()
@@ -577,7 +601,7 @@ namespace io.ebu.eis.contentmanager
                 NotificationMessage = "Dispatch Message",
                 ReceiveTime = DateTime.Now,
                 Source = "EBU.io EIS Content Manager",
-                Title = "",
+                Title = MainImage.Text,
                 ImageVariants = MainImage.ImageVariants
             };
 
@@ -1006,7 +1030,7 @@ namespace io.ebu.eis.contentmanager
                             EditorImage.Context = d.DataMessage;
                             EditorImage.ReRender(GlobalData);
                         }
-                        EditorImage.ReRender();
+                        EditorImage.ReRender(true);
                         EditorImage = EditorImage;
                     }
                 }
@@ -1067,17 +1091,23 @@ namespace io.ebu.eis.contentmanager
 
         public void UpdateGlobalData(DataMessage message)
         {
+            var rerender = false;
             if (GlobalData == null)
             {
-                GlobalData = message;
+                GlobalData = message.Clone();
+                rerender = true;
             }
             else
             {
-                GlobalData.MergeGlobal(message);
+                rerender = GlobalData.MergeGlobal(message);
             }
 
-            // Reset all Slides for new Data
-            InvalidateSlidesWithGlobalData();
+            if (rerender)
+            {
+                // Some data changed
+                // Reset all Slides for new Data
+                InvalidateSlidesWithGlobalData();
+            }
         }
 
         public void InvalidateSlidesWithGlobalData()
@@ -1085,20 +1115,33 @@ namespace io.ebu.eis.contentmanager
             // Cart List
             foreach (var c in Carts)
             {
-                foreach (var s in c.Slides)
+                if (c.ShowInCartList)
                 {
-                    s.ReRender(GlobalData);
+                    foreach (var s in c.Slides)
+                    {
+                        if (c.IsActive)
+                        {
+                            // Rerender active
+                            s.ReRender(GlobalData);
+                        }
+                        else
+                        {
+                            // Only update others
+                            s.UpdateGlobal(GlobalData);
+                        }
+                    }
                 }
             }
+
+            // Don't recompute Editor or preview Carts since no use
             // Preview Cart
             foreach (var s in PreviewCart.Slides)
             {
-                s.ReRender(GlobalData);
+                s.UpdateGlobal(GlobalData);
             }
-            // Editor Cart
             foreach (var s in EditorCart.Slides)
             {
-                s.ReRender(GlobalData);
+                s.UpdateGlobal(GlobalData);
             }
         }
 

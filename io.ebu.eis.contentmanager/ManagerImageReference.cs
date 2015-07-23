@@ -50,6 +50,10 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "link")]
         public string Link { get { return _link; } set { _link = value; OnPropertyChanged("Link"); } }
 
+        private string _text;
+        [DataMember(Name = "text", IsRequired = false)]
+        public string Text { get { return _text; } set { _text = value; OnPropertyChanged("Text"); } }
+
 
         private List<ImageVariant> _imageVariants;
         [DataMember(Name = "imagevariants")]
@@ -72,6 +76,31 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "itemsperslide", IsRequired = false)]
         public int ItemsPerSlide { get { return _itemsPerSlide; } set { _itemsPerSlide = value; OnPropertyChanged("ItemsPerSlide"); } }
 
+        private bool _regenerateOnPublish;
+        [DataMember(Name = "regenerateonpublish", IsRequired = false)]
+        public bool RegenerateOnPublish { get { return _regenerateOnPublish; } set { _regenerateOnPublish = value; OnPropertyChanged("RegenerateOnPublish"); } }
+
+        private TimeSpan _validityPeriod = TimeSpan.Zero;
+        [DataMember(Name = "validityperiod", IsRequired = false)]
+        public TimeSpan ValidityPeriod { get { return _validityPeriod; } set { _validityPeriod = value; OnPropertyChanged("ValidityPeriod"); } }
+
+        private DateTime _lastGenerationTime = DateTime.MinValue;
+        [DataMember(Name = "lastgenerationtime", IsRequired = false)]
+        public DateTime LastGenerationTime { get { return _lastGenerationTime; } set { _lastGenerationTime = value; OnPropertyChanged("LastGenerationTime"); } }
+
+        public bool IsValid
+        {
+            get
+            {
+                try
+                {
+                    return LastGenerationTime.Add(ValidityPeriod) > DateTime.Now;
+                }
+                catch (Exception) { }
+                return false;
+            }
+        }
+
         private string _publicImageUrl;
 
         public string PublicImageUrl
@@ -93,7 +122,15 @@ namespace io.ebu.eis.contentmanager
 
         private DataMessage _context;
         [DataMember(Name = "context")]
-        public DataMessage Context { get { return _context; } set { _context = value; ReadTemplateFields(); OnPropertyChanged("Context"); } }
+        public DataMessage Context
+        {
+            get { return _context; }
+            set
+            {
+                _context = value; ReadTemplateFields();
+                OnPropertyChanged("Context");
+            }
+        }
 
         private DispatchedObservableCollection<ManagerTemplateField> _tpFields;
         [DataMember(Name = "templatefields")]
@@ -129,6 +166,7 @@ namespace io.ebu.eis.contentmanager
                 _previewImage = value;
                 if (_previewImage != null)
                 {
+                    _rendering = false;
                     OnPropertyChanged("PreviewImage");
                     OnPropertyChanged("PreviewImageSource");
                 }
@@ -140,23 +178,51 @@ namespace io.ebu.eis.contentmanager
 
         #region Rendering
 
-        public void ReRender()
+        public void ReRender(bool force)
         {
             // Initiate rerender by nulling out reference
+            var changed = ReadTemplateFields();
+            var a = TemplateFields;
+            if (changed || force)
+            {
+                InvalidatePreviews();
+                Console.WriteLine("RERENDERING by Invalidate on " + Template);
+            }
+        }
+
+        private void InvalidatePreviews()
+        {
             PreviewImage = null;
+            OnPropertyChanged("PreviewImage");
+            InvalidatePublic();
+        }
+
+        private void InvalidatePublic()
+        {
             PublicImageUrl = null;
-            //if (!_rendering)
-            //{
-            //    _rendering = true;
-            //    var t = new Thread(Render);
-            //    t.Start();
-            //}
+            OnPropertyChanged("PreviewImageSource");
+        }
+
+        public bool UpdateGlobal(DataMessage global)
+        {
+            if (Context == null)
+            {
+                Context = global.Clone();
+                InvalidatePreviews();
+                return true;
+            }
+            else
+            {
+                var changed = Context.MergeGlobal(global);
+                return changed;
+            }
         }
 
         public void ReRender(DataMessage global)
         {
-            Context.MergeGlobal(global);
-            ReRender();
+            var changed = UpdateGlobal(global);
+            if (changed)
+                ReRender(false);
         }
 
         private void Render()
@@ -167,6 +233,7 @@ namespace io.ebu.eis.contentmanager
                 PublicImageUrl = null;
                 PreviewImage = RenderImageWithTemplateContext();
                 _rendering = false;
+                LastGenerationTime = DateTime.Now;
 
             }, null);
         }
@@ -181,11 +248,15 @@ namespace io.ebu.eis.contentmanager
             PreviewImage = null;
         }
 
-        private void ReadTemplateFields()
+        /// <summary>
+        /// Read the templates variables
+        /// </summary>
+        /// <returns>Returns true if changes happened</returns>
+        private bool ReadTemplateFields()
         {
             if (Template == null || TemplateFields == null)
             {
-                return;
+                return false;
             }
             if (!File.Exists(Template) && File.Exists(Path.Combine(Config.SlidesConfiguration.TemplatePath, Template)))
             {
@@ -197,7 +268,7 @@ namespace io.ebu.eis.contentmanager
             }
             else if (!File.Exists(Template))
             {
-                return;
+                return false;
             }
 
             var templateHtml = File.ReadAllText(Template);
@@ -205,7 +276,9 @@ namespace io.ebu.eis.contentmanager
             // Replace @@values@@ with context Values
             const string pattern = "@@(.*?)@@";
 
-            TemplateFields = new DispatchedObservableCollection<ManagerTemplateField>();
+            var changes = false;
+            if (TemplateFields == null)
+                TemplateFields = new DispatchedObservableCollection<ManagerTemplateField>();
             foreach (Match m in Regex.Matches(templateHtml, pattern))
             {
                 var variable = m.Groups[1].Value;
@@ -215,12 +288,25 @@ namespace io.ebu.eis.contentmanager
                     replaceValue = Context.GetValue(variable);
                 }
                 // Add all fields to template fields
-                if (TemplateFields.Count(x => x.Title == variable) == 0)
+                if (TemplateFields.Any(x => x.Title == variable))
+                {
+                    // If already in there check if value changed
+                    var existing = TemplateFields.First(x => x.Title == variable);
+                    if (String.Compare(existing.Value, replaceValue, StringComparison.Ordinal) != 0)
+                    {
+                        // Update value
+                        existing.Value = replaceValue;
+                        changes = true;
+                    }
+                }
+                else
                 {
                     // Only add once to list
                     TemplateFields.Add(new ManagerTemplateField(variable, replaceValue));
+                    changes = true;
                 }
             }
+            return changes;
         }
 
         //async Task<BitmapImage> renderImageWithTemplateContextAsync()
@@ -428,6 +514,38 @@ namespace io.ebu.eis.contentmanager
         //    return PublicImageUrl;
         //}
 
+        public void DispatchLastUpload()
+        {
+            foreach (UploadConfiguration outConf in Config.OutputConfiguration.UploadConfigurations)
+            {
+                try
+                {
+                    // Dispatch Message
+                    foreach (DispatchConfiguration dispatch in outConf.DispatchConfigurations)
+                    {
+                        switch (dispatch.Type.ToUpper())
+                        {
+                            case "STOMP":
+                                {
+                                    var stompConnection = new StompTopicSender();
+                                    stompConnection.SendStompImage(dispatch.StompUri, dispatch.StompUsername,
+                                        dispatch.StompPassword, dispatch.StompTopic, PublicImageUrl, Text, Link);
+                                }
+                                break;
+
+                            // TODO Log unknown error on default
+                        
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Catch all exception to avoid crash and continue operations
+                    // TODO Log and handle
+                }
+            }
+        }
+
         private string MakePublic()
         {
             // Reset Variants
@@ -444,7 +562,7 @@ namespace io.ebu.eis.contentmanager
                     {
                         BitmapEncoder encoder = new PngBitmapEncoder();
 
-                        imagePath = Path.Combine(Config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".png");
+                        imagePath = Path.Combine(Config.SlidesConfiguration.TemplatePath, Guid.NewGuid() + ".png");
 
                         encoder.Frames.Add(BitmapFrame.Create(PreviewImage));
                         using (var filestream = new FileStream(imagePath, FileMode.Create))
@@ -528,29 +646,14 @@ namespace io.ebu.eis.contentmanager
                             // TODO Log and handle
                         }
 
-                        // Dispatch Message
-                        foreach (DispatchConfiguration dispatch in outConf.DispatchConfigurations)
-                        {
-                            switch (dispatch.Type.ToUpper())
-                            {
-                                case "STOMP":
-                                    {
-                                        var stompConnection = new StompTopicSender();
-                                        stompConnection.SendStompImage(dispatch.StompUri, dispatch.StompUsername,
-                                            dispatch.StompPassword, dispatch.StompTopic, publicUrl, Link, "");
-                                    }
-                                    break;
-                                // TODO Log unknown error on default
-                            }
-                        }
                     }
 
                     // TODO Handle multiple Output PublicUrls, last one wins
                     // Add to variants
                     ImageVariants.Add(new ImageVariant() { Name = output.Name, Url = publicUrl });
 
-                    // Save the Url
-                    if (output.Name == "DEFAULT")
+                    // Save the Url of the IsDefault Image
+                    if (output.IsDefault)
                     {
                         PublicImageUrl = publicUrl;
                     }

@@ -7,167 +7,98 @@
   <CMConfiguration>
 
     <InputConfigurations>
-      <!--<InputConfiguration Type="MQ" MQUri="amqp://rabbit:d5Gfd3p1dFd@eis.ebu.io/eis" MQExchange="eis-dp-vbc-t" />-->
+      <!--<InputConfiguration Type="MQ" MQUri="amqp://username:pwdd@rabbitmq.server.ch/vhost" MQExchange="in-exchangename" />-->
       <InputConfiguration Type="HTTP" BindIp="localhost" BindPort="8080" />
     </InputConfigurations>
 
     <OutputConfiguration EnableDataDispatchMQ="false">
-      <!--<DispatchMQConfiguration MQUri="amqp://user:password@rabbitmqserver/exchange" MQExchange="queuename" />-->
+      <!--<DispatchMQConfiguration MQUri="amqp://username:pwdd@rabbitmq.server.ch/vhost" MQExchange="out-exchangename" />-->
 
       <UploadConfigurations>
-
-        <UploadConfiguration Type="FILE" DestinationPath="C:\temp" PublicUriBase="http://urltopublicserver/pathtoimagefolder" />
-
-        <!--<UploadConfiguration Type="FILE" DestinationPath="C:\temp" PublicUriBase="http://urltopublicserver/pathtoimagefolder">
+        <!--
+        <UploadConfiguration Type="FILE" DestinationPath="C:\temp" PublicUriBase="http://localhost/images">
           <DispatchConfigurations>
-            <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radiovisstompserver:61613" StompUsername="username" StompPassword="password" StompTopic="/topic/dab/4e1/4fff/4005/0/" />
+            <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
           </DispatchConfigurations>
-        </UploadConfiguration>-->
+        </UploadConfiguration>
+        -->
+        <UploadConfiguration Type="FTP"  FtpServer="ftp.server.ch" FtpUsername="username" FtpPassword="password" Subfolder="subfolder" PublicUriBase="http://public.server.ch/subfolder/">
+          <DispatchConfigurations>
+            <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
+          </DispatchConfigurations>
+        </UploadConfiguration>
 
-        <!--<UploadConfiguration Type="FTP"  FtpServer="ftp.server.ch" FtpUsername="username" FtpPassword="password" Subfolder="subfolderonftp" PublicUriBase="http://server/pathtoimagefolder"/>-->
-
-        <!--<UploadConfiguration Type="S3"   AWSAccessKey="accesskey" AWSSecretKey="secretkey"
-                   S3BucketName="bucketname" Subfolder="sobfolderinbucket"
-                   PublicUriBase="http://awss3urlforbucket/subfolder"/>-->
-
+        <!--
+        <UploadConfiguration Type="S3"   AWSAccessKey="key" AWSSecretKey="secret"
+                   S3BucketName="bucketname" Subfolder="subfolder"
+                   PublicUriBase="http://publicurl/bucketname">
+        </UploadConfiguration>
+        -->
       </UploadConfigurations>
 
       <ImageOutputConfigurations>
-        <ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="PNG" Quality="100" IsDefault="true" />
-        <!--<OutputConfiguration Name="LOW" Width="320" Height="240" Encoder="JPEG" Quality="70" />-->
+        <!-- The Public URL of the IsDefault image will be used for dispatch -->
+        <!--<ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="PNG" Quality="100" IsDefault="true" /> -->
+        <ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="JPEG" Quality="80" IsDefault="true" />
       </ImageOutputConfigurations>
-
 
     </OutputConfiguration>
 
-
-    <DataConfiguration DataFlowTypes="STARTLIST;EVENT;WEATHER;RESULTS;RESULT;RESULTLIST;PHOTOFINISH;NEWS;MESSAGE"
-                       DataFlowLeftActions="Cart;Context"
+    <DataConfiguration DataFlowLeftActions="Cart;Context"
                        DataFlowRightActions="Context"
-                       AutoCartClearTypes="START"
-                       AutoCartAppendTypes="EVENT;RESTULT;RESULTLIST;STARTLIST"
-                       AutoCartGenerationTypes="PHOTOFINISH;NEWS;MESSAGE"
-                       AutoEditorTypes="INSTAGRAM;WEATHER"
-                       
-                       ImageFlowTypes="IMAGE;PHOTOFINISH;INSTAGRAM"
                        ImageFlowLeftActions="Template;BackgroundUrl;Context"
                        ImageFlowRightActions="BackgroundUrl"
                        
-                       DataBaseTypes="SCHEDULE;ATHLETE;TEAM"
-                       DataBaseKey="CODE"
-                       
-                       InitialPictureFolder="C:\temp\initial_imagestoimport"
+                       InitialPictureFolder="C:\temp\generic_bg"
                        IncomingPictureFolder="C:\temp\content_images"
                        
-                       StateConfigurationFile ="state.txt"
                        >
-
-      <OnAirCartAutoConfiguration>
-        <OnAirCartAutoCondition DataPath="EVENTTYPE" ExpectedValue="START" Operator="EQUALS" />
-        <OnAirCartAutoCondition DataPath="EVENTTYPE" ExpectedValue="INTER" Operator="EQUALS" />
-        <OnAirCartAutoCondition DataPath="EVENTTYPE" ExpectedValue="FINISH" Operator="EQUALS" />
-      </OnAirCartAutoConfiguration>
-
-      <DataItemConfigurations>
-        <DataItemConfiguration DataType="INSTAGRAM" NamePath="TITLE" CategoryPath="USERNAME"
-                               TypePath="TYPE" ShortPath="CAPTION" PriorityPath="" UrlPath="URL"
-                               DefaultCartName="" DefaultTemplate="instagram_fullsize.html" />
-        <DataItemConfiguration DataType="STARTLIST" NamePath="NAME" CategoryPath="TITLE"
-                               TypePath="RUNNO" ShortPath="EVENTNAME" PriorityPath=""
-                               DefaultCartName="STARTLIST" DefaultTemplate="" />
-        <DataItemConfiguration DataType="RESULTLIST" NamePath="NAME" CategoryPath="TITLE"
-                               TypePath="RESULTSTATUS" ShortPath="EVENTNAME" PriorityPath=""
-                               DefaultCartName="RESULTLIST" DefaultTemplate="" />
-        <DataItemConfiguration DataType="WEATHER" NamePath="TITLE" CategoryPath="WEATHERCONDITION"
-                               TypePath="TITLE" ShortPath="VENUENAME" PriorityPath=""
-                               DefaultCartName="" DefaultTemplate="weather.html" />
-        <DataItemConfiguration DataType="EVENT" NamePath="ATHLETE.[0].TVNAME" CategoryPath="EVENTTYPE;NO"
-                               TypePath="BIB" ShortPath="EVENTNAME" PriorityPath=""
-                               DefaultCartName="" DefaultTemplate="racer_start.html" />
-        <DataItemConfiguration DataType="PHOTOFINISH" NamePath="UNITNAME" CategoryPath="TITLE"
-                               TypePath="RESULTSTATUS" ShortPath="EVENTNAME" PriorityPath="" UrlPath="URL"
-                               DefaultCartName="" DefaultTemplate="" />
-        <DataItemConfiguration DataType="ATHLETE" NamePath="TVNAME" CategoryPath=""
-                               TypePath="" ShortPath="ORGANISATIONNAME" PriorityPath=""
-                               DefaultCartName="" DefaultTemplate="" />
-        <DataItemConfiguration DataType="NEWS" NamePath="TITLE" CategoryPath="TITLE"
-                               TypePath="NEWSTYPE" ShortPath="MESSAGE" PriorityPath=""
-                               DefaultCartName="" DefaultTemplate="" />
-        <DataItemConfiguration DataType="MESSAGE" NamePath="MESSAGE" CategoryPath="TITLE"
-                               TypePath="CODEX" ShortPath="MESSAGE" PriorityPath=""
-                               DefaultCartName="" DefaultTemplate="" />
-        <DataItemConfiguration DataType="IMAGE" NamePath="TITLE" CategoryPath="TITLE"
-                               TypePath="TYPE" ShortPath="TYPE" PriorityPath="" UrlPath="URL"
-                               DefaultCartName="" DefaultTemplate="" />
-      </DataItemConfigurations>
-
-      <DataPriorityConfigurations>
-        <DataPriorityConfiguration DataPath="EVENTTYPE" ExpectedValue="FINISH" Priority="High" Operator="EQUALS" />
-        <DataPriorityConfiguration DataPath="EVENTTYPE" ExpectedValue="START" Priority="Medium" Operator="EQUALS" />
-        <DataPriorityConfiguration DataPath="EVENTTYPE" ExpectedValue="INTER" Priority="Low" Operator="EQUALS" />
-        <DataPriorityConfiguration DataPath="TITLE" ExpectedValue="STARTLIST" Priority="Medium" Operator="EQUALS" />
-        <DataPriorityConfiguration DataPath="TITLE" ExpectedValue="RESULTLIST" Priority="Green" Operator="EQUALS" />
-        <DataPriorityConfiguration DataPath="CAPTION" ExpectedValue="oidar" Priority="Green" Operator="CONTAINS" />
-      </DataPriorityConfigurations>
 
     </DataConfiguration>
 
-    <SlidesConfiguration TemplatePath="C:\temp\contentmanager-templates"
-                         DefaultLink="http://www.website.com/"  >
+    <!-- Specify here the base path to your html5 template to be loaded by the manager -->
+    <SlidesConfiguration TemplatePath="C:\content-manager\radio-generic\"
+                         DefaultLink="http://www.ebu.io" >
       <CartConfigurations>
-        <CartConfiguration Name="INITIAL" Active="true" ShowInCartList="true" >
+        <!-- The carts defined here are default carts that are loaded on startup -->
+        <!-- The Active=true cart is the one that is "on air" at start up -->
+        <CartConfiguration Name="MAIN CART" Active="true" ShowInCartList="true" >
           <Slides>
-            <Slide Filename="datesample02.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="datesample03.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="datesample04.html" DefaultLink="http://www.website.com/" />
+            <Slide Filename="logo.html" DefaultLink="http://www.ebu.io" DefaultText="DEMO RADIO, DemoSlide for RadioVIS" />
+            <Slide Filename="show1.html" DefaultLink="http://www.ebu.io" DefaultText="Show Time, DemoSlide for RadioVIS" />
+            <Slide Filename="cover-icecast.html" DefaultLink="http://www.ebu.io" DefaultText="Current Song, DemoSlide for RadioVIS" />
+            <Slide Filename="weather.html" DefaultLink="http://www.ebu.io"  DefaultText="Weather in Geneva, DemoSlide for RadioVIS"
+                   RegenerateOnPublish="true" ValidityPeriodSeconds="120" />
+            <Slide Filename="webcam.html" DefaultLink="http://www.ebu.io"  DefaultText="Webcam in Geneva, DemoSlide for RadioVIS"
+                   RegenerateOnPublish="true" ValidityPeriodSeconds="120" />
           </Slides>
         </CartConfiguration>
-        <CartConfiguration Name="CART 1" ShowInCartList="true" >
+
+        <CartConfiguration Name="MUSIC ONLY" Active="false" ShowInCartList="true" >
           <Slides>
-            <Slide Filename="sample.html" DefaultLink="http://www.website.com/" />
+            <Slide Filename="cover-icecast.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
+            <Slide Filename="logo.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
           </Slides>
         </CartConfiguration>
-        <!--<CartConfiguration Name="CART 2" ShowInCartList="true" >
-          <Slides>
-            <Slide Filename="ebuimage.html" DefaultLink="http://www.website.com/" />
-          </Slides>
-        </CartConfiguration>
-        <CartConfiguration Name="CART 3" ShowInCartList="true" >
-          <Slides>
-            <Slide Filename="ebuimage.html" DefaultLink="http://www.website.com/" />
-          </Slides>
-        </CartConfiguration>-->
+
+        <!-- The 'ALL' cart with editor default will be shown at the bottom of the CM and acts as source for new slides -->
         <CartConfiguration Name="ALL" EditorDefault="true" >
           <Slides>
-            <Slide Filename="ebuimage.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="imageonly.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="instagram.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="instagram_fullsize.html" DefaultLink="http://www.website.com/" />
-
-            <Slide Filename="twitter.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="headline.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="1line.html" DefaultLink="http://www.website.com/" />
-            <Slide Filename="comment.html" DefaultLink="http://www.website.com/" />
+            <Slide Filename="logo.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
+            <Slide Filename="show1.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
+            <Slide Filename="cover.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
+            <Slide Filename="cover-icecast.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
+            <Slide Filename="weather.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
+            <Slide Filename="webcam.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
           </Slides>
         </CartConfiguration>
-
-        <!--<CartConfiguration Name="STARTLIST" ShowInCartList="false">
-          <Slides>
-            <Slide Filename="startlist6lines.html" DefaultLink="http://www.website.com/" CanRepeat="true" ItemsPerSlide="6" />
-          </Slides>
-        </CartConfiguration>-->
-
-        <!--<CartConfiguration Name="RESULTLIST" ShowInCartList="false">
-          <Slides>
-            <Slide Filename="resultlist6lines.html" DefaultLink="http://www.website.com/" CanRepeat="true" ItemsPerSlide="6" />
-          </Slides>
-        </CartConfiguration>-->
-        
       </CartConfigurations>
     </SlidesConfiguration>
 
   </CMConfiguration>
 
+
+  <!-- ###################### Don't change anything below this line ###################### -->
   <startup>
     <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
   </startup>

@@ -35,6 +35,7 @@ namespace io.ebu.eis.canvasgenerator
                 p.WaitForExit(TimeToExit);
                 // Read the Error:
                 // var error = p.StandardError.ReadToEnd().Trim();
+                // TODO If error not null or empty String the report error
                 // Read the Output:
                 var base64Image = p.StandardOutput.ReadToEnd().Trim();
                 var bytes = Convert.FromBase64CharArray(base64Image.ToCharArray(), 0, base64Image.Length);

@@ -16,7 +16,10 @@ namespace io.ebu.eis.http
         private static readonly Regex SystemRex = new Regex(@"\/system(\/)?\?(?<values>.*)$");
         private static readonly Regex ChangeRex = new Regex(@"\/change(\/)?\?(?<values>.*)$");
 
-        private enum CMCommand { Update, Broadcast, UpdateAndBroadcast, Load, Preview, System, Change }
+        // IceCast Update look like : http://192.168.1.10:8000/admin/metadata?mount=/mystream&mode=updinfo&song=ACDC+Back+In+Black
+        private static readonly Regex IceCastRex = new Regex(@"\/admin/metadata(\/)?\?(?<values>.*)");
+
+        private enum CMCommand { Update, Broadcast, UpdateAndBroadcast, Load, Preview, System, Change, IceCast }
 
         private readonly HttpListenerContext _context;
         private readonly IDataMessageHandler _handler;
@@ -41,14 +44,16 @@ namespace io.ebu.eis.http
                 if (_context.Request.HttpMethod == "GET")
                 {
                     // GET Request
+                    var kvStore = _context.Request.QueryString;
                     switch (RawUrlToCMCommand(_context.Request.RawUrl))
                     {
                         case CMCommand.Update:
-                            var kvStore = _context.Request.QueryString;
+                        case CMCommand.IceCast:
                             var dm = new DataMessage
                             {
                                 Key = "GLOBAL",
-                                DataType = "GLOBAL"
+                                DataType = "GLOBAL",
+                                Value = "Global Message"
                             };
                             foreach (var k in kvStore.AllKeys)
                             {
@@ -61,6 +66,8 @@ namespace io.ebu.eis.http
                                 dm.Data.Add(d);
                             }
                             _handler.UpdateGlobalData(dm);
+                            _context.Response.StatusCode = 200;
+                            responseString = "Ok.";
                             break;
                         // TODO Add additional commands
                         default:
@@ -114,7 +121,6 @@ namespace io.ebu.eis.http
                             _context.Response.StatusCode = 500;
                             var buffer = _context.Request.ContentEncoding.GetBytes("Error occured.\n" + e.Message);
                             _context.Response.Close(buffer, false);
-                            _context.Response.Close();
                         }
                     }
                     else
@@ -122,7 +128,6 @@ namespace io.ebu.eis.http
                         _context.Response.StatusCode = 400;
                         var buffer = _context.Request.ContentEncoding.GetBytes("POST should contain body content.");
                         _context.Response.Close(buffer, false);
-                        _context.Response.Close();
                     }
                 }
                 else
@@ -133,9 +138,19 @@ namespace io.ebu.eis.http
                     _context.Response.Close(buffer, false);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO Log this
+                try
+                {
+                    _context.Response.StatusCode = 500;
+                    var buffer = _context.Request.ContentEncoding.GetBytes("Error occured. " + ex.Message);
+                    _context.Response.Close(buffer, false);
+                }
+                catch (Exception)
+                {
+                    // TODO Log
+                }
             }
         }
 
@@ -155,6 +170,8 @@ namespace io.ebu.eis.http
                 return CMCommand.System;
             if (ChangeRex.Match(rawUrl).Success)
                 return CMCommand.Change;
+            if (IceCastRex.Match(rawUrl).Success)
+                return CMCommand.IceCast;
             return CMCommand.System;
         }
     }
