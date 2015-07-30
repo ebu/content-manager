@@ -39,7 +39,7 @@ namespace io.ebu.eis.http
                 // Manage Encoding
                 _context.Response.ContentEncoding = _context.Request.ContentEncoding;
                 // Set CM Server Headers
-                _context.Response.Headers.Add("Server", "EBU.io Content Manager");
+                _context.Response.Headers.Add("Server", "EBU Content Manager");
 
                 if (_context.Request.HttpMethod == "GET")
                 {

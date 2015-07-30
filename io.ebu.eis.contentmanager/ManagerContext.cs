@@ -593,14 +593,14 @@ namespace io.ebu.eis.contentmanager
             // DispatchNotificationMessage
             var m = new DispatchNotificationMessage()
             {
-                Account = "EBU.io",
+                Account = "EBU",
                 ContentType = "application/json",
                 Imageurl = MainImage.PublicImageUrl,
                 Link = MainImage.Link,
                 NotificationKey = Guid.NewGuid().ToString(),
                 NotificationMessage = "Dispatch Message",
                 ReceiveTime = DateTime.Now,
-                Source = "EBU.io EIS Content Manager",
+                Source = "EBU EIS Content Manager",
                 Title = MainImage.Text,
                 ImageVariants = MainImage.ImageVariants
             };

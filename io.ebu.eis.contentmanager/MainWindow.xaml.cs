@@ -1050,7 +1050,7 @@ namespace io.ebu.eis.contentmanager
 
         private void editButton_Unchecked(object sender, RoutedEventArgs e)
         {
-            string company = "EBU.io";
+            string company = "EBU";
             string application = "ContentManager";
             string windows = "MainWindow";
             RegistryHelper.SaveValue(company, application, windows, "VerticalColumn0", HorizontalSystemGrid.ColumnDefinitions[0].ActualWidth);
@@ -1062,7 +1062,7 @@ namespace io.ebu.eis.contentmanager
 
         private void RestoreLayout()
         {
-            string company = "EBU.io";
+            string company = "EBU";
             string application = "ContentManager";
             string windows = "MainWindow";
             if (RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0") > 0.0)
@@ -1095,6 +1095,7 @@ namespace io.ebu.eis.contentmanager
             {
                 // Also hide Data Buttons and Bar
                 autoDataButton.Visibility = Visibility.Hidden;
+                dataOverrideInterval.Visibility = Visibility.Hidden;
                 dataOverrideProgress.Visibility = Visibility.Hidden;
             }
         }

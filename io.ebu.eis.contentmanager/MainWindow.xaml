@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
         xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures" 
         x:Class="io.ebu.eis.contentmanager.MainWindow"
-        Title="EBU.io Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/cm.ico" MouseMove="Window_MouseMove">
+        Title="EBU - Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/cm.ico" MouseMove="Window_MouseMove">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -264,7 +264,7 @@
             <RowDefinition Height="37"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <TextBlock HorizontalAlignment="Left" Margin="10,3,0,0" Style="{StaticResource ResourceKey=HeaderTextBlockStyle}" TextWrapping="Wrap" Text="EBU.io Content Manager" VerticalAlignment="Top" Height="29" Width="397" FontSize="20"/>
+        <TextBlock HorizontalAlignment="Left" Margin="10,3,0,0" Style="{StaticResource ResourceKey=HeaderTextBlockStyle}" TextWrapping="Wrap" Text="EBU - Content Manager" VerticalAlignment="Top" Height="29" Width="397" FontSize="20"/>
         <Grid x:Name="HorizontalSystemGrid" Margin="0" Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
@@ -437,7 +437,7 @@
                 <TextBlock VerticalAlignment="Center">AUTO DATA</TextBlock>
             </StackPanel>-->
         </ToggleButton>
-        <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="24" Margin="983,3,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding OverrideRotationCount}" VerticalAlignment="Top" Width="36" MinHeight="25" FontSize="12"/>
+        <TextBox x:Name="dataOverrideInterval" ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="24" Margin="983,3,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding OverrideRotationCount}" VerticalAlignment="Top" Width="36" MinHeight="25" FontSize="12"/>
         <ProgressBar x:Name="dataOverrideProgress" HorizontalAlignment="Left" Height="25" Margin="1024,3,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding OverrideProgress}"/>
         <ToggleButton x:Name="editButton" HorizontalAlignment="Right" Margin="0,3,10,0" VerticalAlignment="Top" Width="105" IsChecked="{Binding EditModeEnabled}" Height="24" FontSize="12" MinHeight="25" Unchecked="editButton_Unchecked" Content="Edit Layout">
             <!--<StackPanel Orientation="Horizontal">

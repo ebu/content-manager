@@ -9,6 +9,9 @@ The Content Manager can run in a standalone fashion or in an advanced DataGatewa
 allowing external data providers such as Swisstiming to provide valuable data to generate
 slideshows for live sports events.
 
+## Documentation
+
+See the	doc folder for configuration, usage and api documentation
 
 ## Prerequisites
 
