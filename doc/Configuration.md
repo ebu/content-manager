@@ -27,3 +27,5 @@ available commands and options are descripbed in the Section _API and JSON Data 
 
 You can define an IP to bind the service to a particular IP. Use `localhost` otherwise. You can also change the port on which
 the HTTP Endpoint is listening.
+
+See the [API Documentation](API.md) for more information about the usage of the HTTP API.

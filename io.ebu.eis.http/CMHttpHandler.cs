@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
 using io.ebu.eis.datastructures;
@@ -31,6 +34,8 @@ namespace io.ebu.eis.http
 
         internal void ProcessRequest()
         {
+            var slideNameKey = "BSLIDE";
+            var slideCartNameKey = "SLIDE";
 
             try
             {
@@ -49,25 +54,79 @@ namespace io.ebu.eis.http
                     {
                         case CMCommand.Update:
                         case CMCommand.IceCast:
-                            var dm = new DataMessage
                             {
-                                Key = "GLOBAL",
-                                DataType = "GLOBAL",
-                                Value = "Global Message"
-                            };
-                            foreach (var k in kvStore.AllKeys)
-                            {
-                                var d = new DataMessage
-                                {
-                                    Key = k,
-                                    Value = kvStore[k],
-                                    DataType = "STRING"
-                                };
-                                dm.Data.Add(d);
+                                var dm = CreateGlobalDataMessage(kvStore);
+                                _handler.UpdateGlobalData(dm);
+                                _context.Response.StatusCode = 200;
+                                responseString = "Ok.";
                             }
-                            _handler.UpdateGlobalData(dm);
-                            _context.Response.StatusCode = 200;
-                            responseString = "Ok.";
+                            break;
+                        case CMCommand.Change:
+                            {
+
+                                if (kvStore.AllKeys.Contains(slideNameKey))
+                                {
+                                    var slideName = kvStore[slideNameKey];
+                                    _handler.BroadcastSlide(slideName);
+
+                                    _context.Response.StatusCode = 200;
+                                    responseString = "Ok.";
+                                }
+                                else
+                                {
+                                    _context.Response.StatusCode = 502;
+                                    responseString = "Missing BSLIDE parameter.";
+                                }
+                            }
+                            break;
+                        case CMCommand.UpdateAndBroadcast:
+                            {
+                                if (kvStore.AllKeys.Contains(slideNameKey))
+                                {
+                                    var dm = CreateGlobalDataMessage(kvStore);
+                                    _handler.UpdateGlobalData(dm);
+
+                                    var slideName = kvStore[slideNameKey];
+                                    _handler.BroadcastSlide(slideName);
+
+                                    _context.Response.StatusCode = 200;
+                                    responseString = "Ok.";
+                                }
+                                else
+                                {
+                                    _context.Response.StatusCode = 502;
+                                    responseString = "Missing BSLIDE parameter.";
+                                }
+
+                            }
+                            break;
+                        case CMCommand.Load:
+                            {
+                                if (kvStore.AllKeys.Contains(slideCartNameKey + "1"))
+                                {
+                                    _handler.ClearActiveCart();
+
+                                    var slideList = new List<string>();
+
+                                    var i = 1;
+
+                                    while (!string.IsNullOrEmpty(slideCartNameKey + i))
+                                    {
+                                        slideList.Add(slideCartNameKey + i);
+                                        ++i;
+                                    }
+                                    _handler.AddSlides(slideList);
+
+                                    _context.Response.StatusCode = 200;
+                                    responseString = "Ok.";
+                                }
+                                else
+                                {
+                                    _context.Response.StatusCode = 502;
+                                    responseString = "Missing at least SLIDE1 parameter.";
+                                }
+
+                            }
                             break;
                         // TODO Add additional commands
                         default:
@@ -154,6 +213,26 @@ namespace io.ebu.eis.http
             }
         }
 
+        private static DataMessage CreateGlobalDataMessage(NameValueCollection kvStore)
+        {
+            var dm = new DataMessage
+            {
+                Key = "GLOBAL",
+                DataType = "GLOBAL",
+                Value = "Global Message"
+            };
+            foreach (var k in kvStore.AllKeys)
+            {
+                var d = new DataMessage
+                {
+                    Key = k,
+                    Value = kvStore[k],
+                    DataType = "STRING"
+                };
+                dm.Data.Add(d);
+            }
+            return dm;
+        }
         private static CMCommand RawUrlToCMCommand(string rawUrl)
         {
             if (UpdateRex.Match(rawUrl).Success)

@@ -32,13 +32,25 @@ If your station supports updating IceCast endpoints, you can also update the con
 
     http://localhost:8080/admin/metadata?song=Michael%20Jackson%20-%20Love%20Never%20Felt%20So%20Good
 
-#### Force the regeneration of slides
+#### `/broadcast` Broadcast a specific slide
 
-#### Broadcast a specific slide
+Broadcasts a specific slide (by template Name) passed as BSLIDE argument
 
-#### Change the active cart
+	<server>:<port>/broadcast?BSLIDE=<slidename>
 
-Which updates globally the `song` variable used like `@@song@@` in your templates.
+### `/updateandbroadcast` Combination of the update and broadcast command
+
+Updates the global variables and broadcasts a specific slide
+
+	<server>:<port>/updateandbroadcast?BSLIDE=<slidename>&variable1=value&variable2=value...
+
+#### `/loadslidecart` Change the slides in active cart
+
+Clears the slides in the active cart and adds new copies of the templates to the cart
+
+	<server>:<port>/loadslidecart?SLIDE1=<slidename>&SLIDE2=<slidename>&SLIDE3=<slidename>...
+
+
 
 ### JSON POSTed Data
 

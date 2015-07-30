@@ -701,7 +701,7 @@ namespace io.ebu.eis.datastructures
             set { this["ShortPath"] = value; }
         }
 
-        [ConfigurationProperty("UrlPath", DefaultValue = "", IsRequired = false)]
+        [ConfigurationProperty("UrlPath", DefaultValue = "URL", IsRequired = false)]
         public string UrlPath
         {
             get { return (string)this["UrlPath"]; }

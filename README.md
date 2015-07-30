@@ -1,5 +1,5 @@
-EBU Content Manager
-===================
+# EBU Content Manager
+
 
 The Content Manager is a visual production tool which is able to generate on the fly 
 visualisation for DAB slideshow and RadioVIS. 
@@ -9,13 +9,17 @@ The Content Manager can run in a standalone fashion or in an advanced DataGatewa
 allowing external data providers such as Swisstiming to provide valuable data to generate
 slideshows for live sports events.
 
+
 ## Documentation
 
 See the	doc folder for configuration, usage and api documentation
 
-* *[Documentation](doc)*
+* [Documentation](doc)
+
 
 ## Prerequisites
+
+In Order to build the project:
 
 * Microsoft Visual Studio 2015, C# 6.0 
 (or [community edition](https://www.visualstudio.com/en-us/products/visual-studio-community-vs.aspx))
@@ -46,14 +50,17 @@ Set the `io.ebu.eis.contentmanager` as startup project and build the solutions.
 
 Create a configuration file.
 
+
 ## Configure
 
-The configuration and operations documentation can be found in the 
-[Content Manager README](io.ebu.eis.contentmanager/README.md).
+The configuration documentation can be found in the 
+[Content Manager Configuration](doc/Configuration.md) document.
+
 
 ## Related projects
 
 * [EBU RadioDns PlugIt and VIS Server](https://github.com/ebu/radiodns-plugit)
+
 
 ## Contributors
 

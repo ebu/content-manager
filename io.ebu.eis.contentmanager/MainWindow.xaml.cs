@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.IO;
+using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -11,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using io.ebu.eis.contentmanager.Utils;
+using io.ebu.eis.data.file;
 using io.ebu.eis.datastructures;
 using Microsoft.Win32;
 
@@ -54,9 +56,32 @@ namespace io.ebu.eis.contentmanager
             var t1 = new Thread(AutoProcessing);
             t1.Start();
 
+
+            // Standalone no DataItemConfigurations Settings
+            if (_context?.Config?.DataConfiguration?.DataItemConfigurations.Count == 0)
+            {
+                // Column 4 is the data column - would be changed back if any layout stored
+                HorizontalSystemGrid.ColumnDefinitions[4].Width = new GridLength(0.0);
+                // Also hide Data Buttons and Bar
+                autoDataButton.Visibility = Visibility.Hidden;
+                dataOverrideInterval.Visibility = Visibility.Hidden;
+                dataOverrideProgress.Visibility = Visibility.Hidden;
+
+                // Start Watchfolder if incoming picture defined
+                if (!string.IsNullOrEmpty(_context.Config.DataConfiguration.IncomingPictureFolder))
+                {
+                    _imageWatchFolder = new SystemWatchfolder(_context.Config.DataConfiguration.IncomingPictureFolder,
+                        "*.jpg|*.png|*.gif", false, _context);
+                    _imageWatchFolder.Start();
+                }
+            }
+
+
             // Restore
             RestoreLayout();
         }
+
+        private SystemWatchfolder _imageWatchFolder;
 
         #region GlobalExceptions
         // Global Exception Handler called when a uncaught Exception is thrown
@@ -76,6 +101,9 @@ namespace io.ebu.eis.contentmanager
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            // Stop Watchfolder
+            _imageWatchFolder.Start();
+
             _context = (ManagerContext)DataContext;
 
             _running = false;
@@ -1078,25 +1106,6 @@ namespace io.ebu.eis.contentmanager
                     new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow2"));
                 VerticalSystemGrid.RowDefinitions[4].Height =
                     new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow4"));
-            }
-            else
-            {
-                // We did not store any layout to registry yet
-                // If we have no settings yet and we don't have any data elements
-                if (!(_context?.Config?.DataConfiguration?.DataItemConfigurations?.Count > 0))
-                {
-                    // Column 4 is the data column
-                    HorizontalSystemGrid.ColumnDefinitions[4].Width = new GridLength(0.0);
-                }
-            }
-
-
-            if (!(_context?.Config?.DataConfiguration?.DataItemConfigurations?.Count > 0))
-            {
-                // Also hide Data Buttons and Bar
-                autoDataButton.Visibility = Visibility.Hidden;
-                dataOverrideInterval.Visibility = Visibility.Hidden;
-                dataOverrideProgress.Visibility = Visibility.Hidden;
             }
         }
 

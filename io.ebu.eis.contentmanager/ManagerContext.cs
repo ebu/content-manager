@@ -8,6 +8,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Windows.Data;
+using io.ebu.eis.data.file;
 using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
 using io.ebu.eis.http;
@@ -16,7 +17,7 @@ using io.ebu.eis.mq;
 namespace io.ebu.eis.contentmanager
 {
     [DataContract]
-    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler, IDisposable
+    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler, IDisposable, ISystemFileRouter
     {
         private readonly CMConfigurationSection _config;
         public CMConfigurationSection Config { get { return _config; } }
@@ -179,7 +180,7 @@ namespace io.ebu.eis.contentmanager
                             _disposables.Add(dataInHttpServer);
                         }
                         break;
-                    // TODO Handle and log default
+                        // TODO Handle and log default
                 }
             }
 
@@ -397,6 +398,12 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+
+        public void RouteFile(string filepath)
+        {
+            // Route the file as image to Ingest
+            IngestImage(filepath);
+        }
         public void IngestImage(string file)
         {
             try
@@ -408,7 +415,7 @@ namespace io.ebu.eis.contentmanager
                 {
                     DataType = "IMAGE",
                     Key = Path.GetFileName(file),
-                    Value = file
+                    Value = file,
                 };
                 im.Data.Add(title);
                 im.Data.Add(url);
@@ -1035,7 +1042,8 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            if (_config.DataConfiguration.ImageFlowTypes.Split(';').Contains(message.DataType))
+            if (_config.DataConfiguration.ImageFlowTypes.Split(';').Contains(message.DataType) ||
+                (string.IsNullOrEmpty(_config.DataConfiguration.ImageFlowTypes) && message.DataType.CompareTo("IMAGE") == 0))
             {
                 // Add the message to the image flow
                 var d = new DataFlowItem()
@@ -1049,6 +1057,7 @@ namespace io.ebu.eis.contentmanager
                     Priority = DataFlowPriority.Neglectable,
                     Timestamp = DateTime.Now
                 };
+
                 // Handle dupplicates in http
                 if (ImageFlowItems.Any(x => x.Timestamp > DateTime.Now.AddMinutes(-1) && x.Url == d.Url))
                 {
@@ -1072,10 +1081,15 @@ namespace io.ebu.eis.contentmanager
                     var dli = new Thread(() => DownloadImageToLocal(d.Url, filepath));
                     dli.Start();
                 }
+
+                // Set the priority according to config
                 SetFlowItemPriority(d);
+
+                // Add element to the list
                 ImageFlowItems.Add(d);
 
-                // Cleanup
+
+                // Cleanup, keep the last 200 images only
                 while (ImageFlowItems.Count > 200)
                 {
                     ImageFlowItems.RemoveAt(0);
@@ -1088,6 +1102,8 @@ namespace io.ebu.eis.contentmanager
                 UpdateDataBase(message);
             }
         }
+
+        #region RemoteFunctions
 
         public void UpdateGlobalData(DataMessage message)
         {
@@ -1109,6 +1125,59 @@ namespace io.ebu.eis.contentmanager
                 InvalidateSlidesWithGlobalData();
             }
         }
+
+        public void ClearActiveCart()
+        {
+            if (ActiveCart.Slides.Any())
+            {
+                ActiveCart.Slides.Clear();
+            }
+        }
+
+        public void AddSlides(List<string> slideNames)
+        {
+            // For all slide names
+            foreach (var slideName in slideNames)
+            {
+                // Find Slides that match that name
+                foreach (CartConfiguration cart in _config.SlidesConfiguration.CartConfigurations)
+                {
+                    foreach (SlideConfiguration s in cart.Slides)
+                    {
+                        if (s.Filename.StartsWith(slideName))
+                        {
+                            var sl = new ManagerImageReference(_config)
+                            {
+                                Template = s.Filename,
+                                Link = s.DefaultLink,
+                                Text = s.DefaultText,
+                                RegenerateOnPublish = s.RegenerateOnPublish,
+                                ValidityPeriod = TimeSpan.FromSeconds(s.ValidityPeriodSeconds),
+                                CanRepeate = s.CanRepeat,
+                                ItemsPerSlide = s.ItemsPerSlide,
+                                Context = new DataMessage()
+                            };
+                            // Add the slide to the active cart
+                            ActiveCart.Slides.Add(sl);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void BroadcastSlide(string slideName)
+        {
+            // Find right slide
+            var slide = ActiveCart.Slides.FirstOrDefault(x => x.Template.StartsWith(slideName));
+            // Switch
+            if (slide != null)
+            {
+                SwitchToSlide(slide);
+            }
+
+        }
+
+        #endregion RemoteFunctions
 
         public void InvalidateSlidesWithGlobalData()
         {
@@ -1238,7 +1307,9 @@ namespace io.ebu.eis.contentmanager
                 PropertyChanged(this, new PropertyChangedEventArgs(propertyname));
             }
         }
+
         #endregion PropertyChanged
+
 
     }
 }
