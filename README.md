@@ -68,7 +68,7 @@ The configuration documentation can be found in the
 * [Mathieu Habegger](https://github.com/mhabegger) (SMP)
 
 
-## Acknoledgements
+## Acknowledgements
 
 We would like to thank the following people for their precious support and periodic feedbacks.
 
