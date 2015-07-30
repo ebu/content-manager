@@ -7,61 +7,39 @@
   <CMConfiguration>
 
     <InputConfigurations>
-      <!--<InputConfiguration Type="MQ" MQUri="amqp://username:pwdd@rabbitmq.server.ch/vhost" MQExchange="in-exchangename" />-->
       <InputConfiguration Type="HTTP" BindIp="localhost" BindPort="8080" />
     </InputConfigurations>
 
     <OutputConfiguration EnableDataDispatchMQ="false">
-      <!--<DispatchMQConfiguration MQUri="amqp://username:pwdd@rabbitmq.server.ch/vhost" MQExchange="out-exchangename" />-->
-
       <UploadConfigurations>
-        <!--
-        <UploadConfiguration Type="FILE" DestinationPath="C:\temp" PublicUriBase="http://localhost/images">
-          <DispatchConfigurations>
-            <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
-          </DispatchConfigurations>
-        </UploadConfiguration>
-        -->
-        <UploadConfiguration Type="FTP"  FtpServer="ftp.server.ch" FtpUsername="username" FtpPassword="password" Subfolder="subfolder" PublicUriBase="http://public.server.ch/subfolder/">
-          <DispatchConfigurations>
-            <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
-          </DispatchConfigurations>
-        </UploadConfiguration>
-
-        <!--
-        <UploadConfiguration Type="S3"   AWSAccessKey="key" AWSSecretKey="secret"
-                   S3BucketName="bucketname" Subfolder="subfolder"
-                   PublicUriBase="http://publicurl/bucketname">
-        </UploadConfiguration>
-        -->
+        <!-- ## Uncomment this UploadConfiguration section to start publishing ## -->
+<UploadConfiguration Type="FTP"  FtpServer="ftp.server.ch" FtpUsername="username" FtpPassword="password" Subfolder="subfolder" PublicUriBase="http://public.server.ch/subfolder/">
+  <DispatchConfigurations>
+    <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
+  </DispatchConfigurations>
+</UploadConfiguration>
       </UploadConfigurations>
 
       <ImageOutputConfigurations>
-        <!-- The Public URL of the IsDefault image will be used for dispatch -->
-        <!--<ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="PNG" Quality="100" IsDefault="true" /> -->
         <ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="JPEG" Quality="80" IsDefault="true" />
       </ImageOutputConfigurations>
 
     </OutputConfiguration>
 
+    <ImageOutputConfigurations>
+      <ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="JPEG" Quality="80" IsDefault="true" />
+    </ImageOutputConfigurations>
+
     <DataConfiguration DataFlowLeftActions="Cart;Context"
                        DataFlowRightActions="Context"
                        ImageFlowLeftActions="Template;BackgroundUrl;Context"
                        ImageFlowRightActions="BackgroundUrl"
-                       
                        InitialPictureFolder="C:\temp\generic_bg"
-                       IncomingPictureFolder="C:\temp\content_images"
-                       
-                       >
-
+                       IncomingPictureFolder="C:\temp\content_images" >
     </DataConfiguration>
 
-    <!-- Specify here the base path to your html5 template to be loaded by the manager -->
-    <SlidesConfiguration TemplatePath="C:\content-manager\radio-generic\"
-                         DefaultLink="http://www.ebu.io" >
+    <SlidesConfiguration TemplatePath="radio-generic\" DefaultLink="http://www.ebu.io" >
       <CartConfigurations>
-        <!-- The carts defined here are default carts that are loaded on startup -->
-        <!-- The Active=true cart is the one that is "on air" at start up -->
         <CartConfiguration Name="MAIN CART" Active="true" ShowInCartList="true" >
           <Slides>
             <Slide Filename="logo.html" DefaultLink="http://www.ebu.io" DefaultText="DEMO RADIO, DemoSlide for RadioVIS" />
@@ -81,7 +59,6 @@
           </Slides>
         </CartConfiguration>
 
-        <!-- The 'ALL' cart with editor default will be shown at the bottom of the CM and acts as source for new slides -->
         <CartConfiguration Name="ALL" EditorDefault="true" >
           <Slides>
             <Slide Filename="logo.html" DefaultLink="http://www.ebu.io" DefaultText="DemoSlide for RadioVIS" />
@@ -95,18 +72,17 @@
       </CartConfigurations>
     </SlidesConfiguration>
 
+
   </CMConfiguration>
 
 
-  <!-- ###################### Don't change anything below this line ###################### -->
+  <!-- Don't change anything below this line -->
   <startup>
     <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
   </startup>
   <runtime>
     <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
       <dependentAssembly>
-        <!--<assemblyIdentity name="Apache.NMS" publicKeyToken="82756feee3957618" culture="neutral" />
-        <bindingRedirect oldVersion="0.0.0.0-1.7.0.3635" newVersion="1.7.0.3635" />-->
         <assemblyIdentity name="Apache.NMS" publicKeyToken="82756feee3957618" culture="neutral" />
         <bindingRedirect oldVersion="0.0.0.0-1.5.1.2739" newVersion="1.5.1.2739" />
       </dependentAssembly>
