@@ -1,0 +1,578 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4DADE0BE-C6E6-4B62-B24A-D9EC3A935B11}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>io.ebu.eis.contentmanager</RootNamespace>
+    <AssemblyName>io.ebu.eis.contentmanager</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Images\ebu_contentmanager.ico</ApplicationIcon>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="JsonSerializer.cs" />
+    <Compile Include="ManagerCart.cs" />
+    <Compile Include="ManagerContext.cs" />
+    <Compile Include="ManagerImageReference.cs" />
+    <Compile Include="ManagerTemplateField.cs" />
+    <Compile Include="NewCartWindow.xaml.cs">
+      <DependentUpon>NewCartWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Utils\RegistryHelper.cs" />
+    <Compile Include="Utils\HeightAspectRatioConverter.cs" />
+    <Compile Include="Utils\AspectRatioConverter.cs" />
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="NewCartWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Metro\Dark\MetroDark.MSControls.Core.Implicit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Dark\MetroDark.MSControls.Toolkit.Implicit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Dark\Styles.Shared.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Dark\Styles.WPF.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Dark\Theme.Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Light\Metro.MSControls.Core.Implicit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Light\Metro.MSControls.Toolkit.Implicit.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Light\Styles.Shared.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Light\Styles.WPF.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Metro\Light\Theme.Colors.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="App.config.example">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+    <None Include="radio-generic\css\bootstrap-theme.css.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\css\bootstrap.css.map">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\glyphicons-halflings-regular.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\glyphicons-halflings-regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\glyphicons-halflings-regular.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_bold_macroman\Montserrat-Bold-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_bold_macroman\Montserrat-Bold-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_bold_macroman\Montserrat-Bold-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_regular_macroman\Montserrat-Regular-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_regular_macroman\Montserrat-Regular-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_regular_macroman\Montserrat-Regular-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_bolditalic\OpenSans-BoldItalic-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_bolditalic\OpenSans-BoldItalic-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_bolditalic\OpenSans-BoldItalic-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_bold\OpenSans-Bold-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_bold\OpenSans-Bold-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_bold\OpenSans-Bold-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_extrabolditalic\OpenSans-ExtraBoldItalic-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_extrabolditalic\OpenSans-ExtraBoldItalic-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_extrabolditalic\OpenSans-ExtraBoldItalic-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_extrabold\OpenSans-ExtraBold-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_extrabold\OpenSans-ExtraBold-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_extrabold\OpenSans-ExtraBold-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_italic\OpenSans-Italic-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_italic\OpenSans-Italic-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_italic\OpenSans-Italic-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_lightitalic\OpenSans-LightItalic-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_lightitalic\OpenSans-LightItalic-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_lightitalic\OpenSans-LightItalic-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_light\OpenSans-Light-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_light\OpenSans-Light-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_light\OpenSans-Light-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_regular\OpenSans-Regular-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_regular\OpenSans-Regular-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_regular\OpenSans-Regular-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_semibolditalic\OpenSans-SemiboldItalic-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_semibolditalic\OpenSans-SemiboldItalic-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_semibolditalic\OpenSans-SemiboldItalic-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_semibold\OpenSans-Semibold-webfont.eot">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="radio-generic\fonts\opensans\opensans_semibold\OpenSans-Semibold-webfont.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <None Include="radio-generic\fonts\opensans\opensans_semibold\OpenSans-Semibold-webfont.woff">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="VailApp.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\io.ebu.eis.canvasgenerator\io.ebu.eis.canvasgenerator.csproj">
+      <Project>{490ca7a2-b578-490f-9561-4892d96969d4}</Project>
+      <Name>io.ebu.eis.canvasgenerator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.data.file\io.ebu.eis.data.file.csproj">
+      <Project>{06e8f7af-da76-4f90-bcc6-b43aabd4414c}</Project>
+      <Name>io.ebu.eis.data.file</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.data.ftp\io.ebu.eis.data.ftp.csproj">
+      <Project>{4d97fb11-b83b-47df-8fe2-70a94a10385d}</Project>
+      <Name>io.ebu.eis.data.ftp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.data.s3\io.ebu.eis.data.s3.csproj">
+      <Project>{afbc1f4d-b0ad-4ac8-8d0d-ac2b7298c4bd}</Project>
+      <Name>io.ebu.eis.data.s3</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.datastructures\io.ebu.eis.datastructures.csproj">
+      <Project>{7ce61fc1-d140-4eb3-b2a0-efd395f8d1db}</Project>
+      <Name>io.ebu.eis.datastructures</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.http\io.ebu.eis.http.csproj">
+      <Project>{3e251eb6-130a-49e1-80b7-ba98879162d1}</Project>
+      <Name>io.ebu.eis.http</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.mq\io.ebu.eis.mq.csproj">
+      <Project>{36c58a7c-8fc5-4290-bcd5-8b56e2802497}</Project>
+      <Name>io.ebu.eis.mq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.stomp\io.ebu.eis.stomp.csproj">
+      <Project>{02a3fd2c-6dc9-434f-a28a-cb8aff8d50ea}</Project>
+      <Name>io.ebu.eis.stomp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\ebu_back_loading.png" />
+    <Resource Include="Images\ebu_back_loading_small.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\close.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\close-circled-white.png" />
+    <Resource Include="Images\Icons\close-circled.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\close-white.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-timer-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-timer-outline.png" />
+    <Resource Include="Images\Icons\ios7-timer-white.png" />
+    <Resource Include="Images\Icons\ios7-timer.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\edit-white.png" />
+    <Resource Include="Images\Icons\edit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\image-white.png" />
+    <Resource Include="Images\Icons\image.png" />
+    <Resource Include="Images\Icons\images-white.png" />
+    <Resource Include="Images\Icons\images.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-analytics-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-analytics-outline.png" />
+    <Resource Include="Images\Icons\ios7-analytics-white.png" />
+    <Resource Include="Images\Icons\ios7-analytics.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-thunderstorm-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-thunderstorm-outline.png" />
+    <Resource Include="Images\Icons\ios7-thunderstorm-white.png" />
+    <Resource Include="Images\Icons\ios7-thunderstorm.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\ios7-cart-outline-white.png" />
+    <Resource Include="Images\Icons\ios7-cart-outline.png" />
+    <Resource Include="Images\Icons\ios7-cart-white.png" />
+    <Resource Include="Images\Icons\ios7-cart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\refresh-white.png" />
+    <Resource Include="Images\Icons\refresh.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Icons\image-blue.png" />
+    <Resource Include="Images\Icons\images-blue.png" />
+    <Resource Include="Images\Icons\ios7-cart-blue.png" />
+    <Resource Include="Images\Icons\refresh-blue.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\cm.ico" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Images\ebu_contentmanager.ico" />
+    <Content Include="radio-generic\cover-icecast.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\cover.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="radio-generic\css\bootstrap-theme.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\css\bootstrap-theme.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\css\bootstrap.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\css\bootstrap.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\css\custom.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\glyphicons-halflings-regular.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_bold_macroman\Montserrat-Bold-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_bold_macroman\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_regular_macroman\Montserrat-Regular-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\montserrat_regular_macroman\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\montserrat\SIL Open Font License.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\Apache License.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="radio-generic\fonts\opensans\opensans_bolditalic\OpenSans-BoldItalic-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_bolditalic\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_bold\OpenSans-Bold-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_bold\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_extrabolditalic\OpenSans-ExtraBoldItalic-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_extrabolditalic\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_extrabold\OpenSans-ExtraBold-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_extrabold\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_italic\OpenSans-Italic-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_italic\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_lightitalic\OpenSans-LightItalic-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_lightitalic\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="radio-generic\fonts\opensans\opensans_light\OpenSans-Light-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_light\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_regular\OpenSans-Regular-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\fonts\opensans\opensans_regular\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="radio-generic\fonts\opensans\opensans_semibolditalic\OpenSans-SemiboldItalic-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_semibolditalic\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_semibold\OpenSans-Semibold-webfont.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\fonts\opensans\opensans_semibold\stylesheet.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_01.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_02.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_03.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_04.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_05.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_06.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_07.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_08.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_09.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_10.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\generic_bg\sample_bg_img_ebu_11.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\ebu_black.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\ebu_blue.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\EBU_Tagline_and radio_logo_EBU_RGB_Blue_1200DPI.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\EBU_Tagline_logo_euroradio_Blue_1200.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\ebu_white.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\euroradio_black.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\euroradio_blue.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="radio-generic\img\logos\euroradio_white.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="radio-generic\js\bootstrap.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\js\bootstrap.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\js\jquery-1.11.1.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\logo.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\show1.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\sliderenderer.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\weather.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="radio-generic\webcam.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

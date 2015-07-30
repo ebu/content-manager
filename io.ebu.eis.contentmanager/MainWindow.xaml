@@ -1,0 +1,450 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Utils="clr-namespace:io.ebu.eis.contentmanager.Utils" 
+        xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
+        xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures" 
+        x:Class="io.ebu.eis.contentmanager.MainWindow"
+        Title="EBU - Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/ebu_contentmanager.ico" MouseMove="Window_MouseMove">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- WPF Theme based on @brianlagunas WPF Themes -->
+
+                <!-- Light Theme -->
+                <!--<ResourceDictionary Source="Themes/Metro/Light/Metro.MSControls.Core.Implicit.xaml" />
+                <ResourceDictionary Source="Themes/Metro/Light/Metro.MSControls.Toolkit.Implicit.xaml" />-->
+
+                <!-- Dark Theme -->
+                <ResourceDictionary Source="Themes/Metro/Dark/MetroDark.MSControls.Core.Implicit.xaml" />
+                <ResourceDictionary Source="Themes/Metro/Dark/MetroDark.MSControls.Toolkit.Implicit.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <RoutedUICommand x:Key="SaveCartCommand" Text="Save Cart" />
+            
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+            <!-- Light Theme -->
+            <!--<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />-->
+
+            <Utils:AspectRatioConverter x:Key="AspectRatioConverter"/>
+            <Utils:HeightAspectRatioConverter x:Key="HeightAspectRatioConverter"/>
+            <!-- Dark Theme -->
+            <SolidColorBrush x:Key="BackgroundKey" Color="#FF181818" />
+
+
+            <BitmapImage x:Key="DefaultImage" UriSource="/Images/ebu_back_loading.png" />
+
+            <Style x:Key="TooltipDelayPopupStyle" TargetType="Popup">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding PlacementTarget.IsMouseOver, RelativeSource={RelativeSource Self}}" Value="True">
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard x:Name="OpenPopupStoryBoard" >
+                                <Storyboard>
+                                    <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="IsOpen" FillBehavior="HoldEnd">
+                                        <DiscreteBooleanKeyFrame KeyTime="0:0:2" Value="True"/>
+                                    </BooleanAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <PauseStoryboard BeginStoryboardName="OpenPopupStoryBoard"/>
+                            <BeginStoryboard x:Name="ClosePopupStoryBoard">
+                                <Storyboard>
+                                    <BooleanAnimationUsingKeyFrames Storyboard.TargetProperty="IsOpen" FillBehavior="HoldEnd">
+                                        <DiscreteBooleanKeyFrame KeyTime="0:0:0.1" Value="False"/>
+                                    </BooleanAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Trigger.EnterActions>
+                            <PauseStoryboard BeginStoryboardName="ClosePopupStoryBoard" />
+                        </Trigger.EnterActions>
+                        <Trigger.ExitActions>
+                            <PauseStoryboard BeginStoryboardName="OpenPopupStoryBoard"/>
+                            <ResumeStoryboard BeginStoryboardName="ClosePopupStoryBoard" />
+                        </Trigger.ExitActions>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            <DataTemplate x:Key="DataFlowTemplate1" DataType="structures:DataFlowItem">
+                <Grid MouseLeftButtonDown="DataFlowList_MouseLeftButtonDown">
+                    <StackPanel x:Name="dataPanel" Orientation="Horizontal">
+                        <Rectangle x:Name="statusIndicator"  Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="Auto" Stroke="{x:Null}" VerticalAlignment="Stretch" Width="8"/>
+                        <StackPanel Orientation="Vertical" Margin="5,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Category, FallbackValue=Category, TargetNullValue=Category}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" FontSize="10" />
+                                <TextBlock HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Text="{Binding Type, FallbackValue=Type, TargetNullValue=Type}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" FontSize="10" />
+
+                            </StackPanel>
+                            <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" FontSize="12" />
+                            <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" FontSize="10" />
+                        </StackPanel>
+                    </StackPanel>
+                    <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=dataPanel}"
+                       Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="-20">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
+                            <StackPanel Orientation="Vertical" MinWidth="200" MaxWidth="400">
+                                <TextBlock  HorizontalAlignment="Left" Margin="2,2,2,2" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" />
+                                <TextBlock HorizontalAlignment="Left" Margin="2,2,2,2" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" />
+                                <Image Margin="2,2,2,2" Source="{Binding ImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}" MaxWidth="300" />
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Priority}" Value="High">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="Red" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Medium">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="Orange" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Low">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF00AADE" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Green">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF22FF55" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Neglectable">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF181818" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Unknown">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="White" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="DataImageTemplate1" DataType="structures:DataFlowItem">
+                <Grid MouseLeftButtonDown="ImageFlowList_MouseLeftButtonDown" MouseRightButtonDown="ImageFlowList_MouseRightButtonDown">
+                    <StackPanel x:Name="dataPanel" Orientation="Horizontal">
+                        <Rectangle x:Name="statusIndicator"  Fill="#FFF4F4F5" HorizontalAlignment="Left" Height="Auto" Stroke="{x:Null}" VerticalAlignment="Stretch" Width="8"/>
+                        <StackPanel Orientation="Vertical" Margin="5,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock HorizontalAlignment="Left" Margin="0" TextWrapping="Wrap" Text="{Binding Type, FallbackValue=Type, TargetNullValue=Type}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" FontSize="10" />
+                                <TextBlock HorizontalAlignment="Left" Margin="5,0,0,0" TextWrapping="Wrap" Text="{Binding Category, FallbackValue=Category, TargetNullValue=Category}" VerticalAlignment="Top" Foreground="{DynamicResource Brush02}" FontSize="10" />
+                            </StackPanel>
+                            <TextBlock HorizontalAlignment="Left" Margin="0" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" FontSize="12" />
+                            <Image x:Name="img" MinHeight="50" Source="{Binding ImageSource, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}" MaxHeight="100" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=dataPanel}"
+                       Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="-20">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
+                            <StackPanel Orientation="Vertical" MinWidth="200" MaxWidth="400">
+                                <TextBlock  HorizontalAlignment="Left" Margin="2,2,2,2" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Data Event Name, TargetNullValue=Data Event Name}" VerticalAlignment="Top" />
+                                <TextBlock HorizontalAlignment="Left" Margin="2,2,2,2" TextWrapping="Wrap" Text="{Binding Short, FallbackValue=Text\, this contains the text of the event, TargetNullValue=Text\, this contains the text of the event}" VerticalAlignment="Top" Foreground="{DynamicResource Brush03}" />
+                                <Image Margin="2,2,2,2" Source="{Binding ImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}" MaxWidth="300" />
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding Priority}" Value="High">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="Red" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Medium">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="Orange" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Low">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF00AADE" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Green">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF22FF55" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Neglectable">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="#FF181818" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Priority}" Value="Unknown">
+                        <Setter TargetName="statusIndicator" Property="Fill" Value="White" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="RunningEventsTemplate1">
+                <Grid>
+                    <Button Content="Button" HorizontalAlignment="Stretch" Margin="3" VerticalAlignment="Stretch" Width="Auto" Height="35"/>
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="RunningCartDataTemplate"  DataType="local:ManagerImageReference">
+                <Grid>
+                    <Border x:Name="ImageBorder" BorderThickness="4" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image x:Name="MainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                    </Border>
+                    <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=MainImg}"
+                       Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="-20">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
+                            <Grid Height="320" MinWidth="240">
+                                <Image Margin="1,1,1,1" Source="{Binding PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}" />
+                            </Grid>
+                        </Border>
+                    </Popup>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}" Value="true">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FFFF0000" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive}" Value="false">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FF181818" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="EditorCartDataTemplate"  DataType="local:ManagerImageReference">
+                <Grid PreviewMouseLeftButtonDown="TemplateList_MouseLeftButtonDown">
+                    <Border x:Name="ImageBorder" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image x:Name="MainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                    </Border>
+                    <Popup Style="{StaticResource TooltipDelayPopupStyle}" PlacementTarget="{Binding ElementName=MainImg}"
+                       Name="PreviewImagePopUp" AllowsTransparency="True" PopupAnimation="Fade" HorizontalOffset="10" VerticalOffset="20">
+                        <Border BorderThickness="2" BorderBrush="#FF006AAE" Background="{StaticResource BackgroundKey}">
+                            <Grid Height="320" MinWidth="240">
+                                <Image Margin="1,1,1,1" Source="{Binding PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}" />
+                            </Grid>
+                        </Border>
+                    </Popup>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}" Value="true">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FFFF0000" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive}" Value="false">
+                        <Setter TargetName="ImageBorder" Property="BorderBrush" Value="#FF181818" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="EditorFieldDataTemplate1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="30"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding Title}" VerticalAlignment="Center"/>
+                    <TextBox Grid.Column="1" MaxWidth="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}"  HorizontalAlignment="Stretch" Height="Auto" Margin="0" TextWrapping="Wrap" Text="{Binding Value}" Width="Auto" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" x:Name="ClearTextFieldButton" Content="X" Margin="3,0" VerticalAlignment="Stretch" Click="ClearTextField_Click"/>
+                </Grid>
+            </DataTemplate>
+            <DataTemplate x:Key="CartLIstDataTemplate1">
+                <Grid AllowDrop="True" DragEnter="CartListElement_DragEnter" DragOver="CartListElement_DragOver" Drop="CartListElement_Drop" >
+                    <Border x:Name="CartNameBorder" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Stretch">
+                        <TextBlock  HorizontalAlignment="Stretch" Margin="5" TextWrapping="Wrap" Text="{Binding Name, FallbackValue=Name, TargetNullValue=Name}" VerticalAlignment="Stretch" Style="{StaticResource TextBlockStyle}"/>
+                    </Border>
+                    <Grid.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Name="Save_Cart" Header="Save Cart" Command="{StaticResource SaveCartCommand}">
+                                <!--<MenuItem.Icon>
+                                    <Image Source="/Icons/delete.png" />
+                                </MenuItem.Icon>-->
+                            </MenuItem>
+                        </ContextMenu>
+                    </Grid.ContextMenu>
+                </Grid>
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding IsActive}" Value="true">
+                        <Setter TargetName="CartNameBorder" Property="BorderBrush" Value="#FFFF0000" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding IsActive}" Value="false">
+                        <Setter TargetName="CartNameBorder" Property="BorderBrush" Value="#FF181818" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.CommandBindings>
+        <CommandBinding Command="{StaticResource SaveCartCommand}" Executed="CtxMenu_SaveCart" />
+    </Window.CommandBindings>
+    <Window.DataContext>
+        <local:ManagerContext/>
+    </Window.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="37"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <TextBlock HorizontalAlignment="Left" Margin="10,3,0,0" Style="{StaticResource ResourceKey=HeaderTextBlockStyle}" TextWrapping="Wrap" Text="EBU - Content Manager" VerticalAlignment="Top" Height="29" Width="397" FontSize="20"/>
+        <Grid x:Name="HorizontalSystemGrid" Margin="0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="Black" 
+              ShowsPreview="True" Width="3" Visibility="{Binding EditModeEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <GridSplitter Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="Black"
+              ShowsPreview="True" Width="3" Visibility="{Binding EditModeEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <Grid Grid.Column="2" Margin="0">
+                <Grid Margin="0" VerticalAlignment="Top" Background="{DynamicResource Brush01}" Height="17">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="Images/Icons/images-white.png" Stretch="UniformToFill" Margin="0,0,5,0" />
+                        <TextBlock Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="ImageFlow" VerticalAlignment="Top" FontSize="12" Foreground="{DynamicResource Brush02}" TextAlignment="Center" Height="17"/>
+                    </StackPanel>
+                </Grid>
+                <ListBox x:Name="ImageFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible"  AllowDrop="True" Margin="0,50,0,0" 
+                             Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource DataImageTemplate1}" ItemsSource="{Binding ImageFlowItems}" SelectionChanged="ImageFlowList_SelectionChanged" Drop="ImageFlowList_Drop">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Vertical"
+                                       ItemWidth="{Binding (ListView.View).ItemWidth, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                       Width="{Binding (FrameworkElement.ActualWidth), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+                <TextBox Margin="0,22,41,0" TextWrapping="Wrap" Text="{Binding ImageFlowFilterString, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" MinHeight="16" FontSize="10"/>
+                <Button x:Name="ClearImageFlowFilter" Margin="0,22,6,0" VerticalAlignment="Top" Click="ClearImageFlowFilter_Click" MinHeight="16" FontSize="8" Height="23" HorizontalAlignment="Right" Width="30">
+                    <StackPanel>
+                        <Image Source="Images/Icons/close-white.png" Stretch="UniformToFill" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+            <Grid Grid.Column="4">
+                <Grid VerticalAlignment="Top" Background="{DynamicResource Brush01}" Height="17">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Image Source="Images/Icons/ios7-analytics-white.png" Stretch="UniformToFill" Margin="0,0,5,0" />
+                        <TextBlock Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="DataFlow" VerticalAlignment="Top" FontSize="12" Foreground="{DynamicResource Brush02}" TextAlignment="Center" Height="17"/>
+                    </StackPanel>
+                </Grid>
+                <ListBox x:Name="DataFlowList" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible" Margin="0,50,0,0" 
+                             Background="{StaticResource BackgroundKey}" ItemsSource="{Binding DataFlowItems}" ItemTemplate="{DynamicResource DataFlowTemplate1}" SelectionChanged="DataFlowList_SelectionChanged" KeyDown="DataFlowList_KeyDown"/>
+                <TextBox Margin="0,22,40,0" TextWrapping="Wrap" Text="{Binding DataFlowFilterString, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" FontSize="10" MinHeight="16"/>
+                <Button x:Name="ClearDataFlowFilter" Margin="0,22,5,0" Click="ClearDataFlowFilter_Click" VerticalAlignment="Top" MinHeight="16" FontSize="8" Height="23" HorizontalAlignment="Right" Width="30">
+                    <StackPanel>
+                        <Image Source="Images/Icons/close-white.png" Stretch="UniformToFill" Margin="0,2,0,0" />
+                    </StackPanel>
+                </Button>
+            </Grid>
+            <Grid x:Name="VerticalSystemGrid" Grid.Column="0" Margin="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="89*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="80*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="120*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="50*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" x:Name="MainPreviewStackPanel" Margin="10" Orientation="Horizontal">
+                    <StackPanel.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="Margin" Value="0,0,10,0"/>
+                        </Style>
+                    </StackPanel.Resources>
+                    <Border x:Name="MainImageBorder" BorderThickness="3" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image x:Name="mainImg" Margin="0" Source="{Binding MainImage.PreviewImageSource, FallbackValue={StaticResource DefaultImage}, Mode=OneWay, TargetNullValue={StaticResource DefaultImage}}" MouseDown="mainImg_MouseDown"/>
+                    </Border>
+                    <Border x:Name="PreviewImageBorder" BorderThickness="3" BorderBrush="#FF00FF00" Margin="0,0,339,0" HorizontalAlignment="Right" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
+                        <Image Margin="0" Source="{Binding PreviewImage.PreviewImageSource, FallbackValue={StaticResource DefaultImage}, Mode=OneWay, TargetNullValue={StaticResource DefaultImage}}"/>
+                    </Border>
+                </StackPanel>
+                <GridSplitter ResizeDirection="Rows" Grid.Column="0" Grid.Row="1" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Black" 
+              ShowsPreview="True" Height="3" Visibility="{Binding EditModeEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Grid Margin="0" Grid.Row="2" Background="Black">
+                    <!--<ListBox Margin="0,5,0,0" Grid.Row="1"  ItemsSource="{Binding RunningEvents}" Background="{StaticResource BackgroundKey}" ItemTemplate="{DynamicResource RunningEventsTemplate1}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>-->
+                    <ListBox x:Name="PreviewCartListBox" Margin="150,0,0,0" AllowDrop="True" KeyDown="PreviewListBox_KeyDown" ScrollViewer.VerticalScrollBarVisibility="Disabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" 
+                             ItemTemplate="{DynamicResource RunningCartDataTemplate}" ItemsSource="{Binding PreviewCart.Slides}" SelectionChanged="PreviewListBox_SelectionChanged" PreviewMouseDown="PreviewListBox_MouseDown" PreviewMouseLeftButtonDown="PreviewListBox_PreviewLeftMouseDown" DragOver="PreviewCartListBox_DragOver" Drop="PreviewCartListBox_Drop">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"
+                                       ItemHeight="{Binding (ListView.View).ItemHeight, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                       Height="{Binding (FrameworkElement.ActualHeight), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                    <StackPanel Orientation="Horizontal" Margin="23,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Height="25">
+                        <Image Source="Images/Icons/ios7-cart-blue.png" Stretch="UniformToFill" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,0,5,0" />
+                        <TextBlock HorizontalAlignment="Left" Style="{StaticResource SubHeaderTextBlockStyle}" TextWrapping="Wrap" Text="Running Cart" VerticalAlignment="Center" FontSize="16"/>
+                    </StackPanel>
+                    <Button x:Name="cancelPreviewCartButton" Content="CLOSE" HorizontalAlignment="Left" Margin="5,0,0,5" VerticalAlignment="Bottom" Width="140" Click="cancelPreviewCartButton_Click" Height="20" Visibility="{Binding IsPreviewCartOffAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" FontSize="12" MinHeight="25"/>
+                    <Button x:Name="onAirPreviewCartButton" Content="SET ACTIVE" HorizontalAlignment="Left" Margin="5,0,0,65" VerticalAlignment="Bottom" Width="140" Click="onAirPreviewCartButton_Click" Height="16" Foreground="Red" Visibility="{Binding IsPreviewCartOffAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" FontSize="12" MinHeight="25"/>
+                    <Button x:Name="newCartButton" Content="+" HorizontalAlignment="Left" Margin="5,0,0,5" VerticalAlignment="Bottom" Width="57" Click="newCartButton_Click" Height="16" Visibility="{Binding IsPreviewCartOnAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" FontSize="12" MinHeight="25"/>
+                    <Button x:Name="clearAllCartsButton" Content="Clear All" HorizontalAlignment="Left" Margin="67,0,0,5" VerticalAlignment="Bottom" Width="78" Click="clearAllCartsButton_Click" Height="18" Visibility="{Binding IsPreviewCartOnAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" FontSize="12" MinHeight="25"/>
+                    <Button x:Name="addPreviewCartButton" Content="ADD TO ACTIVE" HorizontalAlignment="Left" Margin="5,0,0,35" VerticalAlignment="Bottom" Width="140" Click="addPreviewCartButton_Click" Height="17" Foreground="#FF00FF0C" Visibility="{Binding IsPreviewCartOffAir, Converter={StaticResource BooleanToVisibilityConverter}, Mode=OneWay}" FontSize="12" MinHeight="25"/>
+                </Grid>
+                <GridSplitter ResizeDirection="Rows" Grid.Column="0" Grid.Row="3" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Black" 
+              ShowsPreview="True" Height="3" Visibility="{Binding EditModeEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <Grid Margin="0,5,0,0" Grid.Row="4" Background="Black">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="193*"/>
+                        <ColumnDefinition Width="120*"/>
+                        <ColumnDefinition Width="57"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="2" Margin="10">
+                        <Border x:Name="EditorImageBorder" BorderThickness="2" BorderBrush="#FF00AADE" 
+                                Height="{Binding ActualWidth, Converter={StaticResource HeightAspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}" 
+                                VerticalAlignment="Center">
+                            <Image x:Name="EditImage" Margin="0" Source="{Binding EditorImage.PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
+                        </Border>
+                    </Grid>
+                    <Grid Grid.Column="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Button x:Name="editorAddButton" Content="+" Margin="10" FontWeight="Bold" FontSize="16" Foreground="Lime" Click="editorAddButton_Click" />
+                        <Button x:Name="editorAddButtonAndMain" Content="+" Margin="10,13,10,10" FontWeight="Bold" FontSize="16" Grid.Row="1" Foreground="Red" Click="editorAddButtonAndMain_Click" />
+                    </Grid>
+                    <ListBox Grid.Column="1" Margin="0,0,5,40" ItemsSource="{Binding EditorImage.TemplateFields}" ItemTemplate="{DynamicResource EditorFieldDataTemplate1}"/>
+                    <Button x:Name="rendreButtonTest" HorizontalAlignment="Right" Margin="0,0,5,10" VerticalAlignment="Bottom" Width="98" Click="rendreButtonTest_Click" Grid.Column="1" Height="13" MinHeight="25" FontSize="12">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="Images/Icons/refresh-white.png" Stretch="UniformToFill" Width="15" Height="15" VerticalAlignment="Center" Margin="0,2,5,0" />
+                            <TextBlock VerticalAlignment="Center">RERENDER</TextBlock>
+                        </StackPanel>
+                    </Button>
+                    <ListBox x:Name="CartListBox" AllowDrop="True" Margin="0,0,5,10" HorizontalContentAlignment="Stretch" ItemsSource="{Binding Carts}" ItemTemplate="{DynamicResource CartLIstDataTemplate1}" SelectionChanged="CartListBox_SelectionChanged" PreviewMouseDown="CartListBox_MouseDown" KeyDown="ListBox_KeyDown" FontSize="10" Drop="CartListBox_Drop"/>
+                    <Button x:Name="resetTemplateCart" HorizontalAlignment="Left" Margin="0,0,0,10" VerticalAlignment="Bottom" Width="98" Grid.Column="1" Height="13" MinHeight="25" FontSize="12" Click="resetTemplateCart_Click">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="Images/Icons/refresh-white.png" Stretch="UniformToFill" Width="15" Height="15" VerticalAlignment="Center" Margin="0,2,5,0" />
+                            <TextBlock VerticalAlignment="Center"><Run Text="RESET"/></TextBlock>
+                        </StackPanel>
+                    </Button>
+
+                </Grid>
+                <GridSplitter ResizeDirection="Rows" Grid.Column="0" Grid.Row="5" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="Black" 
+              ShowsPreview="True" Height="3" Visibility="{Binding EditModeEnabled, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                <ListBox Grid.Row="6" KeyDown="EditorListBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Disabled" ItemTemplate="{DynamicResource EditorCartDataTemplate}" ItemsSource="{Binding EditorCart.Slides}" SelectionChanged="TemplateListBox_SelectionChanged" AllowDrop="True" Drop="TemplateListBox_Drop" PreviewMouseUp="TemplateListBox_PreviewMouseDown">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"
+                                       ItemHeight="{Binding (ListView.View).ItemHeight, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                       Height="{Binding (FrameworkElement.ActualHeight), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+            </Grid>
+        </Grid>
+        <ToggleButton x:Name="autoButton" HorizontalAlignment="Left" Margin="510,3,0,0" Width="140" IsChecked="{Binding InAutomationMode}" Height="1" VerticalAlignment="Top" FontSize="12" MinHeight="25" Content="AUTO Slideshow">
+            <!--<StackPanel Orientation="Horizontal">
+                <Image Source="Images/Icons/ios7-timer-white.png" Stretch="UniformToFill" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock VerticalAlignment="Center">AUTO Slideshow</TextBlock>
+            </StackPanel>-->
+        </ToggleButton>
+        <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="24" Margin="655,3,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding AutomationInterval}" VerticalAlignment="Top" Width="36" MinHeight="25" FontSize="12"/>
+        <ProgressBar HorizontalAlignment="Left" Height="25" Margin="696,3,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding AutomationProgress}"/>
+        <ToggleButton x:Name="autoDataButton" HorizontalAlignment="Left" Margin="838,3,0,0" VerticalAlignment="Top" Width="140" IsChecked="{Binding AllowOverride}" Height="24" FontSize="12" MinHeight="25" Content="AUTO DATA">
+            <!--<StackPanel Orientation="Horizontal">
+                <Image Source="Images/Icons/ios7-thunderstorm-white.png" Stretch="UniformToFill" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock VerticalAlignment="Center">AUTO DATA</TextBlock>
+            </StackPanel>-->
+        </ToggleButton>
+        <TextBox x:Name="dataOverrideInterval" ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="24" Margin="983,3,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding OverrideRotationCount}" VerticalAlignment="Top" Width="36" MinHeight="25" FontSize="12"/>
+        <ProgressBar x:Name="dataOverrideProgress" HorizontalAlignment="Left" Height="25" Margin="1024,3,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding OverrideProgress}"/>
+        <ToggleButton x:Name="editButton" HorizontalAlignment="Right" Margin="0,3,10,0" VerticalAlignment="Top" Width="105" IsChecked="{Binding EditModeEnabled}" Height="24" FontSize="12" MinHeight="25" Unchecked="editButton_Unchecked" Content="Edit Layout">
+            <!--<StackPanel Orientation="Horizontal">
+                <Image Source="Images/Icons/edit-white.png" Stretch="UniformToFill" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock VerticalAlignment="Center">Edit Layout</TextBlock>
+            </StackPanel>-->
+        </ToggleButton>
+
+    </Grid>
+</Window>

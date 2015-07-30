@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Radio VIS Sample - Show Name</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <script>
+        // Note:
+        // Using this backgroundimage JS Variable allows to change the background from within ContentManager with a right
+        // Click onto a picture in the picture stream.
+		var variablesString = 	'{   "backgroundimage": "img/generic_bg/sample_bg_img_ebu_09.jpg" ' +
+								'}';
+    </script>
+
+</head>
+<body>
+<div class="vis-wrapper vis-fix320x240">
+    <div id="backgroundimage">
+        <div id="textbox" class="textbox-center textbox-grey">
+            <div class="text-right text-main-note" id="text-main-note-time">@@timeslot@@</div>
+            <div class="text-right text-main-title" id="text-main-title">@@showname@@</div>
+            <div class="text-right text-main-note" id="text-main-note-host">@@hostedby@@</div>
+        </div>
+        <div id="ebucredits"></div>
+    </div>
+</div>
+
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+
+<script>
+    var variables = jQuery.parseJSON(variablesString);
+    $('#backgroundimage').css("background-image", "url('"+variables.backgroundimage+"')");
+</script>
+</body>
+</html>
