@@ -115,6 +115,88 @@ namespace io.ebu.eis.datastructures
             }
         }
 
+        public bool HasValue(String path)
+        {
+            if (path.Contains(";"))
+            {
+                var valSplit = path.Split(';');
+                var result = "";
+                var first = true;
+                var i = 0;
+                while (i < valSplit.Length)
+                {
+                    if (!first)
+                        result += " - ";
+                    first = false;
+                    result += GetValue(valSplit[i]);
+                    ++i;
+                }
+                return !string.IsNullOrEmpty(result);
+            }
+            else
+            {
+
+                var splitPath = path.Split('.');
+
+                // TODO Enhance
+                // Evaluate Special Functions
+                if (splitPath[0] == "ToDateTime")
+                {
+                    DateTime t = new DateTime(Convert.ToInt32(Value) * 1000);
+                    return true;
+                }
+
+                if (Data == null)
+                    return false;
+
+                // TODO is is weird and should not be necessary
+                if (_lockSync == null)
+                    _lockSync = new object();
+
+                lock (_lockSync)
+                {
+                    if (splitPath.Length == 1)
+                    {
+                        // Current Element return KeyValue
+                        var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
+                        if (r != null)
+                            return true;
+
+                    }
+                    else
+                    {
+                        var searchFor = splitPath.FirstOrDefault();
+                        if (searchFor != null && (searchFor.StartsWith("[") && searchFor.EndsWith("]")))
+                        {
+                            // We need to extract by index
+                            var index = Convert.ToInt32(searchFor.Substring(1, searchFor.Length - 2));
+                            if (index < 0)
+                                index = Data.Count + index;
+                            if (index >= Data.Count)
+                                return false;
+                            var r2 = Data[index];
+                            return
+                                r2.HasValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                        }
+                        else if (searchFor != null && (searchFor.StartsWith("(") && searchFor.EndsWith(")")))
+                        {
+                            // We need to extract by DataType
+                            var r2 = Data.FirstOrDefault(x => x.DataType == searchFor.Substring(1, searchFor.Length - 2));
+                            if (r2 != null)
+                                return
+                                    r2.HasValue(String.Join(".",
+                                        splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                        }
+                        var r = Data.FirstOrDefault(x => x.Key == splitPath.FirstOrDefault());
+                        if (r == null)
+                            return false;
+                        return r.HasValue(String.Join(".", splitPath.Reverse().Take(splitPath.Length - 1).Reverse()));
+                    }
+                }
+                return false;
+            }
+        }
+
         public DataMessage()
         {
             _lockSync = new object();

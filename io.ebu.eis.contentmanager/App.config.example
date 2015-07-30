@@ -13,11 +13,11 @@
     <OutputConfiguration EnableDataDispatchMQ="false">
       <UploadConfigurations>
         <!-- ## Uncomment this UploadConfiguration section to start publishing ## -->
-<UploadConfiguration Type="FTP"  FtpServer="ftp.server.ch" FtpUsername="username" FtpPassword="password" Subfolder="subfolder" PublicUriBase="http://public.server.ch/subfolder/">
-  <DispatchConfigurations>
-    <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
-  </DispatchConfigurations>
-</UploadConfiguration>
+        <!--<UploadConfiguration Type="FTP"  FtpServer="ftp.server.ch" FtpUsername="username" FtpPassword="password" Subfolder="subfolder" PublicUriBase="http://public.server.ch/subfolder/">
+          <DispatchConfigurations>
+            <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
+          </DispatchConfigurations>
+        </UploadConfiguration>-->
       </UploadConfigurations>
 
       <ImageOutputConfigurations>
@@ -25,10 +25,6 @@
       </ImageOutputConfigurations>
 
     </OutputConfiguration>
-
-    <ImageOutputConfigurations>
-      <ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="JPEG" Quality="80" IsDefault="true" />
-    </ImageOutputConfigurations>
 
     <DataConfiguration DataFlowLeftActions="Cart;Context"
                        DataFlowRightActions="Context"

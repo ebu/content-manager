@@ -282,8 +282,8 @@ namespace io.ebu.eis.contentmanager
             foreach (Match m in Regex.Matches(templateHtml, pattern))
             {
                 var variable = m.Groups[1].Value;
-                var replaceValue = "";
-                if (Context != null)
+                string replaceValue = null;
+                if (Context != null && Context.HasValue(variable))
                 {
                     replaceValue = Context.GetValue(variable);
                 }
@@ -295,8 +295,11 @@ namespace io.ebu.eis.contentmanager
                     if (String.Compare(existing.Value, replaceValue, StringComparison.Ordinal) != 0)
                     {
                         // Update value
-                        existing.Value = replaceValue;
-                        changes = true;
+                        if (replaceValue != null)
+                        {
+                            existing.Value = replaceValue;
+                            changes = true;
+                        }
                     }
                 }
                 else
