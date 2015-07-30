@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Radio VIS Sample - Weather</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <script>
+        // Note:
+        // Using this backgroundimage JS Variable allows to change the background from within ContentManager with a right
+        // Click onto a picture in the picture stream.
+		var variablesString = 	'{   "backgroundimage": "img/generic_bg/sample_bg_img_ebu_11.jpg" ' +
+								'}';
+    </script>
+
+</head>
+<body>
+<div class="vis-wrapper vis-fix320x240">
+    <div id="backgroundimage">
+        <div id="textbox" class="textbox-fill textbox-grey">
+            <div class="text-right text-title" id="text-main-note">Weather Today in Geneva</div>
+
+            <div class="text-right" id="text-weather-weather">Weather: <img id="img-weather-weathericon" src="http://openweathermap.org/img/w/01d.png" /></div>
+            <div class="text-right" id="text-weather-temperature">Temperature: 14 C</div>
+            <div class="text-right" id="text-weather-pressure">Pressure: 1422</div>
+            <div class="text-right" id="text-weather-humidity">Humidity: 1422</div>
+
+            <div class="text-right text-small-bottom-note" id="text-small-bottom-note-updatetime">Updated: 9h33</div>
+        </div>
+        <div id="ebucredits"></div>
+    </div>
+</div>
+
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+
+<script>
+
+    $( document ).ready(function() {
+        var variables = jQuery.parseJSON(variablesString);
+        $('#backgroundimage').css("background-image", "url('"+variables.backgroundimage+"')");
+
+        // Date
+        var d = new Date();
+        $('#text-small-bottom-note-updatetime').text('Updated: '+d.toTimeString().substring(0,5));
+
+        // Weather Data
+        var jsonUrl = 'http://api.openweathermap.org/data/2.5/weather?q=Geneva,ch&units=metric';
+        var iconPrefix = 'http://openweathermap.org/img/w/';
+        var iconSuffix = '.png';
+        $.ajax({
+          url: jsonUrl,
+          cache: false
+        })
+          .done(function( data ) {
+            if(data.weather[0].icon){
+                var imgurl = iconPrefix + data.weather[0].icon + iconSuffix;
+                $('#img-weather-weathericon').attr('src', imgurl);
+            }
+            if(data.main.temp){
+                $('#text-weather-temperature').text('Temperature: '+data.main.temp + ' C');
+            }
+            if(data.main.pressure){
+                $('#text-weather-pressure').text('Pressure: '+data.main.pressure);
+            }
+            if(data.main.humidity){
+                $('#text-weather-humidity').text('Humidity: '+data.main.humidity +'%');
+            }
+            if(data.dt){
+                // var d = new Date(data.dt);
+                // $('#text-small-right-bottom-note').text('Updated: '+d.toTimeString().substring(0,5));
+            }
+
+        });
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+/*!
+ * 
+ */
+ 
+ /** Fonts **/
+ @import "../fonts/opensans/opensans_regular/stylesheet.css";
+ @import "../fonts/montserrat/montserrat_regular_macroman/stylesheet.css";
+ @import "../fonts/montserrat/montserrat_bold_macroman/stylesheet.css";
+
+body {
+  background: #AAAAAA;
+  font-family: montserratregular, open_sansregular, "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+}
+
+/** VIS **/
+.vis-wrapper {
+    position: absolute;
+    display: block;
+    overflow: hidden;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+.vis-fix320x240 {
+    width:320px;
+    height:240px;
+}
+
+/** Background **/
+#backgroundimage {
+	position:absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-image:url('../img/generic_bg/sample_bg_img_ebu_01.jpg');
+    background-size:cover;
+	background-position:center;
+	background-repeat:no-repeat;
+}
+
+#ebucredits {
+	position:absolute;
+    bottom: 5px;
+    left: 7px;
+    width: 80px;
+    height: 15px;
+    background-image:url('../img/logos/ebu_white.png');
+    background-size:contain;
+	background-position:center; 
+	background-repeat:no-repeat;
+}
+
+.credits-top {
+    position:absolute;
+    top: 10px;
+    left: 7px;
+    width: 80px;
+    height: 15px;
+}
+
+/** Images **/
+
+#stationlogo {
+    position:absolute;
+    top: 25%;
+    bottom:25%;
+    left:10%;
+    right:10%;
+    background-image:url('../img/logos/ebu_white.png');
+    background-size:contain;
+    background-position:top;
+    background-repeat:no-repeat;
+}
+
+#cover-img-src {
+    border: 0;
+    width:auto;
+    height:100%;
+    float:right;
+}
+#cover-img {
+    position:absolute;
+    height:100%;
+    width:100%;
+    background-image:url('../img/generic_bg/sample_bg_img_ebu_07.jpg');
+    background-size: contain;
+    background-position: right top;
+    background-repeat:no-repeat;
+}
+.cover-wrapper {
+    position: absolute;
+    width: auto;
+    top:4%;
+    left:4%;
+    right:4%;
+    height: 65%;
+    max-width:900px;
+    display: inline-block;
+}
+
+#webcam-img-src {
+    border: 0;
+    width:auto;
+    height:100%;
+}
+#webcam-img {
+    position:absolute;
+    height:100%;
+    width:100%;
+    background-size: contain;
+    background-position: right top;
+    background-repeat:no-repeat;
+}
+.webcam-wrapper {
+    position: absolute;
+    width: auto;
+    top:15%;
+    left:3%;
+    right:3%;
+    height: 72%;
+    max-width:900px;
+    display: inline-block;
+}
+
+
+/** Texts and Boxes */
+.textbox-center {
+    position:absolute;
+    top: 13%;
+    left: 3%;
+    right: 3%;
+    padding: 2% 4%;
+    margin:0px auto;
+}
+.textbox-bottom {
+    position:absolute;
+    bottom: 3%;
+    left: 3%;
+    right: 3%;
+    padding: 2% 4%;
+    margin:0px auto;
+}
+.textbox-small-bottom {
+    position:absolute;
+    bottom: 3%;
+    left: 3%;
+    right: 3%;
+    padding: 0 4%;
+    margin:0px auto;
+}
+.textbox-fill {
+    position:absolute;
+    top: 5%;
+    bottom: 15%;
+    left: 3%;
+    right: 3%;
+    padding: 2% 4%;
+    margin:0px auto;
+}
+.textbox-grey {
+	background: linear-gradient(rgba(230,230,230,0.6), rgba(255,255,255,0.8));
+	background: -webkit-linear-gradient(rgba(230,230,230,0.6), rgba(255,255,255,0.8));
+    background: -o-linear-gradient(rgba(230,230,230,0.6), rgba(255,255,255,0.8));
+    background: -moz-linear-gradient(rgba(230,230,230,0.6), rgba(255,255,255,0.8));
+}
+
+
+.text-right {
+    text-align:right;
+}
+
+.text-weather {
+    font-weight: light;
+}
+
+.text-title {
+    font-size:1.5em;
+    font-weight: bold;
+}
+.text-small {
+    font-size:0.8em;
+    font-weight: bold;
+    margin-top:3px;
+    margin-bottom:3px;
+}
+.text-main-title {
+    font-size:1.9em;
+    font-weight: bold;
+}
+.text-main-note {
+    margin-top:10px;
+    margin-bottom:10px;
+    text-align:right;
+    font-weight: light;
+}
+.text-small-bottom-note {
+    position:absolute;
+    bottom:0;
+    right:3%;
+    margin-top:10px;
+    margin-bottom:5px;
+    text-align:right;
+    font-weight: light;
+    font-size:0.6em;
+}
+#text-title {
+    font-weight: bold;
+}
+#text-artist {
+    font-weight: normal;
+}

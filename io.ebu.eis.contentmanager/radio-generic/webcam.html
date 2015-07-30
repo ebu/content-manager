@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Radio VIS Sample - Weather</title>
+
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/custom.css" rel="stylesheet">
+
+    <script>
+        // Note:
+        // Using this backgroundimage JS Variable allows to change the background from within ContentManager with a right
+        // Click onto a picture in the picture stream.
+		var variablesString = 	'{   "backgroundimage": "img/generic_bg/sample_bg_img_ebu_11.jpg" ' +
+								'}';
+    </script>
+
+</head>
+<body>
+<div class="vis-wrapper vis-fix320x240">
+    <div id="backgroundimage">
+            <div id="ebucredits" class="credits-top"></div>
+
+            <div class="webcam-wrapper">
+                <div id="webcam-img"><img id="webcam-img-src" src="http://sirius.mizel.net/webcam/snapshot.php" /></div>
+            </div>
+            <div class="textbox-small-bottom textbox-grey">
+                <div class="text-small">Webcam - Geneva City - <span id="webcam-updatetime"></span></div>
+            </div>
+    </div>
+</div>
+
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+
+<script>
+
+    $( document ).ready(function() {
+        var variables = jQuery.parseJSON(variablesString);
+        $('#backgroundimage').css("background-image", "url('"+variables.backgroundimage+"')");
+
+        // Date
+        var d = new Date();
+        $('#webcam-updatetime').text(''+d.toTimeString().substring(0,5));
+
+    });
+
+</script>
+</body>
+</html>
