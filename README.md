@@ -13,6 +13,8 @@ slideshows for live sports events.
 
 See the	doc folder for configuration, usage and api documentation
 
+* *[Documentation](doc)*
+
 ## Prerequisites
 
 * Microsoft Visual Studio 2015, C# 6.0 
