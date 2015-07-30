@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
         xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures" 
         x:Class="io.ebu.eis.contentmanager.MainWindow"
-        Title="EBU - Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/cm.ico" MouseMove="Window_MouseMove">
+        Title="EBU - Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/ebu_contentmanager.ico" MouseMove="Window_MouseMove">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

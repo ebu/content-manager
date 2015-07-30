@@ -37,6 +37,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{CAF0184F-033
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "img", "img", "{F32CFC1B-843E-451D-B91F-49DEF1C6ED91}"
+	ProjectSection(SolutionItems) = preProject
+		doc\img\cm_screenshot.png = doc\img\cm_screenshot.png
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
