@@ -923,7 +923,7 @@ namespace io.ebu.eis.contentmanager
                 _context = (ManagerContext)DataContext;
                 if (e.AddedItems.Count > 0 && e.AddedItems[0] is ManagerImageReference)
                 {
-                    _lastSelectedEditorImageRef = (ManagerImageReference) e.AddedItems[0];
+                    _lastSelectedEditorImageRef = (ManagerImageReference)e.AddedItems[0];
                     //_context.EditorImage = _lastSelectedEditorImageRef.Clone();
                 }
 
@@ -1012,7 +1012,7 @@ namespace io.ebu.eis.contentmanager
         {
             if (e.AddedItems.Count > 0 && e.AddedItems[0] is ManagerImageReference)
             {
-                _lastSelectedManagerImageRef = (ManagerImageReference) e.AddedItems[0];
+                _lastSelectedManagerImageRef = (ManagerImageReference)e.AddedItems[0];
             }
         }
 
@@ -1067,6 +1067,7 @@ namespace io.ebu.eis.contentmanager
             string windows = "MainWindow";
             if (RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0") > 0.0)
             {
+                // We have settings, thus restore
                 HorizontalSystemGrid.ColumnDefinitions[0].Width =
                     new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0"));
                 HorizontalSystemGrid.ColumnDefinitions[2].Width =
@@ -1077,6 +1078,24 @@ namespace io.ebu.eis.contentmanager
                     new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow2"));
                 VerticalSystemGrid.RowDefinitions[4].Height =
                     new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow4"));
+            }
+            else
+            {
+                // We did not store any layout to registry yet
+                // If we have no settings yet and we don't have any data elements
+                if (!(_context?.Config?.DataConfiguration?.DataItemConfigurations?.Count > 0))
+                {
+                    // Column 4 is the data column
+                    HorizontalSystemGrid.ColumnDefinitions[4].Width = new GridLength(0.0);
+                }
+            }
+
+
+            if (!(_context?.Config?.DataConfiguration?.DataItemConfigurations?.Count > 0))
+            {
+                // Also hide Data Buttons and Bar
+                autoDataButton.Visibility = Visibility.Hidden;
+                dataOverrideProgress.Visibility = Visibility.Hidden;
             }
         }
 

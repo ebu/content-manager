@@ -2,7 +2,7 @@
 
 ### System Requirements
 
-* Windows 7 or 8 x64
+* Windows 7 or 8 x64 or 10 x64
 * .net 4.5
 
 

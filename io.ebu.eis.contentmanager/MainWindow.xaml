@@ -431,14 +431,14 @@
         </ToggleButton>
         <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="24" Margin="655,3,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding AutomationInterval}" VerticalAlignment="Top" Width="36" MinHeight="25" FontSize="12"/>
         <ProgressBar HorizontalAlignment="Left" Height="25" Margin="696,3,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding AutomationProgress}"/>
-        <ToggleButton x:Name="autoButton_Copy" HorizontalAlignment="Left" Margin="838,3,0,0" VerticalAlignment="Top" Width="140" IsChecked="{Binding AllowOverride}" Height="24" FontSize="12" MinHeight="25" Content="AUTO DATA">
+        <ToggleButton x:Name="autoDataButton" HorizontalAlignment="Left" Margin="838,3,0,0" VerticalAlignment="Top" Width="140" IsChecked="{Binding AllowOverride}" Height="24" FontSize="12" MinHeight="25" Content="AUTO DATA">
             <!--<StackPanel Orientation="Horizontal">
                 <Image Source="Images/Icons/ios7-thunderstorm-white.png" Stretch="UniformToFill" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />
                 <TextBlock VerticalAlignment="Center">AUTO DATA</TextBlock>
             </StackPanel>-->
         </ToggleButton>
         <TextBox ToolTip="Interval in Seconds" HorizontalAlignment="Left" Height="24" Margin="983,3,0,0" TextWrapping="Wrap" HorizontalContentAlignment="Center" Text="{Binding OverrideRotationCount}" VerticalAlignment="Top" Width="36" MinHeight="25" FontSize="12"/>
-        <ProgressBar HorizontalAlignment="Left" Height="25" Margin="1024,3,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding OverrideProgress}"/>
+        <ProgressBar x:Name="dataOverrideProgress" HorizontalAlignment="Left" Height="25" Margin="1024,3,0,0" VerticalAlignment="Top" Width="105" Maximum="1" SmallChange="0.01" LargeChange="0.1" Value="{Binding OverrideProgress}"/>
         <ToggleButton x:Name="editButton" HorizontalAlignment="Right" Margin="0,3,10,0" VerticalAlignment="Top" Width="105" IsChecked="{Binding EditModeEnabled}" Height="24" FontSize="12" MinHeight="25" Unchecked="editButton_Unchecked" Content="Edit Layout">
             <!--<StackPanel Orientation="Horizontal">
                 <Image Source="Images/Icons/edit-white.png" Stretch="UniformToFill" Width="12" Height="12" VerticalAlignment="Center" Margin="0,0,5,0" />

@@ -12,7 +12,7 @@ slideshows for live sports events.
 
 ## Prerequisites
 
-* Microsoft Visual Studio 2013 
+* Microsoft Visual Studio 2015, C# 6.0 
 (or [community edition](https://www.visualstudio.com/en-us/products/visual-studio-community-vs.aspx))
 
 ### Dependencies
