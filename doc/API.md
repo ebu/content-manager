@@ -38,7 +38,7 @@ Broadcasts a specific slide (by template Name) passed as BSLIDE argument
 
 	<server>:<port>/broadcast?BSLIDE=<slidename>
 
-### `/updateandbroadcast` Combination of the update and broadcast command
+#### `/updateandbroadcast` Combination of the update and broadcast command
 
 Updates the global variables and broadcasts a specific slide
 

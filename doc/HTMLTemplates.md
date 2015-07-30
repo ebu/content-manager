@@ -5,14 +5,53 @@ data from third parties and external systems and are also editable inside the co
 
 ## HTML Template
 
-### Variables @@var@@ for content manager
+### Variables `@@var@@` for content manager
+
+Your template may contain variables surrounded with double `@@` signs, these variables will be replaced by the content manager
+when the slide is generated. Also the editor inside the content manager will show those variable and make it possible to edit their values.
+
 
 ### CSS for 320x240 images
 
+DAB and RadioVIS images have a standard of 320px x 240px. In order for your templates to match that size and be displayed correctly, add a meta
+information for the viewport and the best options is to wrap the content inside a `div` and define a class.
+
+```
+...
+<meta name="viewport" content="width=device-width, initial-scale=1">
+...
+
+<div class="vis-wrapper vis-fix320x240">
+
+</div>
+```
+```
+.vis-wrapper {
+    position: absolute;
+    display: block;
+    overflow: hidden;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+.vis-fix320x240 {
+    width:320px;
+    height:240px;
+}
+```
+
+If you choose to create responsive templates, the current version of the content manager will automatically generate images 320x240.
+
 ### Use of Javascript
 
+Slides are generated with `phantomJS` which is a headless Webkit based browser ([http://phantomjs.org/](http://phantomjs.org/)).
+Thus we support all standard HTML, CSS and javascript features.
 
 ## Some Examples
+
+The content manager comes with a few generic radio templates that are located in the `radio-generic` folder. Some other examples are also available
+in JSFiddle for demo purpose.
 
 ### Simple Example with variables
 
