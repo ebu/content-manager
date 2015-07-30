@@ -68,6 +68,14 @@ The configuration documentation can be found in the
 * [Mathieu Habegger](https://github.com/mhabegger) (SMP)
 
 
+## Acknoledgements
+
+We would like to thank the following people for their precious support and periodic feedbacks.
+
+* [Mathias Coinchon](https://github.com/coinchon) (EBU)
+* [Christophe Pasquier](https://twitter.com/SportOnRadio) (EURORADIO)
+
+
 ## Copyright & license
 
 Copyright (c) 2015, EBU-UER Technology & Innovation
