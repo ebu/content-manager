@@ -9,13 +9,29 @@ The Content Manager can run in a standalone fashion or in an advanced DataGatewa
 allowing external data providers such as Swisstiming to provide valuable data to generate
 slideshows for live sports events.
 
+![EBU Content Manager](doc/img/cm_screenshot.png)
+
+As example of images the Content Manager can generate and we it was used for at EBU see the following two event
+reports of sport cases:
+
+* [EURORADIO @ 2014 European Athletics Championships in Zürich](http://output.ebu.io/archive/zurich2014/)
+* [EURORADIO @ 2015 FIS Alpine World Ski Championships in Vail / Beaver Creek](http://output.ebu.io/archive/vail2015/)
+
+## Quick Start
+
+You can download a ZIP file with the precompiled and demo configured Content Manager and start using it right away:
+
+[https://github.com/ebu/content-manager/releases](https://github.com/ebu/content-manager/releases)
+
 ## Documentation
 
 See the	doc folder for configuration, usage and api documentation
 
 * [Documentation](doc)
 
-![EBU Content Manager](doc/img/cm_screenshot.png)
+
+----
+
 
 ## Prerequisites
 
@@ -40,7 +56,7 @@ The following third-party libraries use in the solutions:
 * PhantomJS
 
 
-## Getting started
+## Getting started (a bit slower than quick start)
 
 Use git to clone the repository or add this repository as team source in your Visual Studio Environment.
 
@@ -51,10 +67,13 @@ Set the `io.ebu.eis.contentmanager` as startup project and build the solutions.
 Create a configuration file.
 
 
-## Configure
+### Configure
 
 The configuration documentation can be found in the 
 [Content Manager Configuration](doc/Configuration.md) document.
+
+
+----
 
 
 ## Related projects
