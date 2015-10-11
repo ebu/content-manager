@@ -88,7 +88,7 @@ namespace io.ebu.eis.data.file
         {
             // Specify what is done when a file is changed, created, or deleted.
             // Ignore deleted
-            if (e.ChangeType != WatcherChangeTypes.Deleted)
+            if (e.ChangeType == WatcherChangeTypes.Created)
             {
                 // If file still exists
                 if (File.Exists(e.FullPath))

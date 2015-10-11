@@ -18,15 +18,21 @@
             <DispatchConfiguration Type="STOMP" StompUri="stomp:tcp://radio.ebu.io:61613" StompUsername="stomp_user" StompPassword="stomp_pwd" StompTopic="/topic/dab/4e1/ffff/ffff/0/" />
           </DispatchConfigurations>
         </UploadConfiguration>-->
+        <!-- Or File SMB Share : <UploadConfiguration Type="FILE" DestinationPath="C:\temp" PublicUriBase="http://localhost/images"> -->
+        <!-- Or S# AWS Upload :  <UploadConfiguration Type="S3"   AWSAccessKey="key" AWSSecretKey="secret"
+                                                      S3BucketName="bucketname" Subfolder="aubfolder"
+                                                      PublicUriBase="http://bucketname-cname.com/subfolder"> -->
       </UploadConfigurations>
 
       <ImageOutputConfigurations>
         <ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="JPEG" Quality="80" IsDefault="true" />
+        <!--<ImageOutputConfiguration Name="DEFAULT" Width="320" Height="240" Encoder="PNG" Quality="100" IsDefault="true" />-->
       </ImageOutputConfigurations>
 
     </OutputConfiguration>
 
-    <DataConfiguration DataFlowLeftActions="Cart;Context"
+    <DataConfiguration AutoEditorTypes="INSTAGRAM;IMAGE"
+                       DataFlowLeftActions="Cart;Context"
                        DataFlowRightActions="Context"
                        ImageFlowLeftActions="Template;BackgroundUrl;Context"
                        ImageFlowRightActions="BackgroundUrl"

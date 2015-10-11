@@ -273,26 +273,46 @@ namespace io.ebu.eis.contentmanager
 
             var templateHtml = File.ReadAllText(Template);
 
-            // Replace @@values@@ with context Values
-            const string pattern = "@@(.*?)@@";
+            // Pattern used to replace template variables
+            string pattern = "@@(?<variable>.*?)(=(?<default>.*))?@@";
 
             var changes = false;
             if (TemplateFields == null)
                 TemplateFields = new DispatchedObservableCollection<ManagerTemplateField>();
-            foreach (Match m in Regex.Matches(templateHtml, pattern))
+            var matches = Regex.Matches(templateHtml, pattern);
+            foreach (Match m in matches)
             {
-                var variable = m.Groups[1].Value;
+                var variable = m.Groups["variable"].Value;
+                var defaultvalue = m.Groups["default"].Value;
+                var isDefaultValue = false;
                 string replaceValue = null;
                 if (Context != null && Context.HasValue(variable))
                 {
                     replaceValue = Context.GetValue(variable);
+                } else if (!string.IsNullOrEmpty(defaultvalue))
+                {
+                    replaceValue = defaultvalue;
+                    isDefaultValue = true;
+
+                    //// Add to context if any
+                    //if (Context != null)
+                    //{
+                    //    Context.Data.Add(new DataMessage()
+                    //    {je 
+                    //        Data = null,
+                    //        DataType = "string",
+                    //        Key = variable,
+                    //        Value = defaultvalue
+                    //    });
+                    //}
                 }
+
                 // Add all fields to template fields
                 if (TemplateFields.Any(x => x.Title == variable))
                 {
                     // If already in there check if value changed
                     var existing = TemplateFields.First(x => x.Title == variable);
-                    if (String.Compare(existing.Value, replaceValue, StringComparison.Ordinal) != 0)
+                    if (!isDefaultValue && String.Compare(existing.Value, replaceValue, StringComparison.Ordinal) != 0)
                     {
                         // Update value
                         if (replaceValue != null)
@@ -330,8 +350,6 @@ namespace io.ebu.eis.contentmanager
 
         //    var templateHtml = File.ReadAllText(Template);
 
-        //    // Replace @@values@@ with context Values
-        //    const string pattern = "@@(.*?)@@";
         //    foreach (Match m in Regex.Matches(templateHtml, pattern))
         //    {
         //        var variable = m.Groups[1].Value;
@@ -391,11 +409,12 @@ namespace io.ebu.eis.contentmanager
 
             var templateHtml = File.ReadAllText(Template);
 
-            // Replace @@values@@ with context Values
-            const string pattern = "@@(.*?)@@";
+            // Pattern used to replace template variables
+            string pattern = "@@(?<variable>.*?)(=(?<default>.*))?@@";
+
             foreach (Match m in Regex.Matches(templateHtml, pattern))
             {
-                var variable = m.Groups[1].Value;
+                var variable = m.Groups["variable"].Value;
                 var matchedValue = m.Value;
                 var replaceField = TemplateFields.FirstOrDefault(x => x.Title == variable);
                 var replaceValue = "";
@@ -421,6 +440,12 @@ namespace io.ebu.eis.contentmanager
             {
                 var variable = mbg.Groups[1].Value;
                 var filepath = Background.Replace("\\", "/"); //"file://" +
+                var localRex = new Regex(@"^\w:\/+", RegexOptions.IgnoreCase);
+                if (localRex.IsMatch(filepath))
+                {
+                    // Add Local file:/// prefix for path with Drive
+                    filepath = "file:///" + filepath;
+                }
                 templateHtml = templateHtml.Replace(variable, filepath);
             }
 
@@ -536,8 +561,8 @@ namespace io.ebu.eis.contentmanager
                                 }
                                 break;
 
-                            // TODO Log unknown error on default
-                        
+                                // TODO Log unknown error on default
+
                         }
                     }
                 }
@@ -640,7 +665,7 @@ namespace io.ebu.eis.contentmanager
                                             outConf.UniqueFilename, outConf.PublicUriBase);
                                     }
                                     break;
-                                // TODO Log error on default
+                                    // TODO Log error on default
                             }
                         }
                         catch (Exception)

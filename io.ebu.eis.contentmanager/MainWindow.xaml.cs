@@ -982,9 +982,10 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO
+                var a = ex;
             }
         }
 
