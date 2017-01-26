@@ -133,6 +133,8 @@ namespace io.ebu.eis.contentmanager
         {
             _config = (CMConfigurationSection)ConfigurationManager.GetSection("CMConfiguration");
 
+            GlobalData = new DataMessage();
+
             Carts = new DispatchedObservableCollection<ManagerCart>();
             CartItemsView = CollectionViewSource.GetDefaultView(Carts);
             CartItemsView.Filter = CartDislpayFilter;
