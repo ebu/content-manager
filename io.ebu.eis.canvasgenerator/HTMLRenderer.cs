@@ -14,11 +14,11 @@ namespace io.ebu.eis.canvasgenerator
         private const string PhantomArgumentProperties = "320px*240px"; //"640px*480px 2.0";//
         private const int TimeToExit = 500;
 
-        public static BitmapImage Render(string file, string pathToWorkingDir)
+        public static BitmapImage Render(string file, string pathToWorkingDir, string zoomFactorOptions = PhantomArgumentProperties)
         {
             try
             {
-                var args = String.Format("{0} {1} {2}", PhantomPageGenerator, file, PhantomArgumentProperties);
+                var args = String.Format("{0} {1} {2}", PhantomPageGenerator, file, zoomFactorOptions);
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = PathToExe,
@@ -28,7 +28,7 @@ namespace io.ebu.eis.canvasgenerator
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     RedirectStandardInput = true,
-                    WorkingDirectory = pathToWorkingDir // PDF Tool Path
+                    WorkingDirectory = pathToWorkingDir // Path to templatess
                 };
                 var p = new Process { StartInfo = startInfo };
                 p.Start();
