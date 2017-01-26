@@ -38,16 +38,36 @@ namespace io.ebu.eis.canvasgenerator
                 // TODO If error not null or empty String the report error
                 // Read the Output:
                 var base64Image = p.StandardOutput.ReadToEnd().Trim();
-                var bytes = Convert.FromBase64CharArray(base64Image.ToCharArray(), 0, base64Image.Length);
-                if (bytes.Length > 0)
+                try
                 {
-                    var image = GetBitmapImage(bytes);
-                    return image;
+                    var bytes = Convert.FromBase64CharArray(base64Image.ToCharArray(), 0, base64Image.Length);
+                    if (bytes.Length > 0)
+                    {
+                        var image = GetBitmapImage(bytes);
+                        return image;
+                    }
                 }
+                catch (Exception e1)
+                {
+                    // TODO Log
+                    using (EventLog eventLog = new EventLog("Application"))
+                    {
+                        eventLog.Source = "Application";
+                        eventLog.WriteEntry($"EIS Content Manager failed to generate an image.\n{base64Image} - {e1.Message}\n" +
+                            "Details workingPath: {pathToWorkingDir}" +
+                            "Details args: {args}\n\n{e1.StackTrace}", EventLogEntryType.Error, 101, 1);
+                    }
+                }
+
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // TODO Log
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager failed to generate an image.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
             return null;
         }
