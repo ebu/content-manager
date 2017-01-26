@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using io.ebu.eis.datastructures;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -41,6 +42,13 @@ namespace io.ebu.eis.mq
                 // TODO Log
             }
         }
+
+        public void ConnectAsync(string filter = "#")
+        {
+            var t = new Thread(() => Connect(filter));
+            t.Start();
+        }
+
 
         public void Disconnect()
         {

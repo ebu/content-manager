@@ -164,7 +164,7 @@ namespace io.ebu.eis.contentmanager
                             var amquri = input.MQUri;
                             var amqinexchange = input.MQExchange;
                             var dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
-                            dataInConnection.Connect();
+                            dataInConnection.ConnectAsync();
                             // TODO Catch hand handle connection exceptions and reconnect
 
                             _disposables.Add(dataInConnection);
@@ -187,13 +187,13 @@ namespace io.ebu.eis.contentmanager
             #endregion INPUTS
 
             #region OUTPUTS
-            // Open Connection to OUTBOUND MQ
-            if (_config.OutputConfiguration.EnableDataDispatchMQ)
+            // Open Connection to OUTBOUND MQ if enabled and URI defined
+            var amqDispatchUri = _config.OutputConfiguration.DispatchMQConfiguration.MQUri;
+            if (_config.OutputConfiguration.EnableDataDispatchMQ && !string.IsNullOrEmpty(amqDispatchUri))
             {
-                var amquri = _config.OutputConfiguration.DispatchMQConfiguration.MQUri;
                 var amqoutexchange = _config.OutputConfiguration.DispatchMQConfiguration.MQExchange;
-                var dataOutConnection = new AMQQueuePublisher(amquri, amqoutexchange);
-                dataOutConnection.Connect();
+                var dataOutConnection = new AMQQueuePublisher(amqDispatchUri, amqoutexchange);
+                dataOutConnection.ConnectAsync();
                 _publishers.Add(dataOutConnection);
                 // TODO Catch hand handle connection exceptions and reconnect
 

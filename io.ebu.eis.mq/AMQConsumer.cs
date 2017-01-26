@@ -18,6 +18,7 @@ namespace io.ebu.eis.mq
         private readonly IDataMessageHandler _handler;
 
         private Thread _t;
+        private bool _cancelled;
         private bool _running;
 
         private AMQClient _amq;
@@ -78,13 +79,23 @@ namespace io.ebu.eis.mq
             catch (BrokerUnreachableException)
             {
                 // Retry in 1sec
-                Thread.Sleep(1000);
-                Connect(_filter);
+                if (!_cancelled)
+                {
+                    Thread.Sleep(1000);
+                    Connect(_filter);
+                }
             }
+        }
+
+        public void ConnectAsync(string filter = "#")
+        {
+            var t = new Thread(() => Connect(filter));
+            t.Start();
         }
 
         public void Disconnect()
         {
+            _cancelled = true;
             _running = false;
             if (_t != null && _t.IsAlive)
                 _t.Abort();

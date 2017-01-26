@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -102,7 +103,7 @@ namespace io.ebu.eis.contentmanager
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             // Stop Watchfolder
-            _imageWatchFolder.Start();
+            _imageWatchFolder?.Stop();
 
             _context = (ManagerContext)DataContext;
 
@@ -112,7 +113,19 @@ namespace io.ebu.eis.contentmanager
                 Monitor.PulseAll(_synLock);
             }
             _context.Dispose();
-            _context.SerializeToFile();
+            try
+            {
+                _context.SerializeToFile();
+            }
+            catch (Exception ex)
+            {
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS ContentManager was unable to store the configuration to file.\n{ex.Message}\n\n{ex.StackTrace}",
+                        EventLogEntryType.Error, 101, 1);
+                }
+            }
         }
 
 
