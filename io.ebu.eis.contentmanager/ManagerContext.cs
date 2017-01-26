@@ -13,6 +13,7 @@ using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
 using io.ebu.eis.http;
 using io.ebu.eis.mq;
+using io.ebu.eis.shared;
 
 namespace io.ebu.eis.contentmanager
 {

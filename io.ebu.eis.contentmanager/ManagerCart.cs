@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using io.ebu.eis.datastructures.Plain.Collections;
+using io.ebu.eis.shared;
 
 namespace io.ebu.eis.contentmanager
 {

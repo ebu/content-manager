@@ -12,9 +12,10 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using io.ebu.eis.contentmanager.Utils;
 using io.ebu.eis.data.file;
 using io.ebu.eis.datastructures;
+using io.ebu.eis.shared;
+using io.ebu.eis.shared.Utils;
 using Microsoft.Win32;
 
 namespace io.ebu.eis.contentmanager
@@ -1112,19 +1113,26 @@ namespace io.ebu.eis.contentmanager
             string company = "EBU";
             string application = "ContentManager";
             string windows = "MainWindow";
-            if (RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0") > 0.0)
+            try
             {
-                // We have settings, thus restore
-                HorizontalSystemGrid.ColumnDefinitions[0].Width =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0"));
-                HorizontalSystemGrid.ColumnDefinitions[2].Width =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn2"));
-                VerticalSystemGrid.RowDefinitions[0].Height =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow0"));
-                VerticalSystemGrid.RowDefinitions[2].Height =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow2"));
-                VerticalSystemGrid.RowDefinitions[4].Height =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow4"));
+                if (RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0") > 0.0)
+                {
+                    // We have settings, thus restore
+                    HorizontalSystemGrid.ColumnDefinitions[0].Width =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0"));
+                    HorizontalSystemGrid.ColumnDefinitions[2].Width =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn2"));
+                    VerticalSystemGrid.RowDefinitions[0].Height =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow0"));
+                    VerticalSystemGrid.RowDefinitions[2].Height =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow2"));
+                    VerticalSystemGrid.RowDefinitions[4].Height =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow4"));
+                }
+            }
+            catch (Exception)
+            {
+                // TODO Log
             }
         }
 
