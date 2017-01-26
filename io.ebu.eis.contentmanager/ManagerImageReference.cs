@@ -84,10 +84,11 @@ namespace io.ebu.eis.contentmanager
         [DataMember(Name = "validityperiod", IsRequired = false)]
         public TimeSpan ValidityPeriod { get { return _validityPeriod; } set { _validityPeriod = value; OnPropertyChanged("ValidityPeriod"); } }
 
-        private DateTime _lastGenerationTime = DateTime.MinValue;
-        [DataMember(Name = "lastgenerationtime", IsRequired = false)]
-        public DateTime LastGenerationTime { get { return _lastGenerationTime; } set { _lastGenerationTime = value; OnPropertyChanged("LastGenerationTime"); } }
-
+        private long _lastGenerationTime;
+        public DateTime LastGenerationTime { get { return DateTime.FromBinary(_lastGenerationTime); } set { _lastGenerationTime = value.ToBinary(); OnPropertyChanged("LastGenerationTime"); OnPropertyChanged("LastGenerationTimeBinary"); } }
+        [DataMember(Name = "lastgenerationtime")]
+        public long LastGenerationTimeBinary { get { return _lastGenerationTime; } set { _lastGenerationTime = value; OnPropertyChanged("LastGenerationTime"); OnPropertyChanged("LastGenerationTimeBinary"); } }
+        
         public bool IsValid
         {
             get
