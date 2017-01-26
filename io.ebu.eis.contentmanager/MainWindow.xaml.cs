@@ -467,9 +467,14 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO HAndle and not generic Exceltion
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager unable to handle MouseLeftButton Down on data.\n{ex.Message}\n\n{ex.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
         }
 
