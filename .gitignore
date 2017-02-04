@@ -109,3 +109,4 @@ Backup*/
 UpgradeLog*.XML
 *Thumbs.db
 io.ebu.eis.contentmanager/*.config
+io.ebu.eis.worker/*.config
