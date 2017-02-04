@@ -45,7 +45,8 @@
   <ItemGroup>
     <Compile Include="AMQClient.cs" />
     <Compile Include="AMQQueuePublisher.cs" />
-    <Compile Include="AMQConsumer.cs" />
+    <Compile Include="AMQQueueConsumer.cs" />
+    <Compile Include="AMQTopicConsumer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -11,11 +11,18 @@ namespace io.ebu.eis.data.s3
     {
         static IAmazonS3 _client;
 
-        public static string Upload(string pathToLocalFile, string awsAccessKey, string awsSecretKey, string bucketName, string s3Subfolder, string publicUriBase)
+        public static string Upload(string pathToLocalFile, string awsAccessKey, string awsSecretKey,
+            string bucketName, string s3Subfolder, string publicUriBase, string destinationFilenameWithoutExtension = null)
         {
             using (_client = AWSClientFactory.CreateAmazonS3Client(awsAccessKey, awsSecretKey, RegionEndpoint.EUWest1))
             {
                 var name = Guid.NewGuid() + Path.GetExtension(pathToLocalFile);
+                if (!string.IsNullOrEmpty(destinationFilenameWithoutExtension))
+                {
+                    // Take given filename if any
+                    name = destinationFilenameWithoutExtension + Path.GetExtension(pathToLocalFile);
+                }
+
                 try
                 {
                     var request = new PutObjectRequest
@@ -31,7 +38,7 @@ namespace io.ebu.eis.data.s3
                     _client.PutObject(request);
 
                     // Return the Full URL for the uploaded image
-                    return publicUriBase + "/" + name;
+                    return publicUriBase + s3Subfolder + "/" + name;
                 }
                 catch (AmazonS3Exception amazonS3Exception)
                 {

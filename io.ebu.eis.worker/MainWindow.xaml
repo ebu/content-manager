@@ -1,0 +1,50 @@
+﻿<Window x:Class="io.ebu.eis.worker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:io.ebu.eis.worker"
+        xmlns:utils1="clr-namespace:io.ebu.eis.shared.Utils;assembly=io.ebu.eis.shared"
+        mc:Ignorable="d"
+        Title="EIS - Worker Engine" Height="364.869" Width="534.15" Closing="Window_Closing"
+        Foreground="{DynamicResource Brush02}" 
+    Background="{DynamicResource BackgroundKey}" >
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- WPF Theme based on @brianlagunas WPF Themes -->
+
+                <!-- Light Theme -->
+                <!--<ResourceDictionary Source="Themes/Metro/Light/Metro.MSControls.Core.Implicit.xaml" />
+                <ResourceDictionary Source="Themes/Metro/Light/Metro.MSControls.Toolkit.Implicit.xaml" />-->
+
+                <!-- Dark Theme -->
+                <ResourceDictionary Source="Themes/Metro/Dark/MetroDark.MSControls.Core.Implicit.xaml" />
+                <ResourceDictionary Source="Themes/Metro/Dark/MetroDark.MSControls.Toolkit.Implicit.xaml" />
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Light Theme -->
+            <!--<SolidColorBrush x:Key="BackgroundKey" Color="#FFFFFF" />-->
+
+            <utils1:AspectRatioConverter x:Key="AspectRatioConverter"/>
+            <utils1:HeightAspectRatioConverter x:Key="HeightAspectRatioConverter"/>
+            <!-- Dark Theme -->
+            <SolidColorBrush x:Key="BackgroundKey" Color="#FF181818" />
+
+
+            <BitmapImage x:Key="DefaultImage" UriSource="/Images/ebu_back_loading.png" />
+
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.DataContext>
+        <local:WorkerContext/>
+    </Window.DataContext>
+    <Grid>
+        <Border x:Name="MainImageBorder" BorderThickness="3" BorderBrush="#FFFF0000" Margin="10,10,10,40.5">
+            <Image x:Name="mainImg" Margin="0" Source="{Binding MainImage.PreviewImageSource, FallbackValue={StaticResource DefaultImage}, Mode=OneWay, TargetNullValue={StaticResource DefaultImage}}"/>
+        </Border>
+        <Label x:Name="label" Content="{Binding Status}" Margin="10,0,10,9.5" VerticalAlignment="Bottom" Height="26"/>
+    </Grid>
+</Window>

@@ -27,12 +27,19 @@ namespace io.ebu.eis.shared
     {
         public CMConfigurationSection Config;
 
-        public ManagerImageReference(CMConfigurationSection config)
+        // Serials for external generation handling
+        public IImageGenerationHandler ImageGenerationHandler;
+        public string Id;
+        public long ExpectedSerial;
+        public long LastUpdateSerial;
+
+        public ManagerImageReference(CMConfigurationSection config, IImageGenerationHandler generationHandler)
         {
             TemplateFields = new DispatchedObservableCollection<ManagerTemplateField>();
             Config = config;
             IndexOffset = 0;
             ImageVariants = new List<ImageVariant>();
+            ImageGenerationHandler = generationHandler;
         }
 
 
@@ -88,7 +95,7 @@ namespace io.ebu.eis.shared
         public DateTime LastGenerationTime { get { return DateTime.FromBinary(_lastGenerationTime); } set { _lastGenerationTime = value.ToBinary(); OnPropertyChanged("LastGenerationTime"); OnPropertyChanged("LastGenerationTimeBinary"); } }
         [DataMember(Name = "lastgenerationtime")]
         public long LastGenerationTimeBinary { get { return _lastGenerationTime; } set { _lastGenerationTime = value; OnPropertyChanged("LastGenerationTime"); OnPropertyChanged("LastGenerationTimeBinary"); } }
-        
+
         public bool IsValid
         {
             get
@@ -175,6 +182,19 @@ namespace io.ebu.eis.shared
         }
         public ImageSource PreviewImageSource { get { return PreviewImage; } }
 
+        #region DispatchedUpdate
+
+        public void DispatchedExternalPreviewUpdate(long newSerial, string newImageBase64)
+        {
+            // Update in Dispatcher
+            Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+              (SendOrPostCallback)delegate
+              {
+                  LastUpdateSerial = newSerial;
+                  PreviewImage = HTMLRenderer.Base64ToImage(newImageBase64);
+              }, null);
+        }
+        #endregion DispatchedUpdate
 
 
         #region Rendering
@@ -228,15 +248,51 @@ namespace io.ebu.eis.shared
 
         private void Render()
         {
+            if (ImageGenerationHandler != null && Config.ImageGemerationConfiguration.EnableExternalImageGenerator)
+            {
+                // Use external Generator
+                if (string.IsNullOrEmpty(Id))
+                {
+                    Id = Guid.NewGuid().ToString("D");
+                }
+                ExpectedSerial++;
+
+                // Dispatch Generation Image
+                ImageGenerationHandler.DispatchGeneration(Id, ExpectedSerial, this);
+
+                // Register Callback for image return
+                ImageGenerationHandler.RegisterImageCallback(Id, ExpectedSerial, this);
+            }
+            else
+            {
+                Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render,
+                    (SendOrPostCallback)delegate
+                   {
+                       PublicImageUrl = null;
+                       PreviewImage =
+                           HTMLRenderer.Base64ToImage(RenderImageWithTemplateContext(generationProperties: null));
+                       _rendering = false;
+                       LastGenerationTime = DateTime.Now;
+
+                   }, null);
+            }
+        }
+        public string RenderAndReturnBase64(string generationProperties = null)
+        {
+            _rendering = true;
+            var image = RenderImageWithTemplateContext(generationProperties);
+
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render,
             (SendOrPostCallback)delegate
             {
                 PublicImageUrl = null;
-                PreviewImage = RenderImageWithTemplateContext();
+                PreviewImage = HTMLRenderer.Base64ToImage(image);
                 _rendering = false;
                 LastGenerationTime = DateTime.Now;
 
             }, null);
+
+            return image;
         }
         //public async void RenderAsync()
         //{
@@ -290,7 +346,8 @@ namespace io.ebu.eis.shared
                 if (Context != null && Context.HasValue(variable))
                 {
                     replaceValue = Context.GetValue(variable);
-                } else if (!string.IsNullOrEmpty(defaultvalue))
+                }
+                else if (!string.IsNullOrEmpty(defaultvalue))
                 {
                     replaceValue = defaultvalue;
                     isDefaultValue = true;
@@ -388,7 +445,7 @@ namespace io.ebu.eis.shared
         //    return rendered;
         //}
 
-        private BitmapImage RenderImageWithTemplateContext()
+        private string RenderImageWithTemplateContext(string generationProperties)
         {
             //var filename = System.IO.Path.Combine(_config.SlidesConfiguration.TemplatePath, template);
             if (Template == null || TemplateFields == null)
@@ -451,7 +508,9 @@ namespace io.ebu.eis.shared
             }
 
             // Render the image
-            var rendered = HTMLRenderer.RenderHtml(templateHtml, Config.SlidesConfiguration.TemplatePath);
+            var rendered = HTMLRenderer.RenderHtml(html: templateHtml,
+                pathToWorkingDir: Config.SlidesConfiguration.TemplatePath,
+                zoomFactorOptions: generationProperties);
 
             return rendered;
         }
@@ -575,16 +634,64 @@ namespace io.ebu.eis.shared
             }
         }
 
+        //public static Bitmap ResizeImage(Bitmap imgToResize, System.Drawing.Size size)
+        //{
+        //    try
+        //    {
+        //        Bitmap b = new Bitmap(size.Width, size.Height);
+        //        using (Graphics g = Graphics.FromImage((Image)b))
+        //        {
+        //            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+        //            g.DrawImage(imgToResize, 0, 0, size.Width, size.Height);
+        //        }
+        //        return b;
+        //    }
+        //    catch
+        //    {
+        //        Console.WriteLine("Bitmap could not be resized");
+        //        return imgToResize;
+        //    }
+        //}
+        public static BitmapSource ResizeBitmapImage(BitmapImage image, int width, int height)
+        {
+            //using (MemoryStream strmImg = new MemoryStream())
+            //{
+            TransformedBitmap myBitmapImage = new TransformedBitmap();
+            myBitmapImage.BeginInit();
+            myBitmapImage.Source = image;
+            ScaleTransform st = new ScaleTransform();
+            st.ScaleX = (double)width / (double)image.PixelWidth;
+            st.ScaleY = (double)height / (double)image.PixelHeight;
+            myBitmapImage.Transform = st;
+            myBitmapImage.EndInit();
+            return myBitmapImage;
+            //}
+        }
         private string MakePublic()
         {
             // Reset Variants
             ImageVariants = new List<ImageVariant>(); // zFWx@-djeG6
+
+            var delay = 0;
+            while (PreviewImage == null && delay < 13)
+            {
+                // Implement waiting function when image should be generated first
+                Thread.Sleep(250);
+                delay++;
+            }
 
             if (PreviewImage != null)
             {
                 // Save image to temporary location
                 foreach (ImageOutputConfiguration output in Config.OutputConfiguration.ImageOutputConfigurations)
                 {
+                    BitmapSource image = PreviewImage;
+                    if (image.PixelWidth != output.Width || image.PixelHeight != output.Height)
+                    {
+                        // Resize original first for this output
+                        image = ResizeBitmapImage(PreviewImage, output.Width, output.Height);
+                    }
+
                     var imagePath = "";
 
                     if (output.Encoder == "PNG")
@@ -593,7 +700,7 @@ namespace io.ebu.eis.shared
 
                         imagePath = Path.Combine(Config.SlidesConfiguration.TemplatePath, Guid.NewGuid() + ".png");
 
-                        encoder.Frames.Add(BitmapFrame.Create(PreviewImage));
+                        encoder.Frames.Add(BitmapFrame.Create(image));
                         using (var filestream = new FileStream(imagePath, FileMode.Create))
                         {
                             encoder.Save(filestream);
@@ -629,7 +736,7 @@ namespace io.ebu.eis.shared
                         using (var outStream = new MemoryStream())
                         {
                             BitmapEncoder enc = new BmpBitmapEncoder();
-                            enc.Frames.Add(BitmapFrame.Create(PreviewImage));
+                            enc.Frames.Add(BitmapFrame.Create(image));
                             enc.Save(outStream);
                             var bitmap = new Bitmap(outStream);
 
@@ -644,13 +751,34 @@ namespace io.ebu.eis.shared
                     {
                         try
                         {
+                            var subFolder = outConf.Subfolder;
+                            if (!output.IsDefault)
+                            {
+                                // Since not default, push to variant folder
+                                subFolder = $"{subFolder}/{output.Name.ToLower()}";
+                            }
                             switch (outConf.Type.ToUpper())
                             {
                                 case "S3":
                                     {
                                         publicUrl = AWSS3Uploader.Upload(imagePath, outConf.AWSAccessKey,
-                                            outConf.AWSSecretKey, outConf.S3BucketName, outConf.Subfolder,
+                                            outConf.AWSSecretKey, outConf.S3BucketName, subFolder,
                                             outConf.PublicUriBase);
+
+                                        if (!string.IsNullOrEmpty(outConf.LatestStaticImageName))
+                                        {
+                                            // We need a static image as well
+                                            try
+                                            {
+                                                var latestStaticUrl = AWSS3Uploader.Upload(imagePath, outConf.AWSAccessKey,
+                                                    outConf.AWSSecretKey, outConf.S3BucketName, subFolder,
+                                                    outConf.PublicUriBase, outConf.LatestStaticImageName);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                // TODO
+                                            }
+                                        }
                                     }
                                     break;
                                 case "FILE":
@@ -662,7 +790,7 @@ namespace io.ebu.eis.shared
                                 case "FTP":
                                     {
                                         publicUrl = FtpFileUploader.Upload(imagePath, outConf.FtpServer,
-                                            outConf.FtpUsername, outConf.FtpPassword, outConf.Subfolder,
+                                            outConf.FtpUsername, outConf.FtpPassword, subFolder,
                                             outConf.UniqueFilename, outConf.PublicUriBase);
                                     }
                                     break;
@@ -715,6 +843,7 @@ namespace io.ebu.eis.shared
             var clone = JsonSerializer.Deserialize<ManagerImageReference>(js);
             // Reset instance values
             clone.Config = Config;
+            clone.ImageGenerationHandler = ImageGenerationHandler;
             // Return
             return clone;
         }

@@ -27,7 +27,9 @@ namespace io.ebu.eis.contentmanager
     {
         private ManagerContext _context;
         private bool _running;
-        private readonly object _synLock = new object();
+        private readonly object _synLock1 = new object();
+        private readonly object _synLock2 = new object();
+        private readonly object _synLock3 = new object();
 
         private DateTime _lastAutomationChange = DateTime.MinValue;
         private ManagerImageReference _lastSelectedManagerImageRef;
@@ -50,7 +52,9 @@ namespace io.ebu.eis.contentmanager
             _context = (ManagerContext)DataContext;
 
             //Enable the cross acces to this collection elsewhere
-            BindingOperations.EnableCollectionSynchronization(_context.Carts, _synLock);
+            BindingOperations.EnableCollectionSynchronization(_context.Carts, _synLock1);
+            BindingOperations.EnableCollectionSynchronization(_context.ImageFlowItems, _synLock2);
+            BindingOperations.EnableCollectionSynchronization(_context.DataFlowItems, _synLock3);
 
 
             // Start Processes
@@ -69,15 +73,15 @@ namespace io.ebu.eis.contentmanager
                 dataOverrideInterval.Visibility = Visibility.Hidden;
                 dataOverrideProgress.Visibility = Visibility.Hidden;
 
-                // Start Watchfolder if incoming picture defined
-                if (!string.IsNullOrEmpty(_context.Config.DataConfiguration.IncomingPictureFolder))
-                {
-                    _imageWatchFolder = new SystemWatchfolder(_context.Config.DataConfiguration.IncomingPictureFolder,
-                        "*.jpg|*.png|*.gif", false, _context);
-                    _imageWatchFolder.Start();
-                }
             }
 
+            // Start Watchfolder if incoming picture defined
+            if (!string.IsNullOrEmpty(_context?.Config?.DataConfiguration?.IncomingPictureFolder))
+            {
+                _imageWatchFolder = new SystemWatchfolder(_context.Config.DataConfiguration.IncomingPictureFolder,
+                    "*.jpg|*.png|*.gif", false, _context);
+                _imageWatchFolder.Start();
+            }
 
             // Restore
             RestoreLayout();
@@ -109,9 +113,9 @@ namespace io.ebu.eis.contentmanager
             _context = (ManagerContext)DataContext;
 
             _running = false;
-            lock (_synLock)
+            lock (_synLock1)
             {
-                Monitor.PulseAll(_synLock);
+                Monitor.PulseAll(_synLock1);
             }
             _context.Dispose();
             try
@@ -136,7 +140,7 @@ namespace io.ebu.eis.contentmanager
         {
             while (_running)
             {
-                lock (_synLock)
+                lock (_synLock1)
                 {
                     Dispatcher.BeginInvoke(DispatcherPriority.Render,
                     (SendOrPostCallback)delegate
@@ -189,7 +193,7 @@ namespace io.ebu.eis.contentmanager
                     }, null);
 
 
-                    Monitor.Wait(_synLock, 100);
+                    Monitor.Wait(_synLock1, 100);
                 }
             }
         }
@@ -212,7 +216,10 @@ namespace io.ebu.eis.contentmanager
                     {
                         _context = (ManagerContext)DataContext;
                         if (_context.MainImage != null)
-                            Clipboard.SetText(_context.MainImage.PublicImageUrl);
+                        {
+                            var text = string.Join("\n", _context.MainImage.ImageVariants.Select(i => $"{i.Name} : {i.Url}"));
+                            Clipboard.SetText(text);
+                        }
                     }
                     catch (Exception)
                     {
@@ -442,7 +449,7 @@ namespace io.ebu.eis.contentmanager
                                 // Load corresponding template
                                 if (conf != null)
                                 {
-                                    var newTemplate = new ManagerImageReference(_context.Config)
+                                    var newTemplate = new ManagerImageReference(_context.Config, _context)
                                     {
                                         Template = conf.DefaultTemplate,
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,
@@ -545,7 +552,7 @@ namespace io.ebu.eis.contentmanager
                                 // Load corresponding template
                                 if (conf != null)
                                 {
-                                    var newTemplate = new ManagerImageReference(_context.Config)
+                                    var newTemplate = new ManagerImageReference(_context.Config, _context)
                                     {
                                         Template = conf.DefaultTemplate,
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,
@@ -615,7 +622,7 @@ namespace io.ebu.eis.contentmanager
                                 // Load corresponding template
                                 if (conf != null)
                                 {
-                                    var newTemplate = new ManagerImageReference(_context.Config)
+                                    var newTemplate = new ManagerImageReference(_context.Config, _context)
                                     {
                                         Template = conf.DefaultTemplate,
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,

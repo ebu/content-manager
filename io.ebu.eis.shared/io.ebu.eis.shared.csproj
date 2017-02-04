@@ -48,7 +48,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IImageGenerationHandler.cs" />
     <Compile Include="JsonSerializer.cs" />
+    <Compile Include="WorkerTaskMessage.cs" />
     <Compile Include="ManagerImageReference.cs" />
     <Compile Include="ManagerTemplateField.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

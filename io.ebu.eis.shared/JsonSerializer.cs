@@ -4,7 +4,7 @@ using System.Text;
 
 namespace io.ebu.eis.shared
 {
-    internal static class JsonSerializer
+    public static class JsonSerializer
     {
         public static string Serialize<T>(T obj)
         {

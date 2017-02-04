@@ -7,7 +7,10 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
+using System.Windows;
 using System.Windows.Data;
+using System.Windows.Threading;
+using io.ebu.eis.canvasgenerator;
 using io.ebu.eis.data.file;
 using io.ebu.eis.datastructures;
 using io.ebu.eis.datastructures.Plain.Collections;
@@ -18,12 +21,13 @@ using io.ebu.eis.shared;
 namespace io.ebu.eis.contentmanager
 {
     [DataContract]
-    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler, IDisposable, ISystemFileRouter
+    public class ManagerContext : INotifyPropertyChanged, IDataMessageHandler, IDisposable, ISystemFileRouter, IImageGenerationHandler
     {
         private readonly CMConfigurationSection _config;
         public CMConfigurationSection Config { get { return _config; } }
 
         private readonly List<AMQQueuePublisher> _publishers = new List<AMQQueuePublisher>();
+        private readonly AMQQueuePublisher _imageGeneratorMq;
         private readonly List<IDisposable> _disposables = new List<IDisposable>();
 
         private bool _inAutomationMode;
@@ -166,7 +170,7 @@ namespace io.ebu.eis.contentmanager
                         {
                             var amquri = input.MQUri;
                             var amqinexchange = input.MQExchange;
-                            var dataInConnection = new AMQConsumer(amquri, amqinexchange, this);
+                            var dataInConnection = new AMQTopicConsumer(amquri, amqinexchange, this);
                             dataInConnection.ConnectAsync();
                             // TODO Catch hand handle connection exceptions and reconnect
 
@@ -187,6 +191,35 @@ namespace io.ebu.eis.contentmanager
                 }
             }
 
+            // Callback from Image Generation
+            if (_config.ImageGemerationConfiguration.EnableExternalImageGenerator)
+            {
+                // Input
+                foreach (InputConfiguration input in _config.ImageGemerationConfiguration.InputConfigurations)
+                {
+                    switch (input.Type.ToUpper())
+                    {
+                        case "MQ":
+                            {
+                                var amquri = input.MQUri;
+                                var amqqueue = input.MQQueue;
+                                var dataInConnection = new AMQQueueConsumer(amquri, amqqueue, this);
+                                dataInConnection.ConnectAsync();
+                                // TODO Catch hand handle connection exceptions and reconnect
+
+                                _disposables.Add(dataInConnection);
+                            }
+                            break;
+                    }
+                }
+                // Output
+                var amqImageGenerationUri = _config.ImageGemerationConfiguration.DispatchMQConfiguration.MQUri;
+                var amqImageGenerationQueue = _config.ImageGemerationConfiguration.DispatchMQConfiguration.MQQueue;
+                _imageGeneratorMq = new AMQQueuePublisher(amqImageGenerationUri, amqImageGenerationQueue);
+                _imageGeneratorMq.Connect();
+
+                _disposables.Add(_imageGeneratorMq);
+            }
             #endregion INPUTS
 
             #region OUTPUTS
@@ -291,6 +324,7 @@ namespace io.ebu.eis.contentmanager
                 foreach (var s in c.Slides)
                 {
                     s.Config = _config;
+                    s.ImageGenerationHandler = this;
                 }
             }
         }
@@ -317,7 +351,7 @@ namespace io.ebu.eis.contentmanager
 
                     foreach (SlideConfiguration s in cart.Slides)
                     {
-                        var sl = new ManagerImageReference(_config)
+                        var sl = new ManagerImageReference(_config, this)
                         {
                             Template = s.Filename,
                             Link = s.DefaultLink,
@@ -348,7 +382,7 @@ namespace io.ebu.eis.contentmanager
 
         public void AddEditorTemplate(string path)
         {
-            var newTemplate = new ManagerImageReference(_config)
+            var newTemplate = new ManagerImageReference(_config, this)
             {
                 Template = path,
                 Link = _config.SlidesConfiguration.DefaultLink,
@@ -401,10 +435,42 @@ namespace io.ebu.eis.contentmanager
             }
         }
 
+        protected virtual bool IsFileLocked(string filePath)
+        {
+            var file = new FileInfo(filePath);
+            // From http://stackoverflow.com/questions/876473/is-there-a-way-to-check-if-a-file-is-in-use
+            FileStream stream = null;
 
+            try
+            {
+                stream = file.Open(FileMode.Open, FileAccess.Read, FileShare.None);
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Close();
+            }
+
+            //file is not locked
+            return false;
+        }
         public void RouteFile(string filepath)
         {
             // Route the file as image to Ingest
+
+            // Add a delay
+            while (IsFileLocked(filepath))
+            {
+                Thread.Sleep(500);
+            }
             IngestImage(filepath);
         }
         public void IngestImage(string file)
@@ -913,7 +979,7 @@ namespace io.ebu.eis.contentmanager
                     if (!string.IsNullOrEmpty(conf.DefaultTemplate))
                     {
                         // Create new ImageRef
-                        var newImgRef = new ManagerImageReference(Config)
+                        var newImgRef = new ManagerImageReference(Config, this)
                         {
                             Template = conf.DefaultTemplate,
                             Link = Config.SlidesConfiguration.DefaultLink,
@@ -1019,7 +1085,7 @@ namespace io.ebu.eis.contentmanager
                             // Load corresponding template
                             if (conf != null)
                             {
-                                var newTemplate = new ManagerImageReference(Config)
+                                var newTemplate = new ManagerImageReference(Config, this)
                                 {
                                     Template = conf.DefaultTemplate,
                                     Link = Config.SlidesConfiguration.DefaultLink,
@@ -1149,7 +1215,7 @@ namespace io.ebu.eis.contentmanager
                     {
                         if (s.Filename.StartsWith(slideName))
                         {
-                            var sl = new ManagerImageReference(_config)
+                            var sl = new ManagerImageReference(_config, this)
                             {
                                 Template = s.Filename,
                                 Link = s.DefaultLink,
@@ -1167,6 +1233,7 @@ namespace io.ebu.eis.contentmanager
                 }
             }
         }
+
 
         public void BroadcastSlide(string slideName)
         {
@@ -1232,6 +1299,89 @@ namespace io.ebu.eis.contentmanager
                 // TODO Log
             }
         }
+
+        #region ImageGeneration
+        private Dictionary<string, ManagerImageReference> callBackRefs = new Dictionary<string, ManagerImageReference>();
+        public void DispatchGeneration(string id, long serial, ManagerImageReference image)
+        {
+            var task = new WorkerTaskMessage();
+            task.Type = "io.ebu.eis.task.generateimage";
+            task.Id = id;
+            task.Serial = serial;
+            task.GenerationProps = Config.ImageGemerationConfiguration.GenerationProperties;
+            task.ImageReference = image;
+
+            var json = JsonSerializer.Serialize(task);
+            _imageGeneratorMq.Dispatch(json);
+        }
+
+        public void RegisterImageCallback(string id, long serial, ManagerImageReference image)
+        {
+            if (!callBackRefs.ContainsKey(id))
+            {
+                callBackRefs.Add(id, image);
+            }
+            else
+            {
+                // TODO log should not happen;
+            }
+        }
+        public bool HandleWorkerTask(string js)
+        {
+            try
+            {
+                var task = JsonSerializer.Deserialize<WorkerTaskMessage>(js);
+
+                switch (task.Type)
+                {
+                    case "io.ebu.eis.image":
+                        {
+                            // Find image reference
+                            lock (callBackRefs)
+                            {
+                                if (callBackRefs.ContainsKey(task.Id))
+                                {
+                                    var img = callBackRefs[task.Id];
+                                    lock (img)
+                                    {
+                                        if (task.Serial > img.LastUpdateSerial)
+                                        {
+                                            // We update since new generation is newer
+                                            img.DispatchedExternalPreviewUpdate(task.Serial, task.Base64ImageData);
+                                        }
+                                    }
+                                    if (img.LastUpdateSerial == img.ExpectedSerial)
+                                    {
+                                        // No more updates expected, thus remove from callback
+                                        callBackRefs.Remove(task.Id);
+                                    }
+
+                                }
+                                else
+                                {
+                                    // TODO
+                                }
+                            }
+
+                        }
+                        break;
+                    default:
+                        Console.WriteLine($"Uknown task of type {task.Type}");
+                        break;
+                }
+
+                // Finally return true
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // TODO log
+            }
+            return false;
+        }
+
+
+        #endregion ImageGeneration
 
         #region DummyData
         public void DummyData()

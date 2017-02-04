@@ -14,11 +14,11 @@ namespace io.ebu.eis.canvasgenerator
         private const string PhantomArgumentProperties = "320px*240px"; //"640px*480px 2.0";//
         private const int TimeToExit = 500;
 
-        public static BitmapImage Render(string file, string pathToWorkingDir, string zoomFactorOptions = PhantomArgumentProperties)
+        private static string Render(string file, string pathToWorkingDir, string zoomFactorOptions = PhantomArgumentProperties)
         {
             try
             {
-                var args = String.Format("{0} {1} {2}", PhantomPageGenerator, file, zoomFactorOptions);
+                var args = $"{PhantomPageGenerator} {file} {zoomFactorOptions}";
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = PathToExe,
@@ -40,12 +40,8 @@ namespace io.ebu.eis.canvasgenerator
                 var base64Image = p.StandardOutput.ReadToEnd().Trim();
                 try
                 {
-                    var bytes = Convert.FromBase64CharArray(base64Image.ToCharArray(), 0, base64Image.Length);
-                    if (bytes.Length > 0)
-                    {
-                        var image = GetBitmapImage(bytes);
-                        return image;
-                    }
+                    var test = Base64ToImage(base64Image);
+                    return base64Image;
                 }
                 catch (Exception e1)
                 {
@@ -72,7 +68,7 @@ namespace io.ebu.eis.canvasgenerator
             return null;
         }
 
-        public static BitmapImage RenderHtml(string html, string pathToWorkingDir)
+        public static string RenderHtml(string html, string pathToWorkingDir, string zoomFactorOptions = PhantomArgumentProperties)
         {
             // TODO Pass as argument and decode
             var tempFilename = Guid.NewGuid() + ".html";
@@ -83,8 +79,13 @@ namespace io.ebu.eis.canvasgenerator
             file.Flush();
             file.Close();
 
+            if (string.IsNullOrEmpty(zoomFactorOptions))
+            {
+                zoomFactorOptions = PhantomArgumentProperties;
+            }
+
             // TODO This is ugly but works : )
-            var image = Render(Path.GetFileName(tempfile), pathToWorkingDir);
+            var image = Render(Path.GetFileName(tempfile), pathToWorkingDir, zoomFactorOptions);
 
             // TODO Remove
             // Delete Temp file
@@ -100,14 +101,38 @@ namespace io.ebu.eis.canvasgenerator
             return image;
         }
 
-        public static BitmapImage GetBitmapImage(byte[] imageBytes)
+
+        public static BitmapImage Base64ToImage(string base64Image)
         {
-            var bitmapImage = new BitmapImage();
-            bitmapImage.BeginInit();
-            bitmapImage.StreamSource = new MemoryStream(imageBytes);
-            bitmapImage.EndInit();
-            return bitmapImage;
+            if (!string.IsNullOrEmpty(base64Image))
+            {
+                var bytes = Convert.FromBase64String(base64Image);
+                if (bytes.Length > 0)
+                {
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.StreamSource = new MemoryStream(bytes);
+                    bitmapImage.EndInit();
+                    return bitmapImage;
+                }
+            }
+            return null;
         }
+
+        //public string ImageToBase64(BitmapImage image, System.Drawing.Imaging.ImageFormat format)
+        //{
+        //    using (MemoryStream ms = new MemoryStream())
+        //    {
+        //        // Convert Image to byte[]
+        //        image.Save(ms, format);
+        //        byte[] imageBytes = ms.ToArray();
+
+        //        // Convert byte[] to Base64 String
+        //        string base64String = Convert.ToBase64String(imageBytes);
+        //        return base64String;
+        //    }
+        //}
+
 
 
     }
