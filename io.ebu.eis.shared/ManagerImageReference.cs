@@ -844,6 +844,7 @@ namespace io.ebu.eis.shared
             // Reset instance values
             clone.Config = Config;
             clone.ImageGenerationHandler = ImageGenerationHandler;
+            clone.PreviewImage = PreviewImage;
             // Return
             return clone;
         }

@@ -558,6 +558,11 @@ namespace io.ebu.eis.contentmanager
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,
                                         CanRepeate = false
                                     };
+                                    // Set the background Uri right away so no regeneration required
+                                    if (_context.Config.DataConfiguration.ImageFlowLeftActions.Split(';').Contains("BackgroundUrl"))
+                                    {
+                                        newTemplate.Background = m.Url;
+                                    }
 
                                     _context.EditorImage = newTemplate;
                                 }
@@ -997,12 +1002,14 @@ namespace io.ebu.eis.contentmanager
                         var newTemplate = template.Clone();
                         if (_context.EditorImage != null)
                         {
-                            // Keep existing context
-                            var existingContext = _context.EditorImage.Context;
-                            var existingBgImg = _context.EditorImage.Background;
-                            newTemplate.Context = existingContext;
-                            newTemplate.Background = existingBgImg;
-
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                // Keep existing context when CTRL is hold
+                                var existingContext = _context.EditorImage.Context;
+                                var existingBgImg = _context.EditorImage.Background;
+                                newTemplate.Context = existingContext;
+                                newTemplate.Background = existingBgImg;
+                            }
                         }
                         _context.EditorImage = newTemplate;
                     }
@@ -1054,8 +1061,10 @@ namespace io.ebu.eis.contentmanager
                     {
                         if (_context.PreviewCart.Slides.Contains(_lastSelectedManagerImageRef) && _context.PreviewCart.Slides.Count > 1)
                         {
+                            var idx = PreviewCartListBox.SelectedIndex;
                             _context.PreviewCart.Slides.Remove(_lastSelectedManagerImageRef);
                             _context.ReloadPreview();
+                            PreviewCartListBox.SelectedIndex = Math.Max(0, Math.Min(idx, _context.PreviewCart.Slides.Count - 1));
                         }
                     }
 
