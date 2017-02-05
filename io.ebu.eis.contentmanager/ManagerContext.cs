@@ -859,7 +859,7 @@ namespace io.ebu.eis.contentmanager
                                 var clone = ath.Clone();
                                 clone.Data.RemoveRange(0, itemsPerSlide);
                                 ath.Data.RemoveRange(itemsPerSlide, ath.Data.Count - itemsPerSlide);
-                                var newSlide = newCart.Slides.First().Clone();
+                                var newSlide = newCart.Slides.First().Clone(false);
                                 newSlide.IndexOffset = offset;
                                 var contextClone = context.Clone();
                                 contextClone.Data.First(x => x.Key == "STARTPOSITIONS").Data = clone.Data;
@@ -925,7 +925,7 @@ namespace io.ebu.eis.contentmanager
                                 var clone = ath.Clone();
                                 clone.Data.RemoveRange(0, itemsPerSlide);
                                 ath.Data.RemoveRange(itemsPerSlide, ath.Data.Count - itemsPerSlide);
-                                var newSlide = newCart.Slides.First().Clone();
+                                var newSlide = newCart.Slides.First().Clone(false);
                                 newSlide.IndexOffset = offset;
                                 var contextCLone = context.Clone();
                                 contextCLone.Data.First(x => x.Key == "RESULTS").Data = clone.Data;

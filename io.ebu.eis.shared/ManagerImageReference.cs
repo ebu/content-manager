@@ -835,7 +835,7 @@ namespace io.ebu.eis.shared
 
         #endregion Rendering
 
-        public ManagerImageReference Clone()
+        public ManagerImageReference Clone(bool clonePreviewImage)
         {
             // Serialize
             var js = JsonSerializer.Serialize(this);
@@ -844,7 +844,10 @@ namespace io.ebu.eis.shared
             // Reset instance values
             clone.Config = Config;
             clone.ImageGenerationHandler = ImageGenerationHandler;
-            clone.PreviewImage = PreviewImage;
+            if (clonePreviewImage)
+            {
+                clone.PreviewImage = PreviewImage;
+            }
             // Return
             return clone;
         }

@@ -77,7 +77,7 @@ namespace io.ebu.eis.contentmanager
             var newCart = new ManagerCart(Name);
             foreach (var s in Slides)
             {
-                newCart.Slides.Add(s.Clone());
+                newCart.Slides.Add(s.Clone(true));
             }
             newCart.SetAllSlidesInactive();
             return newCart;

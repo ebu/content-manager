@@ -269,7 +269,7 @@ namespace io.ebu.eis.contentmanager
            (SendOrPostCallback)delegate
            {
                _context = (ManagerContext)DataContext;
-               _context.PreviewCart.Slides.Add(_context.EditorImage.Clone());
+               _context.PreviewCart.Slides.Add(_context.EditorImage.Clone(true));
                _context.ReloadPreview();
 
            }, null);
@@ -284,7 +284,7 @@ namespace io.ebu.eis.contentmanager
                if (_context.EditorImage != null)
                {
                    _context = (ManagerContext)DataContext;
-                   var newImg = _context.EditorImage.Clone();
+                   var newImg = _context.EditorImage.Clone(true);
                    _context.PreviewCart.Slides.Add(newImg);
                    _context.ReloadPreview();
                    _lastAutomationChange = DateTime.Now;
@@ -754,7 +754,7 @@ namespace io.ebu.eis.contentmanager
                         // CTRL is hold thus copy
                         // Clone and add
                         var cart = context;
-                        cart.Slides.Add(slide.Clone());
+                        cart.Slides.Add(slide.Clone(true));
                     }
                     else
                     {
@@ -999,7 +999,7 @@ namespace io.ebu.eis.contentmanager
                     var template = grid.DataContext as ManagerImageReference;
                     if (template != null)
                     {
-                        var newTemplate = template.Clone();
+                        var newTemplate = template.Clone(false);
                         if (_context.EditorImage != null)
                         {
                             if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
