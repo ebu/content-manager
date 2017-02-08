@@ -72,12 +72,12 @@ namespace io.ebu.eis.contentmanager
             return Slides[nextIndex];
         }
 
-        public ManagerCart Clone()
+        public ManagerCart Clone(bool clonePreviewImages)
         {
             var newCart = new ManagerCart(Name);
             foreach (var s in Slides)
             {
-                newCart.Slides.Add(s.Clone(true));
+                newCart.Slides.Add(s.Clone(clonePreviewImages));
             }
             newCart.SetAllSlidesInactive();
             return newCart;

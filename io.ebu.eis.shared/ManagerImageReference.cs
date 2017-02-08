@@ -190,7 +190,6 @@ namespace io.ebu.eis.shared
             Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Render,
               (SendOrPostCallback)delegate
               {
-                  LastUpdateSerial = newSerial;
                   PreviewImage = HTMLRenderer.Base64ToImage(newImageBase64);
               }, null);
         }

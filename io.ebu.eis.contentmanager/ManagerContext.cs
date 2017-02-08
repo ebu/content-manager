@@ -799,7 +799,7 @@ namespace io.ebu.eis.contentmanager
                 {
                     // TODO ASK IF Switch Cart or add to cart
 
-                    var newCart = existingCart.Clone();
+                    var newCart = existingCart.Clone(false);
                     newCart.Name = newCart.Name + " - " + m.DataMessage.GetValue("EVENTNAME");
                     if (newCart.Slides.Count == 1 && newCart.Slides.First().CanRepeate)
                     {
@@ -1347,6 +1347,7 @@ namespace io.ebu.eis.contentmanager
                                         if (task.Serial > img.LastUpdateSerial)
                                         {
                                             // We update since new generation is newer
+                                            img.LastUpdateSerial = task.Serial;
                                             img.DispatchedExternalPreviewUpdate(task.Serial, task.Base64ImageData);
                                         }
                                     }
@@ -1359,7 +1360,7 @@ namespace io.ebu.eis.contentmanager
                                 }
                                 else
                                 {
-                                    // TODO
+                                    // Discard
                                 }
                             }
 
