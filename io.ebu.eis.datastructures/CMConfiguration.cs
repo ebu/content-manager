@@ -423,7 +423,7 @@ namespace io.ebu.eis.datastructures
             set { this["PublicUriBase"] = value; }
         }
 
-        [ConfigurationProperty("LatestStaticImageName", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("LatestStaticImageName", DefaultValue = "", IsRequired = false)]
         public String LatestStaticImageName
         {
             get { return (String)this["LatestStaticImageName"]; }

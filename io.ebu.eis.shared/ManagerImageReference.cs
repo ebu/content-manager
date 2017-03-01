@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -180,7 +181,7 @@ namespace io.ebu.eis.shared
                 }
             }
         }
-        public ImageSource PreviewImageSource { get { return PreviewImage; } }
+        public ImageSource PreviewImageSource => PreviewImage;
 
         #region DispatchedUpdate
 
@@ -202,7 +203,6 @@ namespace io.ebu.eis.shared
         {
             // Initiate rerender by nulling out reference
             var changed = ReadTemplateFields();
-            var a = TemplateFields;
             if (changed || force)
             {
                 InvalidatePreviews();
@@ -514,93 +514,6 @@ namespace io.ebu.eis.shared
             return rendered;
         }
 
-        //private async Task<string> MakePublicAsync()
-        //{
-        //    // Reset Variants
-        //    ImageVariants = new List<ImageVariant>(); // zFWx@-djeG6
-
-        //    // Save image to temporary location
-        //    foreach (OutputConfiguration output in _config.OutputConfigurations)
-        //    {
-        //        var imagePath = "";
-
-        //        if (output.Encoder == "PNG")
-        //        {
-        //            BitmapEncoder encoder = new PngBitmapEncoder();
-
-        //            imagePath = Path.Combine(_config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".png");
-
-        //            encoder.Frames.Add(BitmapFrame.Create(PreviewImage));
-        //            using (var filestream = new FileStream(imagePath, FileMode.Create))
-        //            {
-        //                encoder.Save(filestream);
-        //            }
-        //        }
-        //        if (output.Encoder == "JPEG")
-        //        {
-        //            //encoder = new JpegBitmapEncoder();
-        //            //((JpegBitmapEncoder)encoder).QualityLevel = output.Quality;
-        //            //extention = ".jpg";
-        //            // Compress IMAGE
-        //            var encoder = GetEncoder(ImageFormat.Jpeg);
-
-        //            // Create an Encoder object based on the GUID
-        //            // for the Quality parameter category.
-        //            System.Drawing.Imaging.Encoder myEncoder = System.Drawing.Imaging.Encoder.Compression;
-        //            System.Drawing.Imaging.Encoder myEncoder2 = System.Drawing.Imaging.Encoder.Quality;
-
-
-        //            // Create an EncoderParameters object.
-        //            // An EncoderParameters object has an array of EncoderParameter
-        //            // objects. In this case, there is only one
-        //            // EncoderParameter object in the array.
-        //            var myEncoderParameters = new EncoderParameters(2);
-
-        //            var myEncoderParameter = new EncoderParameter(myEncoder, 0L);
-        //            var myEncoderParameter2 = new EncoderParameter(myEncoder2, output.Quality);
-        //            myEncoderParameters.Param[0] = myEncoderParameter;
-        //            myEncoderParameters.Param[1] = myEncoderParameter2;
-
-        //            imagePath = Path.Combine(_config.SlidesConfiguration.TemplatePath, Guid.NewGuid().ToString() + ".jpg");
-
-        //            using (var outStream = new MemoryStream())
-        //            {
-        //                BitmapEncoder enc = new BmpBitmapEncoder();
-        //                enc.Frames.Add(BitmapFrame.Create(PreviewImage));
-        //                enc.Save(outStream);
-        //                var bitmap = new Bitmap(outStream);
-
-        //                bitmap.Save(imagePath, encoder, myEncoderParameters);
-        //            }
-
-        //        }
-
-        //        // Upload Image to Amazon S3
-        //        var publicUrl = AWSS3Uploader.Upload(imagePath, _config.S3Configuration.AWSAccessKey,
-        //                _config.S3Configuration.AWSSecretKey, _config.S3Configuration.S3BucketName,
-        //                _config.S3Configuration.S3Subfolder, _config.S3Configuration.S3PublicUriBase);
-
-        //        // Add to variants
-        //        ImageVariants.Add(new ImageVariant() { Name = output.Name, Url = publicUrl });
-
-        //        // Save the Url
-        //        if (output.Name == "DEFAULT")
-        //        {
-        //            PublicImageUrl = publicUrl;
-        //        }
-
-        //        // Delete temporary Image
-        //        File.Delete(imagePath);
-        //    }
-
-        //    if (string.IsNullOrEmpty(_publicImageUrl))
-        //    {
-        //        // TODO No default thus choose one
-        //    }
-
-        //    return PublicImageUrl;
-        //}
-
         public void DispatchLastUpload()
         {
             foreach (UploadConfiguration outConf in Config.OutputConfiguration.UploadConfigurations)
@@ -620,37 +533,31 @@ namespace io.ebu.eis.shared
                                 }
                                 break;
 
-                                // TODO Log unknown error on default
+                            default:
+                                {
+                                    using (EventLog eventLog = new EventLog("Application"))
+                                    {
+                                        eventLog.Source = "Application";
+                                        eventLog.WriteEntry($"EIS Content Manager failed to dispatch the image to an unknown service type {dispatch.Type}.", EventLogEntryType.Warning, 101, 1);
+                                    }
+                                }
+                                break;
 
                         }
                     }
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     // Catch all exception to avoid crash and continue operations
-                    // TODO Log and handle
+                    using (EventLog eventLog = new EventLog("Application"))
+                    {
+                        eventLog.Source = "Application";
+                        eventLog.WriteEntry($"EIS Content Manager failed to dispatch the image.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                    }
                 }
             }
         }
 
-        //public static Bitmap ResizeImage(Bitmap imgToResize, System.Drawing.Size size)
-        //{
-        //    try
-        //    {
-        //        Bitmap b = new Bitmap(size.Width, size.Height);
-        //        using (Graphics g = Graphics.FromImage((Image)b))
-        //        {
-        //            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-        //            g.DrawImage(imgToResize, 0, 0, size.Width, size.Height);
-        //        }
-        //        return b;
-        //    }
-        //    catch
-        //    {
-        //        Console.WriteLine("Bitmap could not be resized");
-        //        return imgToResize;
-        //    }
-        //}
         public static BitmapSource ResizeBitmapImage(BitmapImage image, int width, int height)
         {
             //using (MemoryStream strmImg = new MemoryStream())
@@ -658,9 +565,11 @@ namespace io.ebu.eis.shared
             TransformedBitmap myBitmapImage = new TransformedBitmap();
             myBitmapImage.BeginInit();
             myBitmapImage.Source = image;
-            ScaleTransform st = new ScaleTransform();
-            st.ScaleX = (double)width / (double)image.PixelWidth;
-            st.ScaleY = (double)height / (double)image.PixelHeight;
+            ScaleTransform st = new ScaleTransform
+            {
+                ScaleX = (double)width / (double)image.PixelWidth,
+                ScaleY = (double)height / (double)image.PixelHeight
+            };
             myBitmapImage.Transform = st;
             myBitmapImage.EndInit();
             return myBitmapImage;
@@ -775,7 +684,11 @@ namespace io.ebu.eis.shared
                                             }
                                             catch (Exception ex)
                                             {
-                                                // TODO
+                                                using (EventLog eventLog = new EventLog("Application"))
+                                                {
+                                                    eventLog.Source = "Application";
+                                                    eventLog.WriteEntry($"EIS Content Manager failed to publish the image to AWS S3 static url.\n{ex.Message}\n\n{ex.StackTrace}", EventLogEntryType.Error, 101, 1);
+                                                }
                                             }
                                         }
                                     }
@@ -793,13 +706,25 @@ namespace io.ebu.eis.shared
                                             outConf.UniqueFilename, outConf.PublicUriBase);
                                     }
                                     break;
-                                    // TODO Log error on default
+                                default:
+                                    {
+                                        using (EventLog eventLog = new EventLog("Application"))
+                                        {
+                                            eventLog.Source = "Application";
+                                            eventLog.WriteEntry($"EIS Content Manager failed to publish the image to an unknown destination type {outConf.Type}.", EventLogEntryType.Warning, 101, 1);
+                                        }
+                                    }
+                                    break;
                             }
                         }
-                        catch (Exception)
+                        catch (Exception e)
                         {
                             // Catch all exception to avoid crash and continue operations
-                            // TODO Log and handle
+                            using (EventLog eventLog = new EventLog("Application"))
+                            {
+                                eventLog.Source = "Application";
+                                eventLog.WriteEntry($"EIS Content Manager failed to publish the image with a general error.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                            }
                         }
 
                     }

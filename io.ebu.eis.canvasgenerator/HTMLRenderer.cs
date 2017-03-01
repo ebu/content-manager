@@ -45,7 +45,6 @@ namespace io.ebu.eis.canvasgenerator
                 }
                 catch (Exception e1)
                 {
-                    // TODO Log
                     using (EventLog eventLog = new EventLog("Application"))
                     {
                         eventLog.Source = "Application";
@@ -58,7 +57,6 @@ namespace io.ebu.eis.canvasgenerator
             }
             catch (Exception e)
             {
-                // TODO Log
                 using (EventLog eventLog = new EventLog("Application"))
                 {
                     eventLog.Source = "Application";

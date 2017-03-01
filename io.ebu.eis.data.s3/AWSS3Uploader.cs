@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Amazon;
 using Amazon.Runtime;
@@ -49,17 +50,32 @@ namespace io.ebu.eis.data.s3
                         Console.WriteLine("Please check the provided AWS Credentials.");
                         Console.WriteLine(
                             "If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
+                        using (EventLog eventLog = new EventLog("Application"))
+                        {
+                            eventLog.Source = "Application";
+                            eventLog.WriteEntry($"EIS Content Manager failed to publish the image to AWS S3 due to a credential error.\n{amazonS3Exception.Message}\n\n{amazonS3Exception.StackTrace}", EventLogEntryType.Error, 101, 1);
+                        }
                     }
                     else
                     {
                         Console.WriteLine("An error occurred with the message '{0}' when writing an object",
                             amazonS3Exception.Message);
+                        using (EventLog eventLog = new EventLog("Application"))
+                        {
+                            eventLog.Source = "Application";
+                            eventLog.WriteEntry($"EIS Content Manager failed to publish the image to AWS S3.\n{amazonS3Exception.Message}\n\n{amazonS3Exception.StackTrace}", EventLogEntryType.Error, 101, 1);
+                        }
                     }
                 }
                 catch (AmazonServiceException ase)
                 {
                     Console.WriteLine("An Service exception error occurred with the message '{0}' when writing an object",
                             ase.Message);
+                    using (EventLog eventLog = new EventLog("Application"))
+                    {
+                        eventLog.Source = "Application";
+                        eventLog.WriteEntry($"EIS Content Manager failed to publish the image to AWS S3 due to a service error.\n{ase.Message}\n\n{ase.StackTrace}", EventLogEntryType.Error, 101, 1);
+                    }
                 }
                 return null;
             }

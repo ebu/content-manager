@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace io.ebu.eis.data.file
 {
@@ -65,7 +63,11 @@ namespace io.ebu.eis.data.file
             }
             catch (Exception e)
             {
-                // TODO Log
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager got an error while reading the initial watchfolder content of {_path}/{_filter}.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
         }
         public void Stop()
@@ -80,7 +82,11 @@ namespace io.ebu.eis.data.file
             }
             catch (Exception e)
             {
-                // TODO Log
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager failed to stop the watchfolder {_path}/{_filter}.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
         }
 
