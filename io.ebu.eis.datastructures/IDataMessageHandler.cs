@@ -12,5 +12,7 @@ namespace io.ebu.eis.datastructures
         void ClearActiveCart();
 
         void AddSlides(List<string> slideNames);
+
+        bool HandleWorkerTask(string message);
     }
 }

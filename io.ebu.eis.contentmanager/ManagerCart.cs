@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Serialization;
 using io.ebu.eis.datastructures.Plain.Collections;
+using io.ebu.eis.shared;
 
 namespace io.ebu.eis.contentmanager
 {
@@ -71,12 +72,12 @@ namespace io.ebu.eis.contentmanager
             return Slides[nextIndex];
         }
 
-        public ManagerCart Clone()
+        public ManagerCart Clone(bool clonePreviewImages)
         {
             var newCart = new ManagerCart(Name);
             foreach (var s in Slides)
             {
-                newCart.Slides.Add(s.Clone());
+                newCart.Slides.Add(s.Clone(clonePreviewImages));
             }
             newCart.SetAllSlidesInactive();
             return newCart;

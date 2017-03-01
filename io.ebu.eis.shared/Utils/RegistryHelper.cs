@@ -27,7 +27,7 @@
 using System;
 using Microsoft.Win32;
 
-namespace io.ebu.eis.contentmanager.Utils
+namespace io.ebu.eis.shared.Utils
 {
     public static class RegistryHelper
     {

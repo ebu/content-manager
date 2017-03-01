@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
@@ -11,9 +12,10 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using io.ebu.eis.contentmanager.Utils;
 using io.ebu.eis.data.file;
 using io.ebu.eis.datastructures;
+using io.ebu.eis.shared;
+using io.ebu.eis.shared.Utils;
 using Microsoft.Win32;
 
 namespace io.ebu.eis.contentmanager
@@ -25,7 +27,9 @@ namespace io.ebu.eis.contentmanager
     {
         private ManagerContext _context;
         private bool _running;
-        private readonly object _synLock = new object();
+        private readonly object _synLock1 = new object();
+        private readonly object _synLock2 = new object();
+        private readonly object _synLock3 = new object();
 
         private DateTime _lastAutomationChange = DateTime.MinValue;
         private ManagerImageReference _lastSelectedManagerImageRef;
@@ -48,7 +52,9 @@ namespace io.ebu.eis.contentmanager
             _context = (ManagerContext)DataContext;
 
             //Enable the cross acces to this collection elsewhere
-            BindingOperations.EnableCollectionSynchronization(_context.Carts, _synLock);
+            BindingOperations.EnableCollectionSynchronization(_context.Carts, _synLock1);
+            BindingOperations.EnableCollectionSynchronization(_context.ImageFlowItems, _synLock2);
+            BindingOperations.EnableCollectionSynchronization(_context.DataFlowItems, _synLock3);
 
 
             // Start Processes
@@ -67,15 +73,15 @@ namespace io.ebu.eis.contentmanager
                 dataOverrideInterval.Visibility = Visibility.Hidden;
                 dataOverrideProgress.Visibility = Visibility.Hidden;
 
-                // Start Watchfolder if incoming picture defined
-                if (!string.IsNullOrEmpty(_context.Config.DataConfiguration.IncomingPictureFolder))
-                {
-                    _imageWatchFolder = new SystemWatchfolder(_context.Config.DataConfiguration.IncomingPictureFolder,
-                        "*.jpg|*.png|*.gif", false, _context);
-                    _imageWatchFolder.Start();
-                }
             }
 
+            // Start Watchfolder if incoming picture defined
+            if (!string.IsNullOrEmpty(_context?.Config?.DataConfiguration?.IncomingPictureFolder))
+            {
+                _imageWatchFolder = new SystemWatchfolder(_context.Config.DataConfiguration.IncomingPictureFolder,
+                    "*.jpg|*.png|*.gif", false, _context);
+                _imageWatchFolder.Start();
+            }
 
             // Restore
             RestoreLayout();
@@ -102,17 +108,29 @@ namespace io.ebu.eis.contentmanager
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             // Stop Watchfolder
-            _imageWatchFolder.Start();
+            _imageWatchFolder?.Stop();
 
             _context = (ManagerContext)DataContext;
 
             _running = false;
-            lock (_synLock)
+            lock (_synLock1)
             {
-                Monitor.PulseAll(_synLock);
+                Monitor.PulseAll(_synLock1);
             }
             _context.Dispose();
-            _context.SerializeToFile();
+            try
+            {
+                _context.SerializeToFile();
+            }
+            catch (Exception ex)
+            {
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS ContentManager was unable to store the configuration to file.\n{ex.Message}\n\n{ex.StackTrace}",
+                        EventLogEntryType.Error, 101, 1);
+                }
+            }
         }
 
 
@@ -122,7 +140,7 @@ namespace io.ebu.eis.contentmanager
         {
             while (_running)
             {
-                lock (_synLock)
+                lock (_synLock1)
                 {
                     Dispatcher.BeginInvoke(DispatcherPriority.Render,
                     (SendOrPostCallback)delegate
@@ -175,7 +193,7 @@ namespace io.ebu.eis.contentmanager
                     }, null);
 
 
-                    Monitor.Wait(_synLock, 100);
+                    Monitor.Wait(_synLock1, 100);
                 }
             }
         }
@@ -198,7 +216,10 @@ namespace io.ebu.eis.contentmanager
                     {
                         _context = (ManagerContext)DataContext;
                         if (_context.MainImage != null)
-                            Clipboard.SetText(_context.MainImage.PublicImageUrl);
+                        {
+                            var text = string.Join("\n", _context.MainImage.ImageVariants.Select(i => $"{i.Name} : {i.Url}"));
+                            Clipboard.SetText(text);
+                        }
                     }
                     catch (Exception)
                     {
@@ -248,7 +269,7 @@ namespace io.ebu.eis.contentmanager
            (SendOrPostCallback)delegate
            {
                _context = (ManagerContext)DataContext;
-               _context.PreviewCart.Slides.Add(_context.EditorImage.Clone());
+               _context.PreviewCart.Slides.Add(_context.EditorImage.Clone(true));
                _context.ReloadPreview();
 
            }, null);
@@ -263,7 +284,7 @@ namespace io.ebu.eis.contentmanager
                if (_context.EditorImage != null)
                {
                    _context = (ManagerContext)DataContext;
-                   var newImg = _context.EditorImage.Clone();
+                   var newImg = _context.EditorImage.Clone(true);
                    _context.PreviewCart.Slides.Add(newImg);
                    _context.ReloadPreview();
                    _lastAutomationChange = DateTime.Now;
@@ -428,7 +449,7 @@ namespace io.ebu.eis.contentmanager
                                 // Load corresponding template
                                 if (conf != null)
                                 {
-                                    var newTemplate = new ManagerImageReference(_context.Config)
+                                    var newTemplate = new ManagerImageReference(_context.Config, _context)
                                     {
                                         Template = conf.DefaultTemplate,
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,
@@ -454,9 +475,14 @@ namespace io.ebu.eis.contentmanager
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO HAndle and not generic Exceltion
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager unable to handle MouseLeftButton Down on data.\n{ex.Message}\n\n{ex.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
         }
 
@@ -526,12 +552,17 @@ namespace io.ebu.eis.contentmanager
                                 // Load corresponding template
                                 if (conf != null)
                                 {
-                                    var newTemplate = new ManagerImageReference(_context.Config)
+                                    var newTemplate = new ManagerImageReference(_context.Config, _context)
                                     {
                                         Template = conf.DefaultTemplate,
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,
                                         CanRepeate = false
                                     };
+                                    // Set the background Uri right away so no regeneration required
+                                    if (_context.Config.DataConfiguration.ImageFlowLeftActions.Split(';').Contains("BackgroundUrl"))
+                                    {
+                                        newTemplate.Background = m.Url;
+                                    }
 
                                     _context.EditorImage = newTemplate;
                                 }
@@ -596,7 +627,7 @@ namespace io.ebu.eis.contentmanager
                                 // Load corresponding template
                                 if (conf != null)
                                 {
-                                    var newTemplate = new ManagerImageReference(_context.Config)
+                                    var newTemplate = new ManagerImageReference(_context.Config, _context)
                                     {
                                         Template = conf.DefaultTemplate,
                                         Link = _context.Config.SlidesConfiguration.DefaultLink,
@@ -723,7 +754,7 @@ namespace io.ebu.eis.contentmanager
                         // CTRL is hold thus copy
                         // Clone and add
                         var cart = context;
-                        cart.Slides.Add(slide.Clone());
+                        cart.Slides.Add(slide.Clone(true));
                     }
                     else
                     {
@@ -968,23 +999,26 @@ namespace io.ebu.eis.contentmanager
                     var template = grid.DataContext as ManagerImageReference;
                     if (template != null)
                     {
-                        var newTemplate = template.Clone();
+                        var newTemplate = template.Clone(false);
                         if (_context.EditorImage != null)
                         {
-                            // Keep existing context
-                            var existingContext = _context.EditorImage.Context;
-                            var existingBgImg = _context.EditorImage.Background;
-                            newTemplate.Context = existingContext;
-                            newTemplate.Background = existingBgImg;
-
+                            if (Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift))
+                            {
+                                // Keep existing context when CTRL is hold
+                                var existingContext = _context.EditorImage.Context;
+                                var existingBgImg = _context.EditorImage.Background;
+                                newTemplate.Context = existingContext;
+                                newTemplate.Background = existingBgImg;
+                            }
                         }
                         _context.EditorImage = newTemplate;
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // TODO
+                var a = ex;
             }
         }
 
@@ -1027,8 +1061,10 @@ namespace io.ebu.eis.contentmanager
                     {
                         if (_context.PreviewCart.Slides.Contains(_lastSelectedManagerImageRef) && _context.PreviewCart.Slides.Count > 1)
                         {
+                            var idx = PreviewCartListBox.SelectedIndex;
                             _context.PreviewCart.Slides.Remove(_lastSelectedManagerImageRef);
                             _context.ReloadPreview();
+                            PreviewCartListBox.SelectedIndex = Math.Max(0, Math.Min(idx, _context.PreviewCart.Slides.Count - 1));
                         }
                     }
 
@@ -1093,19 +1129,26 @@ namespace io.ebu.eis.contentmanager
             string company = "EBU";
             string application = "ContentManager";
             string windows = "MainWindow";
-            if (RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0") > 0.0)
+            try
             {
-                // We have settings, thus restore
-                HorizontalSystemGrid.ColumnDefinitions[0].Width =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0"));
-                HorizontalSystemGrid.ColumnDefinitions[2].Width =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn2"));
-                VerticalSystemGrid.RowDefinitions[0].Height =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow0"));
-                VerticalSystemGrid.RowDefinitions[2].Height =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow2"));
-                VerticalSystemGrid.RowDefinitions[4].Height =
-                    new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow4"));
+                if (RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0") > 0.0)
+                {
+                    // We have settings, thus restore
+                    HorizontalSystemGrid.ColumnDefinitions[0].Width =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn0"));
+                    HorizontalSystemGrid.ColumnDefinitions[2].Width =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "VerticalColumn2"));
+                    VerticalSystemGrid.RowDefinitions[0].Height =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow0"));
+                    VerticalSystemGrid.RowDefinitions[2].Height =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow2"));
+                    VerticalSystemGrid.RowDefinitions[4].Height =
+                        new GridLength(RegistryHelper.GetDouble(company, application, windows, "HorizontalRow4"));
+                }
+            }
+            catch (Exception)
+            {
+                // TODO Log
             }
         }
 

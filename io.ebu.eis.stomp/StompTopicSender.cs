@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using Apache.NMS;
 using Apache.NMS.Util;
@@ -125,14 +126,21 @@ namespace io.ebu.eis.stomp
                     connection.Close();
                 }
             }
-            catch (TypeLoadException)
+            catch (TypeLoadException e)
             {
-                // TODO could mean password is wrong and dll did not load
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager failed to publish the image to STOMP due to a load exception.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                // TODO Log Exceptions
-                
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager failed to publish the image to STOMP due to a general exception.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
         }
 

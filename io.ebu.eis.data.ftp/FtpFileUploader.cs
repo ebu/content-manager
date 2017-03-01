@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 
@@ -47,7 +48,11 @@ namespace io.ebu.eis.data.ftp
             catch (WebException e)
             {
                 Console.WriteLine("error " + e.Message);
-                // TODO Log
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager failed to publish the image to FTP.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
 
             // Rename File
@@ -71,7 +76,11 @@ namespace io.ebu.eis.data.ftp
             catch (WebException e)
             {
                 Console.WriteLine("error " + e.Message);
-                // TODO Log
+                using (EventLog eventLog = new EventLog("Application"))
+                {
+                    eventLog.Source = "Application";
+                    eventLog.WriteEntry($"EIS Content Manager failed to publish the image to FTP and rename it.\n{e.Message}\n\n{e.StackTrace}", EventLogEntryType.Error, 101, 1);
+                }
             }
 
             if (response != null)

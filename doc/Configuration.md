@@ -30,12 +30,36 @@ You should edit the following values:
 | FtpServer     | ftp.server.ch                      | Address to your FTP server                                                                                  |
 | FtpUsername   | username                           | Username to your FTP server                                                                                 |
 | FtpPassword   | password                           | Password for the FTP account                                                                                |
-| Subfolder     | generated-images                   | Subfolder on the FTP server                                                                                 |
+| Subfolder     | generated-images                   | Subfolder on the FTP server (does not require prefix or suffix slash)                                       |
 | PublicUriBase | http://public.server.ch/subfolder/ | The prefix that will be appended to all images uploaded as public url address for the RadioVIS distribution |
 | StompUri      | stomp:tcp://radio.ebu.io:61613     | The stomp URL to your stomp server, this example is one of the EBU RadioVIS servers                         |
 | StompUsername | username                           | The stomp username                                                                                          |
 | StompPassword | password                           | The stomp password                                                                                          |
 | StompTopic    | /topic/dab/4e1/ffff/ffff/0/        |                                                                                                             |
+
+### Using Amazon S3 as storage backend
+```
+<UploadConfiguration Type="S3" AWSAccessKey="accesskey"
+                     AWSSecretKey="secret"
+                     S3BucketName="bucketname" Subfolder="generated-images"
+                     LatestStaticImageName="current"
+                     PublicUriBase="https://s3-eu-west-1.amazonaws.com/bucketname/">
+  <DispatchConfigurations>
+    <!-- ... -->
+  </DispatchConfigurations>
+</UploadConfiguration>
+```
+
+You should edit the following values:
+
+| Attribute     | Example Value                                  | Description                                                                                                         |
+|---------------|------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| AWSAccessKey  | key                                            | Access key from an Amazon AWS Account or IAM User                                                                   |
+| AWSSecretKey  | secret                                         | Secret key for the given access key                                                                                 |
+| S3BucketName  | bucketname                                     | The amazon S3 bucket name                                                                                           |
+| Subfolder     | generated-images                               | Subfolder withing the S3 bucket i.e. the prefix (without /)                                                         |
+| LatestStaticImageName | current                                | Optional parameter, (Default empty) which specifies a static image name which would be update on every image change |
+| PublicUriBase | https://s3-eu-west-1.amazonaws.com/bucketname/ | The prefix that will be prepended to all images uploaded as public url address for the RadioVIS distribution        |
 
 If you need to publish the same image to multiple topics simply dupplicate the `DispatchConfiguration` Tag and update the settings accordingly 
 for the new dispatch.

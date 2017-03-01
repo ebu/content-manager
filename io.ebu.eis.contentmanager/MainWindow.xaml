@@ -1,11 +1,15 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:Utils="clr-namespace:io.ebu.eis.contentmanager.Utils" 
         xmlns:local="clr-namespace:io.ebu.eis.contentmanager" 
-        xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures" 
+        xmlns:structures="clr-namespace:io.ebu.eis.datastructures;assembly=io.ebu.eis.datastructures"
+        xmlns:Utils="clr-namespace:io.ebu.eis.shared.Utils;assembly=io.ebu.eis.shared"
+        xmlns:shared="clr-namespace:io.ebu.eis.shared;assembly=io.ebu.eis.shared"
         x:Class="io.ebu.eis.contentmanager.MainWindow"
-        Title="EBU - Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/ebu_contentmanager.ico" MouseMove="Window_MouseMove">
+        Title="EBU - Content Manager" Height="708" Width="1300" MinHeight="600" MinWidth="1024" 
+    Foreground="{DynamicResource Brush02}" 
+    Background="{DynamicResource BackgroundKey}" 
+    Closing="Window_Closing" WindowStartupLocation="CenterScreen" Icon="Images/ebu_contentmanager.ico" MouseMove="Window_MouseMove">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -23,7 +27,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <RoutedUICommand x:Key="SaveCartCommand" Text="Save Cart" />
-            
+
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <!-- Light Theme -->
@@ -168,7 +172,7 @@
                     <Button Content="Button" HorizontalAlignment="Stretch" Margin="3" VerticalAlignment="Stretch" Width="Auto" Height="35"/>
                 </Grid>
             </DataTemplate>
-            <DataTemplate x:Key="RunningCartDataTemplate"  DataType="local:ManagerImageReference">
+            <DataTemplate x:Key="RunningCartDataTemplate"  DataType="shared:ManagerImageReference">
                 <Grid>
                     <Border x:Name="ImageBorder" BorderThickness="4" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                         <Image x:Name="MainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>
@@ -191,7 +195,7 @@
                     </DataTrigger>
                 </DataTemplate.Triggers>
             </DataTemplate>
-            <DataTemplate x:Key="EditorCartDataTemplate"  DataType="local:ManagerImageReference">
+            <DataTemplate x:Key="EditorCartDataTemplate"  DataType="shared:ManagerImageReference">
                 <Grid PreviewMouseLeftButtonDown="TemplateList_MouseLeftButtonDown">
                     <Border x:Name="ImageBorder" BorderThickness="2" BorderBrush="#FFFF0000" HorizontalAlignment="Left" Width="{Binding ActualHeight, Converter={StaticResource AspectRatioConverter}, Mode=OneWay, RelativeSource={RelativeSource Self}}">
                         <Image x:Name="MainImg" Margin="0" Source="{Binding PreviewImageSource, Mode=OneWay, FallbackValue={StaticResource DefaultImage}, TargetNullValue={StaticResource DefaultImage}}"/>

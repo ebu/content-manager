@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using io.ebu.eis.datastructures;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
@@ -42,6 +43,13 @@ namespace io.ebu.eis.mq
             }
         }
 
+        public void ConnectAsync(string filter = "#")
+        {
+            var t = new Thread(() => Connect(filter));
+            t.Start();
+        }
+
+
         public void Disconnect()
         {
             if (_amq != null)
@@ -50,7 +58,7 @@ namespace io.ebu.eis.mq
                 _conn.Close();
         }
 
-        public void Dispatch(DispatchNotificationMessage message)
+        public void Dispatch(string message)
         {
             // Create Persistence
             if (_amq != null)
@@ -58,12 +66,16 @@ namespace io.ebu.eis.mq
                 var properties = _amq.Channel.CreateBasicProperties();
                 properties.SetPersistent(true);
 
-                _amq.Channel.BasicPublish("", _amqpExchange, properties, Encoding.UTF8.GetBytes(message.Serialize()));
+                _amq.Channel.BasicPublish("", _amqpExchange, properties, Encoding.UTF8.GetBytes(message));
             }
             else
             {
                 // TODO LOG 
             }
+        }
+        public void Dispatch(DispatchNotificationMessage message)
+        {
+            Dispatch(message.Serialize());
         }
 
 

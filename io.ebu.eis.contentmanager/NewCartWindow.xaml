@@ -1,7 +1,7 @@
 ﻿<Window x:Class="io.ebu.eis.contentmanager.NewCartWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:utils="clr-namespace:io.ebu.eis.contentmanager.Utils"
+        xmlns:utils="clr-namespace:io.ebu.eis.shared.Utils"
         Title="New Cart" Height="162" Width="355" Foreground="{DynamicResource Brush02}" Background="{DynamicResource BackgroundKey}" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" WindowStyle="ToolWindow" >
     <Window.Resources>
         <ResourceDictionary>

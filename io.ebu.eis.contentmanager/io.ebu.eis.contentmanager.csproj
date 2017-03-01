@@ -9,10 +9,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>io.ebu.eis.contentmanager</RootNamespace>
     <AssemblyName>io.ebu.eis.contentmanager</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -63,14 +64,9 @@
     <Compile Include="JsonSerializer.cs" />
     <Compile Include="ManagerCart.cs" />
     <Compile Include="ManagerContext.cs" />
-    <Compile Include="ManagerImageReference.cs" />
-    <Compile Include="ManagerTemplateField.cs" />
     <Compile Include="NewCartWindow.xaml.cs">
       <DependentUpon>NewCartWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\RegistryHelper.cs" />
-    <Compile Include="Utils\HeightAspectRatioConverter.cs" />
-    <Compile Include="Utils\AspectRatioConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -146,7 +142,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="App.config.example">
+    <None Include="LTPSApp.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="io.ebu.eis.contentmanager.exe.config.example">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -313,6 +312,10 @@
     <ProjectReference Include="..\io.ebu.eis.mq\io.ebu.eis.mq.csproj">
       <Project>{36c58a7c-8fc5-4290-bcd5-8b56e2802497}</Project>
       <Name>io.ebu.eis.mq</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\io.ebu.eis.shared\io.ebu.eis.shared.csproj">
+      <Project>{88fbe6f3-7fc9-4940-8403-bbcf93be6edc}</Project>
+      <Name>io.ebu.eis.shared</Name>
     </ProjectReference>
     <ProjectReference Include="..\io.ebu.eis.stomp\io.ebu.eis.stomp.csproj">
       <Project>{02a3fd2c-6dc9-434f-a28a-cb8aff8d50ea}</Project>

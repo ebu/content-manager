@@ -34,6 +34,13 @@ namespace io.ebu.eis.datastructures
             set { this["OutputConfiguration"] = value; }
         }
 
+        [ConfigurationProperty("ImageGemerationConfiguration")]
+        public ImageGemerationConfiguration ImageGemerationConfiguration
+        {
+            get { return (ImageGemerationConfiguration)this["ImageGemerationConfiguration"]; }
+            set { this["ImageGemerationConfiguration"] = value; }
+        }
+
         [ConfigurationProperty("SlidesConfiguration")]
         public SlidesConfiguration SlidesConfiguration
         {
@@ -224,6 +231,12 @@ namespace io.ebu.eis.datastructures
             get { return (String)this["MQExchange"]; }
             set { this["MQExchange"] = value; }
         }
+        [ConfigurationProperty("MQQueue", DefaultValue = "", IsRequired = false)]
+        public String MQQueue
+        {
+            get { return (String)this["MQQueue"]; }
+            set { this["MQQueue"] = value; }
+        }
 
     }
 
@@ -256,6 +269,37 @@ namespace io.ebu.eis.datastructures
         }
     }
 
+    public class ImageGemerationConfiguration : ConfigurationElement
+    {
+        [ConfigurationProperty("EnableExternalImageGenerator", DefaultValue = false, IsRequired = true)]
+        public bool EnableExternalImageGenerator
+        {
+            get { return (bool)this["EnableExternalImageGenerator"]; }
+            set { this["EnableExternalImageGenerator"] = value; }
+        }
+
+        [ConfigurationProperty("GenerationProperties", DefaultValue = "", IsRequired = true)]
+        public string GenerationProperties
+        {
+            get { return (string)this["GenerationProperties"]; }
+            set { this["GenerationProperties"] = value; }
+        }
+
+        [ConfigurationProperty("DispatchMQConfiguration", IsRequired = false)]
+        public DispatchMQConfiguration DispatchMQConfiguration
+        {
+            get { return (DispatchMQConfiguration)this["DispatchMQConfiguration"]; }
+            set { this["DispatchMQConfiguration"] = value; }
+        }
+
+        [ConfigurationProperty("InputConfigurations")]
+        public InputConfigurationCollection InputConfigurations
+        {
+            get { return ((InputConfigurationCollection)(base["InputConfigurations"])); }
+        }
+
+    }
+
     public class DispatchMQConfiguration : ConfigurationElement
     {
         [ConfigurationProperty("MQUri", DefaultValue = "", IsRequired = true)]
@@ -265,11 +309,18 @@ namespace io.ebu.eis.datastructures
             set { this["MQUri"] = value; }
         }
 
-        [ConfigurationProperty("MQExchange", DefaultValue = "", IsRequired = true)]
+        [ConfigurationProperty("MQExchange", DefaultValue = "", IsRequired = false)]
         public String MQExchange
         {
             get { return (String)this["MQExchange"]; }
             set { this["MQExchange"] = value; }
+        }
+
+        [ConfigurationProperty("MQQueue", DefaultValue = "", IsRequired = false)]
+        public String MQQueue
+        {
+            get { return (String)this["MQQueue"]; }
+            set { this["MQQueue"] = value; }
         }
 
     }
@@ -372,6 +423,13 @@ namespace io.ebu.eis.datastructures
             set { this["PublicUriBase"] = value; }
         }
 
+        [ConfigurationProperty("LatestStaticImageName", DefaultValue = "", IsRequired = false)]
+        public String LatestStaticImageName
+        {
+            get { return (String)this["LatestStaticImageName"]; }
+            set { this["LatestStaticImageName"] = value; }
+        }
+
         [ConfigurationProperty("DispatchConfigurations", IsRequired = false)]
         public DispatchConfigurationCollection DispatchConfigurations
         {
@@ -389,7 +447,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DispatchConfiguration)(element)).Type + element;
+            return ((DispatchConfiguration)(element)).Type + element + ((DispatchConfiguration)(element)).StompTopic + ((DispatchConfiguration)(element)).StompUsername;
         }
 
         public DispatchConfiguration this[int idx]
