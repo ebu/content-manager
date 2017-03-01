@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         Title="EIS - Worker Engine" Height="364.869" Width="534.15" Closing="Window_Closing"
         Foreground="{DynamicResource Brush02}" 
-    Background="{DynamicResource BackgroundKey}" >
+    Background="{DynamicResource BackgroundKey}" Icon="Images/ebu_contentmanager.ico" >
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

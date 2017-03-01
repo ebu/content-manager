@@ -447,7 +447,7 @@ namespace io.ebu.eis.datastructures
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            return ((DispatchConfiguration)(element)).Type + element;
+            return ((DispatchConfiguration)(element)).Type + element + ((DispatchConfiguration)(element)).StompTopic + ((DispatchConfiguration)(element)).StompUsername;
         }
 
         public DispatchConfiguration this[int idx]
